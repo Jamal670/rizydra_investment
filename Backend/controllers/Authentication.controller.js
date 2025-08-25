@@ -18,7 +18,7 @@ exports.RegUser = async (req, res) => {
 exports.VerifyOtp = async (req, res) => {
   try {
     const _id = req.params.id;
-    const {otp, type } = req.body;
+    const { otp, type } = req.body;
     console.log(req.body, _id);
     const result = await userAuthService.VerifyOtp(_id, otp, type);
     res.status(200).json(result);
@@ -42,12 +42,13 @@ exports.Login = async (req, res) => {
 
     // Store in HttpOnly cookie for security
     res.cookie("token", token, {
-      httpOnly: false, // Allow JavaScript access in development
+      httpOnly: true,   // ✅ make it secure
       secure: process.env.NODE_ENV === "production",
-      sameSite: 'lax',
-      maxAge: 24 * 3600000,
-      path: '/'
+      sameSite: "none", // agar frontend aur backend alag domains pe hain
+      maxAge: 24 * 60 * 60 * 1000,
+      path: "/"
     });
+
 
     res.status(200).json({
       message: 'User logged in successfully',
@@ -92,7 +93,7 @@ exports.ForgotPassSendEmail = async (req, res) => {
 exports.ForgotPass = async (req, res) => {
   try {
     const userId = req.params.id;
-    const {newPassword } = req.body;
+    const { newPassword } = req.body;
     // Call service to handle forgot password logic
     const result = await userAuthService.ForgotPass(userId, newPassword);
     res.status(200).json(result);

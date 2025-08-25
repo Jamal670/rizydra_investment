@@ -22,15 +22,15 @@ app.use(rateLimit({ windowMs: 15*60*1000, max: 300 }));
 app.use(express.json());
 
 // ✅ Cron Job: Har din raat 12 baje run hoga
-// cron.schedule('5 0 * * *', async () => {
-//   console.log('⏳ Running Daily Earnings Calculation...');
-//   try {
-//     await dailyEarningService.calculateDailyEarnings();
-//     console.log('✅ Daily earnings calculated successfully');
-//   } catch (err) {
-//     console.error('❌ Error in daily earnings calculation:', err);
-//   }
-// });
+cron.schedule('5 0 * * *', async () => {
+  console.log('⏳ Running Daily Earnings Calculation...');
+  try {
+    await dailyEarningService.calculateDailyEarnings();
+    console.log('✅ Daily earnings calculated successfully');
+  } catch (err) {
+    console.error('❌ Error in daily earnings calculation:', err);
+  }
+});
 
 
 

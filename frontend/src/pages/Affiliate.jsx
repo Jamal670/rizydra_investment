@@ -201,10 +201,7 @@ function Affiliate() {
                 </div>
             </div>
 
-            {/* Profit Calculation Section */}
-            <section className="profit-calculation wow slideInUp overflow-hidden">
-                <div className="container"></div>
-            </section>
+            
         </>
     );
 }

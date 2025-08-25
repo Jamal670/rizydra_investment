@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Line, Pie, Bar, Line as StackedArea } from 'react-chartjs-2';
+import api from '../../Api';
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -12,7 +13,6 @@ import {
     ArcElement,
     BarElement,
 } from 'chart.js';
-import api from '../../api';
 
 // Register Chart.js components
 ChartJS.register(

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import api from '../api';
+import api from '../Api';
 
 function Otp() {
   const [isLoading, setIsLoading] = useState(true);

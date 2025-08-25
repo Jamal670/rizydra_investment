@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import api from '../../api';
+import api from '../../Api';
 
 function Deposit() {
     const [isLoading, setIsLoading] = useState(true);

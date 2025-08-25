@@ -95,13 +95,43 @@ function ReferalUsers() {
         <>
             {/* Preloader */}
             {isLoading && (
-                <>
-                    <div className="loader-bg">
-                        <div className="loader-p"></div>
-                    </div>
-                    <div className="overlay"></div>
-                </>
-            )}
+        <>
+          <div
+            className="loader-bg"
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100vw',
+              height: '100vh',
+              background: '#fff',
+              zIndex: 9999,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            <img
+              src="/loader.jpeg"
+              alt="Loading..."
+              style={{
+                width: 260,
+                height: 260,
+                animation: 'blink 1s infinite',
+              }}
+            />
+          </div>
+          <style>
+            {`
+        @keyframes blink {
+          0% { opacity: 1; }
+          50% { opacity: 0.3; }
+          100% { opacity: 1; }
+        }
+      `}
+          </style>
+        </>
+      )}
 
 
 

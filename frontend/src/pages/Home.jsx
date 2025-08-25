@@ -56,21 +56,53 @@ function Home() {
     return () => clearTimeout(timer);
   }, []);
 
+  // ...existing code...
   return (
     <>
-      <Helmet>
+      {/* <Helmet>
         <title>Rizydra</title>
         <meta name="description" content="Welcome to Rizydra, your trusted partner in investment solutions." />
-      </Helmet>
+      </Helmet> */}
       {/* Preloader */}
       {isLoading && (
         <>
-          <div className="loader-bg">
-            <div className="loader-p"></div>
+          <div
+            className="loader-bg"
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100vw',
+              height: '100vh',
+              background: '#fff',
+              zIndex: 9999,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            <img
+              src="/loader.jpeg"
+              alt="Loading..."
+              style={{
+                width: 260,
+                height: 260,
+                animation: 'blink 1s infinite',
+              }}
+            />
           </div>
-          <div className="overlay"></div>
+          <style>
+            {`
+        @keyframes blink {
+          0% { opacity: 1; }
+          50% { opacity: 0.3; }
+          100% { opacity: 1; }
+        }
+      `}
+          </style>
         </>
       )}
+
 
       {/* Banner Section */}
       <section className="banner-section bg_img" style={{ background: 'url(/assets/images/banner/bg.png) center bottom' }}>
@@ -163,7 +195,7 @@ function Home() {
       <div className="sponsor-section wow fadeInUp">
         <div className="container">
           <div className="sponsor-slider">
-            {['aa','bb','cc','dd','ee','ff','gg','hh','ii'].map((img, idx) => (
+            {['aa', 'bb', 'cc', 'dd', 'ee', 'ff', 'gg', 'hh', 'ii'].map((img, idx) => (
               <div className="single-slide" key={idx}>
                 <div className="brand-item">
                   <img src={`/assets/images/sponsor/${img}.png`} alt="" />
@@ -377,7 +409,7 @@ function Home() {
               <div className="testimonial-content">
                 <div className="section-header text-center">
                   <span className="subtitle wow fadeInUp">our happly client</span>
-                  <h2 className="title wow fadeInUp" data-wow-delay=".5s">Discover Our Happy 
+                  <h2 className="title wow fadeInUp" data-wow-delay=".5s">Discover Our Happy
                     Client Feedback</h2>
                 </div>
                 <div className="testimonial-slider-wrapper">

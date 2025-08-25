@@ -35,31 +35,24 @@ cron.schedule('5 0 * * *', async () => {
 
 
 const allowedOrigins = [
-  process.env.CLIENT_URL || "https://rizydra-investment-rmky.vercel.app", // Ensure this is correct
+  process.env.CLIENT_URL,
   "http://localhost:3000",
-  "https://rizydra-investment-rmky.vercel.app", // Explicitly add your frontend URL
-  "https://rizydra-investment.vercel.app"       // Also allow backend URL if needed
+  "https://your-frontend.vercel.app"
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like Postman, mobile apps, or server-side requests)
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.includes(origin)) {
+    // Allow requests with no origin (like Postman) or in the list
+    if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      // Log blocked origins for debugging
       console.log("❌ CORS blocked for origin:", origin);
       callback(new Error("Not allowed by CORS"));
     }
   },
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Ensure OPTIONS is included for preflight
-  credentials: true,
-  allowedHeaders: ['Content-Type', 'Authorization'] // Explicitly allow headers you use
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true
 }));
-
-app.options('*', cors());
 
 app.use('/', authRoutes); // authentation path
 app.use('/user', userRoutes); // user_dashboard path

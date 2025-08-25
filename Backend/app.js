@@ -9,8 +9,8 @@ require('dotenv').config();
 
 //Require routes
 const dailyEarningService = require('./services/dailyEarning.service'); // Daily earnings service
-const authRoutes = require('./routers/Auth.router'); 
-const userRoutes = require('./routers/user.router');
+const authRoutes = require('./routers/Auth.Router'); 
+const userRoutes = require('./routers/user.Router');
 
 // Initialize express app
 const app = express();

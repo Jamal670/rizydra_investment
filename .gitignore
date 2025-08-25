@@ -1,0 +1,10 @@
+# node modules
+frontend/node_modules/
+Backend/node_modules/
+
+# .env
+frontend/.env
+Backend/.env
+
+# client
+client/

@@ -1,0 +1,491 @@
+import React, { useEffect, useState } from 'react';
+import { Line, Pie, Bar, Line as StackedArea } from 'react-chartjs-2';
+import {
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    Title,
+    Tooltip,
+    Legend,
+    ArcElement,
+    BarElement,
+} from 'chart.js';
+import api from '../../api';
+
+// Register Chart.js components
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    Title,
+    Tooltip,
+    Legend,
+    ArcElement,
+    BarElement
+);
+
+function UserDashboard() {
+    const [isLoading, setIsLoading] = useState(true);
+    const [userData, setUserData] = useState({ name: '', email: '', image: '' });
+    const [chartData, setChartData] = useState({
+        lineChart: [],
+        pieChart: { deposit: 0, invested: 0 },
+        barChart: [],
+        stackedAreaChart: []
+    });
+    const [cardData, setCardData] = useState({
+        totalBalance: '0.00',
+        totalEarn: '0.00',
+        refEarn: '0.00',
+        depositAmount: '0.00',
+        investedAmount: '0.00'
+    });
+
+    useEffect(() => {
+        // Only load assets once per session
+        if (!window.__rizydraAssetsLoaded) {
+            // Dynamically load CSS files
+            const cssFiles = [
+                '/assets/css/bootstrap.min.css',
+                '/assets/css/all.min.css',
+                '/assets/css/line-awesome.min.css',
+                '/assets/css/animate.css',
+                '/assets/css/magnific-popup.css',
+                '/assets/css/nice-select.css',
+                '/assets/css/odometer.css',
+                '/assets/css/slick.css',
+                '/assets/css/main.css'
+            ];
+            cssFiles.forEach(href => {
+                if (!document.querySelector(`link[href="${href}"]`)) {
+                    const link = document.createElement('link');
+                    link.rel = 'stylesheet';
+                    link.href = href;
+                    document.head.appendChild(link);
+                }
+            });
+
+            // Dynamically load JS files
+            const jsFiles = [
+                '/assets/js/jquery-3.3.1.min.js',
+                '/assets/js/bootstrap.min.js',
+                '/assets/js/jquery.ui.js',
+                '/assets/js/slick.min.js',
+                '/assets/js/wow.min.js',
+                '/assets/js/magnific-popup.min.js',
+                '/assets/js/odometer.min.js',
+                '/assets/js/viewport.jquery.js',
+                '/assets/js/nice-select.js',
+                '/assets/js/main.js'
+            ];
+            jsFiles.forEach(src => {
+                if (!document.querySelector(`script[src="${src}"]`)) {
+                    const script = document.createElement('script');
+                    script.src = src;
+                    script.async = false;
+                    document.body.appendChild(script);
+                }
+            });
+            window.__rizydraAssetsLoaded = true;
+        }
+
+        // Fetch user dashboard data when route is loaded
+        api.get('/user/showUserDash', { withCredentials: true })
+            .then(res => {
+                console.log('Dashboard response:', res.data); // Debug log
+                setUserData({
+                    name: res.data.name || '',
+                    email: res.data.email || '',
+                    image: res.data.image || ''
+                });
+                // Set chart data from the same response
+                setChartData({
+                    lineChart: res.data.lineChart || [],
+                    pieChart: res.data.pieChart || { deposit: 0, invested: 0 },
+                    barChart: res.data.barChart || [],
+                    stackedAreaChart: res.data.stackedAreaChart || []
+                });
+                // Set card data
+                setCardData(res.data.cardData || {
+                    totalBalance: '0.00',
+                    totalEarn: '0.00',
+                    refEarn: '0.00',
+                    depositAmount: '0.00',
+                    investedAmount: '0.00'
+                });
+            })
+            .catch((error) => {
+                console.error('Dashboard error:', error); // Debug log
+                setUserData({ name: '', email: '' });
+            })
+            .finally(() => {
+                setIsLoading(false);
+            });
+
+        // Hide loader after 1 second (optional fallback)
+        const timer = setTimeout(() => {
+            setIsLoading(false);
+        }, 1000);
+        return () => clearTimeout(timer);
+    }, []);
+
+    // Chart configurations with better data handling
+    const lineChartData = {
+        labels: chartData.lineChart.length > 0
+            ? chartData.lineChart.map((_, index) => `Day ${index + 1}`)
+            : ['No Data'],
+        datasets: [
+            {
+                label: 'Daily Earnings',
+                data: chartData.lineChart.length > 0 ? chartData.lineChart : [0],
+                borderColor: 'rgb(75, 192, 192)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                tension: 0.1,
+            },
+        ],
+    };
+
+    const pieChartData = {
+        labels: ['Deposit', 'Invested'],
+        datasets: [
+            {
+                data: [chartData.pieChart.deposit, chartData.pieChart.invested],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.8)',
+                    'rgba(54, 162, 235, 0.8)',
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                ],
+                borderWidth: 1,
+            },
+        ],
+    };
+
+    const barChartData = {
+        labels: chartData.barChart.length > 0
+            ? chartData.barChart.map(item => item.name || 'Unknown')
+            : ['No Data'],
+        datasets: [
+            {
+                label: 'Referral Earnings',
+                data: chartData.barChart.length > 0
+                    ? chartData.barChart.map(item => item.totalReferralEarnings || 0)
+                    : [0],
+                backgroundColor: 'rgba(153, 102, 255, 0.8)',
+                borderColor: 'rgba(153, 102, 255, 1)',
+                borderWidth: 1,
+            },
+        ],
+    };
+
+    const stackedAreaChartData = {
+        labels: chartData.stackedAreaChart.length > 0
+            ? chartData.stackedAreaChart.map((_, index) => `Day ${index + 1}`)
+            : ['No Data'],
+        datasets: [
+            {
+                label: 'Daily Earnings',
+                data: chartData.stackedAreaChart.length > 0
+                    ? chartData.stackedAreaChart.map(item => item.daily || 0)
+                    : [0],
+                borderColor: 'rgb(255, 159, 64)',
+                backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                fill: true,
+            },
+            {
+                label: 'Referral Earnings',
+                data: chartData.stackedAreaChart.length > 0
+                    ? chartData.stackedAreaChart.map(item => item.referral || 0)
+                    : [0],
+                borderColor: 'rgb(75, 192, 192)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                fill: true,
+            },
+        ],
+    };
+
+    const chartOptions = {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'top',
+            },
+            title: {
+                display: true,
+                text: 'Dashboard Analytics',
+            },
+        },
+    };
+
+    return (
+        <>
+            {/* Preloader */}
+            {isLoading && (
+                <>
+                    <div className="loader-bg">
+                        <div className="loader-p"></div>
+                    </div>
+                    <div className="overlay"></div>
+                </>
+            )}
+
+
+
+            {/* Banner Section */}
+            <section className="inner-banner bg_img padding-bottom" style={{ background: "url(/assets/images/about/bg.png) no-repeat right bottom" }}>
+                <div className="container">
+                    <div className="inner-banner-wrapper">
+                        <div className="inner-banner-content">
+                            <h2 className="inner-banner-title">User <br /> Dashboard</h2>
+                            <ul className="breadcums">
+                                <li><a href="/">Home</a></li>
+                                <li><span>Dashboard</span></li>
+                            </ul>
+                        </div>
+                        <div className="inner-banner-thumb about d-none d-md-block">
+                            <img src="/assets/images/dashboard/thumb.png" alt="about" />
+                        </div>
+                    </div>
+                </div>
+                <div className="shape1 paroller" data-paroller-factor=".2">
+                    <img src="/assets/images/about/balls.png" alt="about" />
+                </div>
+            </section>
+
+            {/* User Dashboard Section */}
+            <section className="user-dashboard padding-top padding-bottom">
+                <div className="container">
+                    <div className="row gy-5">
+                        <div className="col-lg-3">
+                            <div className="dashboard-sidebar">
+                                <div className="close-dashboard d-lg-none">
+                                    <i className="las la-times"></i>
+                                </div>
+                                <div className="dashboard-user">
+                                    <div className="user-thumb">
+                                        <img
+                                            src={userData.image ? (userData.image.startsWith('data:image') ? userData.image : `data:image/png;base64,${userData.image}`) : "/assets/images/dashboard/userIconss.png"}
+                                            alt="dashboard"
+                                            style={{ width: "100px", height: "100px", borderRadius: "50%", objectFit: "cover" }}
+                                        />
+                                    </div>
+                                    <div className="user-content">
+                                        <span>Welcome</span>
+                                        <h5 className="name">{userData.name}</h5>
+                                        <p className="email">{userData.email}</p>
+                                        <hr />
+                                    </div>
+                                </div>
+                                <ul className="user-dashboard-tab">
+                                    <li><a href="/user-dashboard" className="active">Account Overview</a></li>
+                                    <li><a href="/earning-history">Earnings History</a></li>
+                                    <li><a href="/referal-users">Referral Users</a></li>
+                                    <li><a href="/deposit">Deposit/Withdraw</a></li>
+                                    <li><a href="/account-settings">Account Settings</a></li>
+                                    <li>
+                                        <a
+                                            href="#0"
+                                            onClick={async (e) => {
+                                                e.preventDefault();
+                                                try {
+                                                    await api.get('/logout', { withCredentials: true });
+                                                    window.location.href = '/';
+                                                } catch (err) {
+                                                    // Optionally handle error
+                                                }
+                                            }}
+                                        >
+                                            Sign Out
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div className="col-lg-9">
+                            <div className="user-toggler-wrapper d-flex d-lg-none">
+                                <h4 className="title">User Dashboard</h4>
+                                <div className="user-toggler">
+                                    <i className="las la-sliders-h"></i>
+                                </div>
+                            </div>
+
+
+                            {/* Dashboard Boxes Section */}
+                            <div className="dashboard-boxes">
+                                <div className="row justify-content-center g-4 mb-3">
+                                    {/* Total Balance */}
+                                    <div className="col-12 col-sm-6 col-md-4">
+                                        <div className="dashboard-item">
+                                            <div className="row align-items-center">
+                                                <div className="col-4 text-center">
+                                                    <img src="/assets/images/dashboard/wallet.png" alt="dashboard" style={{ width: 48, height: 48 }} />
+                                                </div>
+                                                <div className="col-8">
+                                                    <h6 className="title mb-0" style={{ fontWeight: 600 }}>Total Balance</h6>
+                                                </div>
+                                            </div>
+                                            <div className="row mt-2">
+                                                <div className="col-12 text-center">
+                                                    <h3 className="ammount theme-one" style={{ fontWeight: 700, fontSize: 22 }}>
+                                                        ${cardData.totalBalance}
+                                                    </h3>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {/* Total Earning */}
+                                    <div className="col-12 col-sm-6 col-md-4">
+                                        <div className="dashboard-item">
+                                            <div className="row align-items-center">
+                                                <div className="col-4 text-center">
+                                                    <img src="/assets/images/dashboard/profit.png" alt="dashboard" style={{ width: 48, height: 48 }} />
+                                                </div>
+                                                <div className="col-8">
+                                                    <h6 className="title mb-0" style={{ fontWeight: 600 }}>Total Earning</h6>
+                                                </div>
+                                            </div>
+                                            <div className="row mt-2">
+                                                <div className="col-12 text-center">
+                                                    <h3 className="ammount theme-two" style={{ fontWeight: 700, fontSize: 22 }}>
+                                                        ${cardData.totalEarn}
+                                                    </h3>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {/* Referral Earning */}
+                                    <div className="col-12 col-sm-6 col-md-4">
+                                        <div className="dashboard-item">
+                                            <div className="row align-items-center">
+                                                <div className="col-4 text-center">
+                                                    <img src="/assets/images/dashboard/reference.png" alt="dashboard" style={{ width: 48, height: 48 }} />
+                                                </div>
+                                                <div className="col-8">
+                                                    <h6 className="title mb-0" style={{ fontWeight: 600 }}>Referral Earning</h6>
+                                                </div>
+                                            </div>
+                                            <div className="row mt-2">
+                                                <div className="col-12 text-center">
+                                                    <h3 className="ammount theme-four" style={{ fontWeight: 700, fontSize: 22 }}>
+                                                        ${cardData.refEarn}
+                                                    </h3>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {/* Deposit Amount */}
+                                    <div className="col-12 col-sm-6 col-md-4">
+                                        <div className="dashboard-item">
+                                            <div className="row align-items-center">
+                                                <div className="col-4 text-center">
+                                                    <img src="/assets/images/dashboard/deposit.png" alt="dashboard" style={{ width: 48, height: 48 }} />
+                                                </div>
+                                                <div className="col-8">
+                                                    <h6 className="title mb-0" style={{ fontWeight: 600 }}>Deposit Balance</h6>
+                                                </div>
+                                            </div>
+                                            <div className="row mt-2">
+                                                <div className="col-12 text-center">
+                                                    <h3 className="ammount theme-three" style={{ fontWeight: 700, fontSize: 22 }}>
+                                                        ${cardData.depositAmount}
+                                                    </h3>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {/* Invested Amount */}
+                                    <div className="col-12 col-sm-6 col-md-4">
+                                        <div className="dashboard-item">
+                                            <div className="row align-items-center">
+                                                <div className="col-4 text-center">
+                                                    <img src="/assets/images/dashboard/invest.png" alt="dashboard" style={{ width: 48, height: 48 }} />
+                                                </div>
+                                                <div className="col-8">
+                                                    <h6 className="title mb-0" style={{ fontWeight: 600 }}>Invested Amount</h6>
+                                                </div>
+                                            </div>
+                                            <div className="row mt-2">
+                                                <div className="col-12 text-center">
+                                                    <h3 className="ammount theme-three" style={{ fontWeight: 700, fontSize: 22 }}>
+                                                        ${cardData.investedAmount}
+                                                    </h3>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Graphs Section Heading */}
+                            <div className="graphs-heading mt-5 mb-4">
+                                <div className="container">
+                                    <h3 className="title" style={{
+                                        fontSize: '28px',
+                                        fontWeight: '700',
+                                        color: '#222',
+                                        textAlign: 'left',
+                                        marginBottom: '0',
+                                        padding: '0px 0'
+                                    }}>
+                                        Graphs
+                                    </h3>
+                                </div>
+                            </div>
+
+                            {/* All Graphs Section - Below the cards in 2x2 grid */}
+                            <section className="charts-section mt-4">
+                                <div className="container">
+                                    <div className="row g-4">
+                                        {/* Row 1: Daily Earnings Trend and Balance Distribution */}
+                                        <div className="col-12 col-lg-6">
+                                            <div className="chart-container" style={{ background: '#fff', padding: '20px', borderRadius: '10px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+                                                <h5 className="mb-3">Daily Earnings Trend</h5>
+                                                <Line data={lineChartData} options={chartOptions} />
+                                            </div>
+                                        </div>
+
+                                        <div className="col-12 col-lg-6">
+                                            <div className="chart-container" style={{ background: '#fff', padding: '20px', borderRadius: '10px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', height: '300px' }}>
+                                                <h5 className="mb-3">Balance Distribution</h5>
+                                                <div style={{ height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                    <Pie data={pieChartData} options={chartOptions} />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Row 2: Referral Earnings Comparison and Combined Growth Analysis */}
+                                        <div className="col-12 col-lg-6">
+                                            <div className="chart-container" style={{ background: '#fff', padding: '20px', borderRadius: '10px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+                                                <h5 className="mb-3">Referral Earnings Comparison</h5>
+                                                <Bar data={barChartData} options={chartOptions} />
+                                            </div>
+                                        </div>
+
+                                        <div className="col-12 col-lg-6">
+                                            <div className="chart-container" style={{ background: '#fff', padding: '20px', borderRadius: '10px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+                                                <h5 className="mb-3">Combined Growth Analysis</h5>
+                                                <StackedArea data={stackedAreaChartData} options={chartOptions} />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Remove the profit calculation section completely */}
+
+            <a href="#0" className="scrollToTop active"><i className="las la-chevron-up"></i></a>
+        </>
+    );
+}
+
+export default UserDashboard;

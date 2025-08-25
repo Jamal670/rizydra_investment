@@ -108,6 +108,8 @@ function Signup() {
         email: form.email,
         password: form.password,
         referralCode: form.referralCode
+      }, {
+        withCredentials: true
       });
       // alert(res.data.message || 'Registration successful!');
       navigate(`/otp/${res.data.user._id}/${"reg"}`);

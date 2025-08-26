@@ -4,7 +4,6 @@ import api from '../../Api';
 
 function EarningHistory() {
     const [isLoading, setIsLoading] = useState(true);
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
     const navigate = useNavigate();
     const [userData, setUserData] = useState({
         name: '',
@@ -16,52 +15,7 @@ function EarningHistory() {
         earnings: []
     });
 
-    // Utility function to get auth token from cookies
-    const getAuthTokenFromCookies = () => {
-        // Since your backend uses httpOnly cookies, we can't access them directly
-        // We need to make an API call to verify authentication
-        return null; // This will be handled by the API call
-    };
-
-    // Utility function to check if token is valid
-    const isTokenValid = (token) => {
-        if (!token) return false;
-
-        try {
-            // Basic JWT token validation (check if it's not expired)
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            const currentTime = Date.now() / 1000;
-
-            return payload.exp > currentTime;
-        } catch (error) {
-            return false;
-        }
-    };
-
-    // Authentication check function
-    const checkAuthentication = async () => {
-        try {
-            // Make an API call to verify authentication
-            const response = await api.get('/user/verify-auth', { withCredentials: true });
-            return true;
-        } catch (error) {
-            if (error.response?.status === 401) {
-                alert('Your session has expired. Please login again');
-                navigate('/login');
-                return false;
-            }
-            return false;
-        }
-    };
-
     useEffect(() => {
-        // First, check authentication
-        if (!checkAuthentication()) {
-            return;
-        }
-
-        setIsAuthenticated(true);
-
         // Only load assets once per session
         if (!window.__rizydraAssetsLoaded) {
             // Dynamically load CSS files
@@ -109,22 +63,23 @@ function EarningHistory() {
             window.__rizydraAssetsLoaded = true;
         }
 
-        // Fetch earning history data only if authenticated
+        // Fetch earning history data
         api.get('/user/earnhistory', { withCredentials: true })
             .then(res => {
-                console.log('API Response:', res.data);
+                // If response is an array, use the first item
+                const user = Array.isArray(res.data) ? res.data[0] : res.data;
                 setUserData({
-                    name: res.data.name || '',
-                    email: res.data.email || '',
-                    image: res.data.image || '',
-                    referralCode: res.data.referralCode || '',
-                    depositAmount: res.data.depositAmount || 0,
-                    investedAmount: res.data.investedAmount || 0,
-                    earnings: res.data.earnings || []
+                    name: user.name || '',
+                    email: user.email || '',
+                    image: user.image || '',
+                    referralCode: user.referralCode || '',
+                    depositAmount: user.depositAmount || 0,
+                    investedAmount: user.investedAmount || 0,
+                    earnings: user.earnings || [],
+                    lastEarningDate: user.earnings && user.earnings.length > 0 ? user.earnings[user.earnings.length - 1].date : ''
                 });
             })
             .catch((error) => {
-                console.error('API Error:', error);
                 // If API call fails due to authentication, redirect to login
                 if (error.response?.status === 401) {
                     alert('Your session has expired. Please login again');
@@ -150,18 +105,13 @@ function EarningHistory() {
             setIsLoading(false);
         }, 1000);
         return () => clearTimeout(timer);
-    }, [navigate]); // Proper dependency management
-
-    // Don't render anything if not authenticated
-    if (!isAuthenticated) {
-        return null;
-    }
+    }, [navigate]);
 
     return (
         <>
             {/* Preloader */}
             {isLoading && (
-        <>
+                <>
           <div
             className="loader-bg"
             style={{
@@ -242,10 +192,14 @@ function EarningHistory() {
                                         <span style={{ fontSize: '14px', color: '#666' }}>Welcome</span>
                                         <h5 className="name" style={{ fontSize: '18px', fontWeight: '600', margin: '5px 0', color: '#222' }}>{userData.name}</h5>
                                         <p className="email" style={{ fontSize: '14px', color: '#666', margin: '0' }}>{userData.email}</p>
-
-
-
-
+                                        <hr />
+                                    </div>
+                                    {/* Referral Code Display */}
+                                    <div style={{ marginTop: '5px', padding: '5px', background: '#f8f9fa', borderRadius: '8px', border: '1px solid #e9ecef' }}>
+                                        <div style={{ fontSize: '12px', color: '#6c757d', marginBottom: '0px' }}>Referral Code:</div>
+                                        <div style={{ fontSize: '16px', fontWeight: '600', color: '#007bff', fontFamily: 'monospace' }}>
+                                            {userData.referralCode || 'N/A'}
+                                        </div>
                                     </div>
                                 </div>
                                 <ul className="user-dashboard-tab">
@@ -263,7 +217,6 @@ function EarningHistory() {
                                                     await api.get('/logout', { withCredentials: true });
                                                     navigate('/login');
                                                 } catch (err) {
-                                                    console.error('Logout error:', err);
                                                     navigate('/login');
                                                 }
                                             }}
@@ -377,6 +330,12 @@ function EarningHistory() {
                             </div>
                             <div className="dashborad-header">
                                 <h4 className="title">Daily Earning</h4>
+                                {/* Show last earning date if available
+                                // {userData.lastEarningDate && (
+                                //     <div style={{ fontSize: '16px', color: '#444', marginBottom: '10px' }}>
+                                //         Last Earning Date: <b>{userData.lastEarningDate}</b>
+                                //     </div>
+                                // )} */}
                             </div>
                             <div
                                 style={{
@@ -480,8 +439,6 @@ function EarningHistory() {
                     </div>
                 </div>
             </section>
-
-
 
             <a href="#0" className="scrollToTop active"><i className="las la-chevron-up"></i></a>
         </>

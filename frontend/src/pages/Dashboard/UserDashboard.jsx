@@ -29,7 +29,7 @@ ChartJS.register(
 
 function UserDashboard() {
     const [isLoading, setIsLoading] = useState(true);
-    const [userData, setUserData] = useState({ name: '', email: '', image: '' });
+    const [userData, setUserData] = useState({ name: '', email: '', image: '', referralCode: '' });
     const [chartData, setChartData] = useState({
         lineChart: [],
         pieChart: { deposit: 0, invested: 0 },
@@ -99,7 +99,8 @@ function UserDashboard() {
                 setUserData({
                     name: res.data.name || '',
                     email: res.data.email || '',
-                    image: res.data.image || ''
+                    image: res.data.image || '',
+                    referralCode: res.data.referralCode || ''
                 });
                 // Set chart data from the same response
                 setChartData({
@@ -308,6 +309,13 @@ function UserDashboard() {
                                         <h5 className="name">{userData.name}</h5>
                                         <p className="email">{userData.email}</p>
                                         <hr />
+                                    </div>
+                                    {/* Referral Code Display */}
+                                    <div style={{ marginTop: '5px', padding: '5px', background: '#f8f9fa', borderRadius: '8px', border: '1px solid #e9ecef' }}>
+                                        <div style={{ fontSize: '12px', color: '#6c757d', marginBottom: '0px' }}>Referral Code:</div>
+                                        <div style={{ fontSize: '16px', fontWeight: '600', color: '#007bff', fontFamily: 'monospace' }}>
+                                            {userData.referralCode || 'N/A'}
+                                        </div>
                                     </div>
                                 </div>
                                 <ul className="user-dashboard-tab">

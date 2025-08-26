@@ -64,7 +64,7 @@ exports.showDashboard = async function showDashboard(userId) {
       { $sort: { _id: 1 } }
     ]);
 
-    // 5) Card Data → User balance information using correct field names
+    // 5) Card Data → User balance information
     const depositAmount = user.depositAmount || 0;
     const investedAmount = user.investedAmount || 0;
     const totalEarn = user.totalEarn || 0;
@@ -82,7 +82,8 @@ exports.showDashboard = async function showDashboard(userId) {
     return {
       name: user.name,
       email: user.email,
-      image: user.image || '', // Ensure image is included
+      image: user.image || '',
+      referralCode: user.referralCode, // 👈 referralCode added here
       lineChart: lineChart.map(item => item.totalEarnings),
       pieChart,
       barChart,
@@ -96,14 +97,13 @@ exports.showDashboard = async function showDashboard(userId) {
     console.error("Chart data error:", error);
     throw error;
   }
-}
+};
+
 
 // Earning history function
 exports.showEarningHistory = async (userId) => {
   try {
-    if (!userId) {
-      throw new Error("User ID is required");
-    }
+    if (!userId) throw new Error("User ID is required");
 
     const objectId = new mongoose.Types.ObjectId(userId);
 
@@ -113,29 +113,34 @@ exports.showEarningHistory = async (userId) => {
       },
       {
         $lookup: {
-          from: 'users',
-          localField: 'userId',
-          foreignField: '_id',
-          as: 'userInfo'
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "userInfo"
         }
       },
-      { $unwind: '$userInfo' },
+      { $unwind: "$userInfo" },
       {
         $group: {
-          _id: '$userId',
-          name: { $first: '$userInfo.name' },
-          email: { $first: '$userInfo.email' },
-          image: { $first: { $ifNull: ['$userInfo.image', ''] } }, // 👈 image add kiya
-          depositAmount: { $first: { $ifNull: ['$userInfo.depositAmount', 0] } },
-          investedAmount: { $first: { $ifNull: ['$userInfo.investedAmount', 0] } },
+          _id: "$userId",
+          name: { $first: "$userInfo.name" },
+          email: { $first: "$userInfo.email" },
+          image: { $first: { $ifNull: ["$userInfo.image", ""] } },
+          referralCode: { $first: "$userInfo.referralCode" },
+          referralLevel: { $first: "$userInfo.referralLevel" },
+          totalBalance: { $first: "$userInfo.totalBalance" },
+          totalEarn: { $first: "$userInfo.totalEarn" },
+          refEarn: { $first: "$userInfo.refEarn" },
+          depositAmount: { $first: "$userInfo.depositAmount" },
+          investedAmount: { $first: "$userInfo.investedAmount" },
           earnings: {
             $push: {
-              baseAmount: { $ifNull: ['$baseAmount', 0] },
-              dailyProfit: { $ifNull: ['$dailyProfit', 0] },
-              refEarn: { $ifNull: ['$refEarn', 0] },
+              baseAmount: { $ifNull: ["$baseAmount", 0] },
+              dailyProfit: { $ifNull: ["$dailyProfit", 0] },
+              refEarn: { $ifNull: ["$refEarn", 0] },
               date: {
                 $dateToString: {
-                  format: "%d %b %Y",
+                  format: "%d %b, %Y",   // 👈 24 Oct, 2025
                   date: "$createdAt",
                   timezone: "UTC"
                 }
@@ -149,7 +154,12 @@ exports.showEarningHistory = async (userId) => {
           _id: 0,
           name: 1,
           email: 1,
-          image: 1,  // 👈 return me bhi image
+          image: 1,
+          referralCode: 1,
+          referralLevel: 1,
+          totalBalance: 1,
+          totalEarn: 1,
+          refEarn: 1,
           depositAmount: 1,
           investedAmount: 1,
           earnings: 1
@@ -157,11 +167,13 @@ exports.showEarningHistory = async (userId) => {
       }
     ]);
 
-    return result.length > 0 ? result[0] : null;
+    // console.log(result);
+    return result;
   } catch (err) {
     throw new Error('Error fetching earning history: ' + err.message);
   }
 };
+
 
 
 // deposit function
@@ -227,7 +239,7 @@ exports.showDeposit = async (userId) => {
           as: 'confirmedInvestments'
         }
       },
-      { $project: { _id: 1, name: 1, email: 1, depositAmount: 1, investedAmount: 1, refEarn: 1, totalEarn: 1, confirmedInvestments: 1, totalBalance: 1, image: 1 } }
+      { $project: { _id: 1, name: 1, email: 1, depositAmount: 1, investedAmount: 1, refEarn: 1, totalEarn: 1, confirmedInvestments: 1, totalBalance: 1, image: 1, referralCode: 1 } }
     ]);
 
     if (!result || result.length === 0) throw new Error("User not found");

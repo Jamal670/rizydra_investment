@@ -171,6 +171,13 @@ function AcSetting() {
                                         <p className="email">{userData.email}</p>
                                         <hr/>
                                     </div>
+                                    {/* Referral Code Display */}
+                                    <div style={{ marginTop: '5px', padding: '5px', background: '#f8f9fa', borderRadius: '8px', border: '1px solid #e9ecef' }}>
+                                        <div style={{ fontSize: '12px', color: '#6c757d', marginBottom: '0px' }}>Referral Code:</div>
+                                        <div style={{ fontSize: '16px', fontWeight: '600', color: '#007bff', fontFamily: 'monospace' }}>
+                                            {userData.referralCode || 'N/A'}
+                                        </div>
+                                    </div>
                                 </div>
                                 <ul className="user-dashboard-tab">
                                     <li><a href="/user-dashboard" >Account Overview</a></li>
@@ -270,7 +277,6 @@ function AcSetting() {
                                             />
                                         </div>
                                         <div style={{ textAlign: 'center', marginTop: '10px' }}>
-                                            <span style={{ display: 'block', fontWeight: 'bold', color: '#333' }}>Referral Code: {userData.referralCode}</span>
                                             <span style={{ display: 'block', color: '#555' }}>Referral Level: {userData.referralLevel}</span>
                                         </div>
                                     </div>

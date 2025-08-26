@@ -69,7 +69,7 @@ function Login() {
                 email: form.email,
                 password: form.password
             });
-            alert(res.data.message || 'Login successful!');
+            // alert(res.data.message || 'Login successful!');
             navigate('/user-dashboard');
         } catch (err) {
             alert(err.response?.data?.error || 'Invalid credentials');

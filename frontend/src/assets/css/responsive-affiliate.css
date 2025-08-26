@@ -1,0 +1,60 @@
+/* General responsive tweaks */
+@media (max-width: 991px) {
+  .inner-banner-thumb.about {
+    display: none !important;
+  }
+  .choose-us-thumb img {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+  .choose-us-right-content {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+  .choose-us-three .row {
+    flex-direction: column-reverse !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .affiliate-tab-menu .tab-item {
+    flex: 0 0 100%;
+    max-width: 100%;
+    margin-bottom: 1rem;
+  }
+  .affiliate-section,
+  .commission-section,
+  .choose-us-three {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  .section-header .title {
+    font-size: 1.5rem !important;
+  }
+  .choose-us-thumb img {
+    max-width: 100vw !important;
+  }
+  .affiliate-item-content h4.title {
+    font-size: 1.1rem !important;
+  }
+}
+
+@media (max-width: 575px) {
+  .loader-bg img {
+    width: 120px !important;
+    height: 120px !important;
+  }
+  .section-header .title,
+  .choose-us-right-content .title {
+    font-size: 1.2rem !important;
+  }
+  .choose-us-thumb img {
+    max-width: 95vw !important;
+  }
+  .affiliate-section,
+  .commission-section,
+  .choose-us-three {
+    padding-left: 5px;
+    padding-right: 5px;
+  }
+}

@@ -136,17 +136,7 @@ function Contact() {
                 <div className="form--group">
                   <input type="tel" className="form--control" placeholder="Phone" />
                 </div>
-                <span>Preffered method of communication</span>
-                <div className="choose-method">
-                  <div className="form--group custom--radio">
-                    <input type="radio" id="choose-method" name="communication-method" defaultChecked />
-                    <label htmlFor="choose-method">Email</label>
-                  </div>
-                  <div className="form--group custom--radio">
-                    <input type="radio" id="choose-method-2" name="communication-method" />
-                    <label htmlFor="choose-method-2">Phone</label>
-                  </div>
-                </div>
+                
                 <div className="form--group">
                   <textarea className="form--control" cols="30" rows="10" placeholder="Message"></textarea>
                 </div>
@@ -177,8 +167,8 @@ function Contact() {
                     <div className="contact-item-content">
                       <h4 className="title">Office Address</h4>
                       <p>
-                        USA, Callifornia 20, Firs <br />
-                        Avenue, Callifornia
+                       742 Evergreen Terrace, <br />
+                        Springfield, IL 62704, USA
                       </p>
                     </div>
                   </div>
@@ -192,8 +182,8 @@ function Contact() {
                     </div>
                     <div className="contact-item-content">
                       <h4 className="title">Email Address</h4>
-                      <a href="Mailto:mdudnfsddf@gmal.com">contact@example.com</a>
-                      <a href="Mailto:mdudnfsddf@gmal.com">info@example.com</a>
+                      <p href="Mailto:mdudnfsddf@gmal.com">info@rizydra.com</p>
+                      {/* <a href="Mailto:mdudnfsddf@gmal.com">info@example.com</a> */}
                     </div>
                   </div>
                 </div>
@@ -204,8 +194,8 @@ function Contact() {
                     </div>
                     <div className="contact-item-content">
                       <h4 className="title">Contact Number</h4>
-                      <a href="Tel:90172834">(123) 456-7890 - 00521</a>
-                      <a href="Tel:90172834">(123) 456-7891 - 00626</a>
+                      <a href="https://t.me/rizydra">Telegram</a>
+                      {/* <a href="Tel:90172834">(123) 456-7891 - 00626</a> */}
                     </div>
                   </div>
                 </div>
@@ -229,7 +219,7 @@ function Contact() {
               <div className="subscription-wrapper">
                 <h2 className="title">Subscribe Newslatter</h2>
                 <p>
-                  Lorem, ipsum dolor sit amet consectetur adipisicing elit. Accusantium itaque at placeat in dolorum eligendi consectetur soluta nesciunt sequi
+                  Stay updated with the latest investment opportunities and daily commission tips — straight to your inbox.
                 </p>
                 <form className="subscription-form">
                   <div className="form--group">
@@ -262,7 +252,7 @@ function Contact() {
                       <div className="thumb">
                         <img src="./assets/images/gateway/usdt_bnb.png" alt="gateway" />
                       </div>
-                      <h6 className="title">BSC (WEB20)</h6>
+                      <h6 className="title">BSC (BEP20)</h6>
                     </div>
                   </div>
                   <div className="col-6 col-md-4 col-lg-6 col-xl-5  fadeInUp" data--delay=".4s">
@@ -270,7 +260,7 @@ function Contact() {
                       <div className="thumb">
                         <img src="./assets/images/gateway/usdt_eth.png" alt="gateway" />
                       </div>
-                      <h6 className="title">ERC20</h6>
+                      <h6 className="title">Ethereum (ERC20)</h6>
                     </div>
                   </div>
                   <div className="col-6 col-md-4 col-lg-6 col-xl-5  fadeInUp" data--delay=".5s">
@@ -278,7 +268,7 @@ function Contact() {
                       <div className="thumb">
                         <img src="./assets/images/gateway/usdtmatic.png" alt="gateway" />
                       </div>
-                      <h6 className="title">Skrill</h6>
+                      <h6 className="title">Polygon POS</h6>
                     </div>
                   </div>
                 </div>

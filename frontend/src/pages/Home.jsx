@@ -1,62 +1,75 @@
 // filepath: d:\jani_Rizydra\client\src\pages\Home.js
 import React, { useEffect, useState } from 'react';
 import { Helmet } from "react-helmet";
+import Cookies from "js-cookie";
 
 function Home() {
   const [isLoading, setIsLoading] = useState(true);
+  const [token, setToken] = useState(Cookies.get("token"));
 
   useEffect(() => {
-    // Dynamically load CSS files
-    const cssFiles = [
-      '/assets/css/bootstrap.min.css',
-      '/assets/css/all.min.css',
-      '/assets/css/line-awesome.min.css',
-      '/assets/css/animate.css',
-      '/assets/css/magnific-popup.css',
-      '/assets/css/nice-select.css',
-      '/assets/css/odometer.css',
-      '/assets/css/slick.css',
-      '/assets/css/main.css'
-    ];
-    cssFiles.forEach(href => {
-      if (!document.querySelector(`link[href="${href}"]`)) {
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = href;
-        document.head.appendChild(link);
-      }
-    });
+    // Check token on mount and whenever cookies change
+    const checkToken = () => setToken(Cookies.get("token"));
+    checkToken();
 
-    // Dynamically load JS files
-    const jsFiles = [
-      '/assets/js/jquery-3.3.1.min.js',
-      '/assets/js/bootstrap.min.js',
-      '/assets/js/jquery.ui.js',
-      '/assets/js/slick.min.js',
-      '/assets/js/wow.min.js',
-      '/assets/js/magnific-popup.min.js',
-      '/assets/js/odometer.min.js',
-      '/assets/js/viewport.jquery.js',
-      '/assets/js/nice-select.js',
-      '/assets/js/main.js'
-    ];
-    jsFiles.forEach(src => {
-      if (!document.querySelector(`script[src="${src}"]`)) {
-        const script = document.createElement('script');
-        script.src = src;
-        script.async = false;
-        document.body.appendChild(script);
-      }
-    });
+    // Optionally, set up an interval to check for cookie changes
+    const interval = setInterval(checkToken, 1000);
 
     // Hide loader after 1 second
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 1000);
-    return () => clearTimeout(timer);
+
+    return () => {
+      clearTimeout(timer);
+      clearInterval(interval);
+    };
   }, []);
 
-  // ...existing code...
+  // Dynamically load CSS files
+  const cssFiles = [
+    '/assets/css/bootstrap.min.css',
+    '/assets/css/all.min.css',
+    '/assets/css/line-awesome.min.css',
+    '/assets/css/animate.css',
+    '/assets/css/magnific-popup.css',
+    '/assets/css/nice-select.css',
+    '/assets/css/odometer.css',
+    '/assets/css/slick.css',
+    '/assets/css/main.css'
+  ];
+  cssFiles.forEach(href => {
+    if (!document.querySelector(`link[href="${href}"]`)) {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = href;
+      document.head.appendChild(link);
+    }
+  });
+
+  // Dynamically load JS files
+  const jsFiles = [
+    '/assets/js/jquery-3.3.1.min.js',
+    '/assets/js/bootstrap.min.js',
+    '/assets/js/jquery.ui.js',
+    '/assets/js/slick.min.js',
+    '/assets/js/wow.min.js',
+    '/assets/js/magnific-popup.min.js',
+    '/assets/js/odometer.min.js',
+    '/assets/js/viewport.jquery.js',
+    '/assets/js/nice-select.js',
+    '/assets/js/main.js'
+  ];
+  jsFiles.forEach(src => {
+    if (!document.querySelector(`script[src="${src}"]`)) {
+      const script = document.createElement('script');
+      script.src = src;
+      script.async = false;
+      document.body.appendChild(script);
+    }
+  });
+
+
   return (
     <>
       {/* <Helmet>
@@ -124,7 +137,15 @@ function Home() {
                 <span className="subtitle">Your Journey to Financial Freedom Begins Here - Unlock Consistent, Automated Returns Through a Platform Designed for Simplicity & Security
                 </span>
                 <div className="button-group d-flex flex-wrap align-items-center">
-                  <a href="/sign-up" className="cmn--btn btn--secondary">get started</a>
+                  {token ? (
+                    <a href="/user-dashboard" className="cmn--btn btn--secondary">
+                      Dashboard
+                    </a>
+                  ) : (
+                    <a href="/sign-up" className="cmn--btn btn--secondary">
+                      Get Started
+                    </a>
+                  )}
                   <a href="https://www.youtube.com/@rizydra" target='_blank' className="video-button"><i className="las la-play"></i></a>
                 </div>
               </div>
@@ -732,25 +753,25 @@ function Home() {
                 <div className="sigle-slider">
                   <div className="gateway-item">
                     <img src="./assets/images/gateway/usdttrx.png" alt="gateway" />
-                    <span className="coin-name">TRON (TRC20)</span>
+                    <span className="coin-name">Tron (TRC20)</span>
                   </div>
                 </div>
                 <div className="sigle-slider">
                   <div className="gateway-item">
                     <img src="./assets/images/gateway/usdt_eth.png" alt="gateway" />
-                    <span className="coin-name">ERC20</span>
+                    <span className="coin-name">Ethereum (ERC20)</span>
                   </div>
                 </div>
                 <div className="sigle-slider">
                   <div className="gateway-item">
                     <img src="./assets/images/gateway/usdt_bnb.png" alt="gateway" />
-                    <span className="coin-name">BSC (WEB20)</span>
+                    <span className="coin-name">BSC (BEP20)</span>
                   </div>
                 </div>
                 <div className="sigle-slider">
                   <div className="gateway-item">
                     <img src="./assets/images/gateway/usdtmatic.png" alt="gateway" />
-                    <span className="coin-name">Skrill</span>
+                    <span className="coin-name">Polygon POS</span>
                   </div>
                 </div>
               </div>

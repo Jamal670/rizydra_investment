@@ -130,9 +130,9 @@ function About() {
               <div className="choose-us-right-content">
                 <div className="section-header">
                   <span className="subtitle  fadeInUp">WHY CHOOSE US</span>
-                  <h2 className="title mx-100">Why You Should Saty With Us</h2>
+                  <h2 className="title mx-100">Why You Should Stay With Us</h2>
                   <p className=" fadeInUp" data--delay=".6s">
-                    Dapibus et amet sociis, arcu orci orci tincidunt neque. Purus etortors justmauris eumalesuada architecto.
+                    We don’t just offer earnings, we create opportunities that turn dreams into reality.
                   </p>
                 </div>
                 <div className="row g-4 row2">
@@ -143,7 +143,7 @@ function About() {
                       </div>
                       <div className="choose-content-two">
                         <h5 className="title">Protected Website</h5>
-                        <p>Donec tempus sed et mauris conquat, proin lectus varius wiortamet labore ac nam purus maurilentesq.</p>
+                        <p>Your data and investments are fully secured with advanced encryption, ensuring a safe and reliable platform where trust always comes first</p>
                       </div>
                     </div>
                   </div>
@@ -154,7 +154,7 @@ function About() {
                       </div>
                       <div className="choose-content-two">
                         <h5 className="title">Quick Withdrawal</h5>
-                        <p>Donec tempus sed et mauris conquat, proin lectus varius wiortamet labore ac nam purus maurilentesq.</p>
+                        <p>Enjoy quick withdrawals with hassle-free payments processed directly to your account — all within 24 hours, without any delays.</p>
                       </div>
                     </div>
                   </div>
@@ -165,7 +165,7 @@ function About() {
                       </div>
                       <div className="choose-content-two">
                         <h5 className="title">Registered Company</h5>
-                        <p>Donec tempus sed et mauris conquat, proin lectus varius wiortamet labore ac nam purus maurilentesq.</p>
+                        <p>A legally registered company you can trust, built on transparency and credibility.</p>
                       </div>
                     </div>
                   </div>
@@ -176,7 +176,7 @@ function About() {
                       </div>
                       <div className="choose-content-two">
                         <h5 className="title">Strong Protection</h5>
-                        <p>Donec tempus sed et mauris conquat, proin lectus varius wiortamet labore ac nam purus maurilentesq.</p>
+                        <p>Multi-layer security with advanced systems keeps your funds safe 24/7.</p>
                       </div>
                     </div>
                   </div>
@@ -187,75 +187,10 @@ function About() {
         </div>
       </section>
 
-      {/* Investor Section */}
-      <section className="investor-section padding-bottom overflow-hidden">
-        <div className="container">
-          <div className="row justify-content-center">
-            <div className="col-lg-7">
-              <div className="section-header text-center">
-                <span className="subtitle">featured investors</span>
-                <h2 className="title">our top investor</h2>
-                <p>
-                  Pipsum dolor sit amet consectetur adipisicing elit. Aliquam modi explicabo nam ex unde et dolorum non dolor! Dolorum nobis
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="row justify-content-center gy-5">
-            <div className="col-xl-3 col-lg-4 col-md-6 col-sm-6  slideInUp" data--delay=".3s">
-              <div className="investor-item">
-                <div className="investor-thumb">
-                  <img src="/assets/images/investor/item1.png" alt="investor" />
-                </div>
-                <div className="investor-content">
-                  <h4 className="name">Robart Betson</h4>
-                  <span className="designation">Top Investor</span>
-                  <h3 className="invest-ammount">$40,000.00</h3>
-                </div>
-              </div>
-            </div>
-            <div className="col-xl-3 col-lg-4 col-md-6 col-sm-6  slideInUp" data--delay=".4s">
-              <div className="investor-item">
-                <div className="investor-thumb">
-                  <img src="/assets/images/investor/item2.png" alt="investor" />
-                </div>
-                <div className="investor-content">
-                  <h4 className="name">Robart Betson</h4>
-                  <span className="designation">Top Investor</span>
-                  <h3 className="invest-ammount">$40,000.00</h3>
-                </div>
-              </div>
-            </div>
-            <div className="col-xl-3 col-lg-4 col-md-6 col-sm-6  slideInUp" data--delay=".5s">
-              <div className="investor-item">
-                <div className="investor-thumb">
-                  <img src="/assets/images/investor/item3.png" alt="investor" />
-                </div>
-                <div className="investor-content">
-                  <h4 className="name">Robart Betson</h4>
-                  <span className="designation">Top Investor</span>
-                  <h3 className="invest-ammount">$40,000.00</h3>
-                </div>
-              </div>
-            </div>
-            <div className="col-xl-3 col-lg-4 col-md-6 col-sm-6  slideInUp" data--delay=".6s">
-              <div className="investor-item">
-                <div className="investor-thumb">
-                  <img src="/assets/images/investor/item4.png" alt="investor" />
-                </div>
-                <div className="investor-content">
-                  <h4 className="name">Robart Betson</h4>
-                  <span className="designation">Top Investor</span>
-                  <h3 className="invest-ammount">$40,000.00</h3>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      
 
       {/* Help Section */}
-      <section className="help-section overflow-hidden">
+      <section className="help-section  overflow-hidden">
         <div className="container">
           <div className="row align-items-center gy-5 flex-column-reverse flex-lg-row">
             <div className="col-lg-6">
@@ -263,9 +198,6 @@ function About() {
                 <div className="section-header">
                   <span className="subtitle wow fadeInUp">we are ready for your help</span>
                   <h2 className="title wow fadeInUp" data-wow-delay=".5s">How We Can Help You?</h2>
-                  <p className="wow fadeInUp" data-wow-delay=".6s">
-                    Dapibus et amet sociis, arcu orci orci tincidunt neque. Purus etortor sjustmauris eumalesuada architecto.
-                  </p>
                 </div>
                 <div className="faq-tab-menu nav-tabs nav border-0 row g-4 justify-content-center">
                   <div className="col-6 col-sm-4 col-md-4 col-lg-6 col-xl-4 wow fadeInLeft" data-wow-delay=".2s">
@@ -293,7 +225,137 @@ function About() {
                     </a>
                   </div>
                 </div>
-                {/* Tab content omitted for brevity, can be added as static content if needed */}
+                <div className="tab-content">
+                  <div className="tab-pane show fade active" id="investor">
+                    <div className="faq-wrapper">
+                      <div className="faq-item wow fadeInUp" data-wow-delay=".3s">
+                        <div className="faq-title">
+                          <h5 className="title">Why You Should Become An Investor?</h5>
+                          <div className="arrow">
+                            <i className="fas fa-angle-up"></i>
+                          </div>
+                        </div>
+                        <div className="faq-content">
+                          <p>
+                            Becoming an investor allows you to grow your money over time, build long-term wealth, and achieve financial independence. Instead of just saving, investing helps your money work for you through potential returns, compounding, and passive income. It's a smart step toward securing your future.
+                          </p>
+                        </div>
+                      </div>
+                      <div className="faq-item open active wow fadeInUp" data-wow-delay=".4s">
+                        <div className="faq-title">
+                          <h5 className="title">Can I Invest Using Cryptocurrency?</h5>
+                          <div className="arrow">
+                            <i className="fas fa-angle-up"></i>
+                          </div>
+                        </div>
+                        <div className="faq-content">
+                          <p>
+                            Yes, you can invest using cryptocurrency. We accept popular digital currencies as a payment method, making it easy and secure for crypto holders to grow their investments. Just choose your preferred crypto at checkout or during the funding process.
+                          </p>
+                        </div>
+                      </div>
+                      <div className="faq-item wow fadeInUp" data-wow-delay=".5s">
+                        <div className="faq-title">
+                          <h5 className="title">Why You Choose Us?</h5>
+                          <div className="arrow">
+                            <i className="fas fa-angle-up"></i>
+                          </div>
+                        </div>
+                        <div className="faq-content">
+                          <p>
+                            We offer a secure, transparent, and rewarding investment platform with competitive returns and a user-friendly experience. Our multi-level affiliate program, flexible payment options including cryptocurrency, and dedicated support team set us apart — making your investment journey simple, smart, and profitable.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="tab-pane show fade" id="privacy">
+                    <div className="faq-wrapper">
+                      <div className="faq-item">
+                        <div className="faq-title">
+                          <h5 className="title">How do you protect my personal information?</h5>
+                          <div className="arrow">
+                            <i className="fas fa-angle-up"></i>
+                          </div>
+                        </div>
+                        <div className="faq-content">
+                          <p>
+                            We use advanced encryption and secure server technology to protect your personal data. All information you provide is stored safely and handled in compliance with global privacy standards.
+                          </p>
+                        </div>
+                      </div>
+                      <div className="faq-item open active">
+                        <div className="faq-title">
+                          <h5 className="title">Will my data be shared with third parties?</h5>
+                          <div className="arrow">
+                            <i className="fas fa-angle-up"></i>
+                          </div>
+                        </div>
+                        <div className="faq-content">
+                          <p>
+                            No, we do not sell or share your personal information with third parties without your consent. Your data is used solely to provide services, improve your experience, and comply with legal requirements.
+                          </p>
+                        </div>
+                      </div>
+                      <div className="faq-item">
+                        <div className="faq-title">
+                          <h5 className="title">Is my financial information safe on your platform?</h5>
+                          <div className="arrow">
+                            <i className="fas fa-angle-up"></i>
+                          </div>
+                        </div>
+                        <div className="faq-content">
+                          <p>
+                            Yes, your financial information is fully protected. We partner with trusted payment gateways and implement strict security protocols to ensure that your transactions and investment details remain confidential and secure.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="tab-pane show fade" id="account">
+                    <div className="faq-wrapper">
+                      <div className="faq-item">
+                        <div className="faq-title">
+                          <h5 className="title">How do I create an account on your platform?</h5>
+                          <div className="arrow">
+                            <i className="fas fa-angle-up"></i>
+                          </div>
+                        </div>
+                        <div className="faq-content">
+                          <p>
+                            To create an account, click the Sign Up button on our homepage. Fill in your basic information, such as name, email, and password, then verify your email to activate your account.
+                          </p>
+                        </div>
+                      </div>
+                      <div className="faq-item open active">
+                        <div className="faq-title">
+                          <h5 className="title">Can I update my account details later?</h5>
+                          <div className="arrow">
+                            <i className="fas fa-angle-up"></i>
+                          </div>
+                        </div>
+                        <div className="faq-content">
+                          <p>
+                            Absolutely. You can update your profile information, contact details, and password anytime from your account dashboard. Just log in and go to the Account Settings section.
+                          </p>
+                        </div>
+                      </div>
+                      <div className="faq-item">
+                        <div className="faq-title">
+                          <h5 className="title">What should I do if I forget my password?</h5>
+                          <div className="arrow">
+                            <i className="fas fa-angle-up"></i>
+                          </div>
+                        </div>
+                        <div className="faq-content">
+                          <p>
+                            If you forget your password, click on the “Forgot Password?” link on the login page. Enter your registered email address, and we’ll send you a link to reset your password securely.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
             <div className="col-lg-6 d-none d-lg-block wow fadeInRight">
@@ -314,7 +376,7 @@ function About() {
                 <span className="subtitle  fadeInUp">client feedback</span>
                 <h2 className="title  mx-100">Happy Client What Say About Us</h2>
                 <p className=" fadeInUp" data--delay=".6s">
-                  Pipsum dolor sit amet consectetur adipisicing elit. Aliquam modi explicabo nam ex unde et dolorum non dolor! Dolorum nobis
+                  Our clients smiles are our biggest achievement, and their words inspire our growth.
                 </p>
               </div>
             </div>
@@ -329,9 +391,9 @@ function About() {
                   <div className="quote-icon">
                     <i className="las la-quote-left"></i>
                   </div>
-                  <h4 className="name">Robindronat</h4>
-                  <span className="designation">Hyip Investor</span>
-                  <p>Placerat pellentesque eros elit lobortis eleifend amet vivamus integer sed tellus quibusdam mauris. Leo cras molestie.</p>
+                  <h4 className="name">Michael Carter</h4>
+                  <span className="designation">Property Dealer</span>
+                  <p>"I invested $10,000 and now I’m earning around $100 daily, plus extra income from referral users. The platform is transparent and payments are always on time — truly life-changing!</p>
                 </div>
               </div>
             </div>
@@ -344,9 +406,9 @@ function About() {
                   <div className="quote-icon">
                     <i className="las la-quote-left"></i>
                   </div>
-                  <h4 className="name">Robindronat</h4>
-                  <span className="designation">Hyip Investor</span>
-                  <p>Placerat pellentesque eros elit lobortis eleifend amet vivamus integer sed tellus quibusdam mauris. Leo cras molestie.</p>
+                  <h4 className="name">James Anderson</h4>
+                  <span className="designation">Software Engineer</span>
+                  <p>I’ve tried many platforms, but this one stands out for its quick withdrawals and reliability. The process is smooth and I feel secure with my funds here.</p>
                 </div>
               </div>
             </div>
@@ -359,9 +421,9 @@ function About() {
                   <div className="quote-icon">
                     <i className="las la-quote-left"></i>
                   </div>
-                  <h4 className="name">Robindronat</h4>
-                  <span className="designation">Hyip Investor</span>
-                  <p>Placerat pellentesque eros elit lobortis eleifend amet vivamus integer sed tellus quibusdam mauris. Leo cras molestie.</p>
+                  <h4 className="name">David Miller</h4>
+                  <span className="designation">Freelancer</span>
+                  <p>Being a freelancer, I wanted a safe side income. This system has helped me grow financially with ease.</p>
                 </div>
               </div>
             </div>
@@ -374,9 +436,9 @@ function About() {
                   <div className="quote-icon">
                     <i className="las la-quote-left"></i>
                   </div>
-                  <h4 className="name">Robindronat</h4>
-                  <span className="designation">Hyip Investor</span>
-                  <p>Placerat pellentesque eros elit lobortis eleifend amet vivamus integer sed tellus quibusdam mauris. Leo cras molestie.</p>
+                  <h4 className="name">Robert Wilson</h4>
+                  <span className="designation">Business Consultant</span>
+                  <p>As a businessman, I value trust and speed. This platform delivers both — earnings are consistent, and the referral program gives a nice boost.</p>
                 </div>
               </div>
             </div>
@@ -407,25 +469,25 @@ function About() {
                 <div className="sigle-slider">
                   <div className="gateway-item">
                     <img src="./assets/images/gateway/usdttrx.png" alt="gateway" />
-                    <span className="coin-name">TRON (TRC20)</span>
+                    <span className="coin-name">Tron (TRC20)</span>
                   </div>
                 </div>
                 <div className="sigle-slider">
                   <div className="gateway-item">
                     <img src="./assets/images/gateway/usdt_eth.png" alt="gateway" />
-                    <span className="coin-name">ERC20</span>
+                    <span className="coin-name">Ethereum (ERC20)</span>
                   </div>
                 </div>
                 <div className="sigle-slider">
                   <div className="gateway-item">
                     <img src="./assets/images/gateway/usdt_bnb.png" alt="gateway" />
-                    <span className="coin-name">BSC (WEB20)</span>
+                    <span className="coin-name">BSC (BEP20)</span>
                   </div>
                 </div>
                 <div className="sigle-slider">
                   <div className="gateway-item">
                     <img src="./assets/images/gateway/usdtmatic.png" alt="gateway" />
-                    <span className="coin-name">Skrill</span>
+                    <span className="coin-name">Polygon POS</span>
                   </div>
                 </div>
               </div>

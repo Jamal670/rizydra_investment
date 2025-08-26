@@ -378,34 +378,104 @@ function EarningHistory() {
                             <div className="dashborad-header">
                                 <h4 className="title">Daily Earning</h4>
                             </div>
-                            <table className="deposit-table">
-                                <thead>
-                                    <tr>
-                                        <th>Amount</th>
-                                        <th>Earning</th>
-                                        <th>Ref Earning</th>
-                                        <th>Total Earning</th>
-                                        <th>Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {userData.earnings && userData.earnings.length > 0 ? (
-                                        userData.earnings.map((item, idx) => (
-                                            <tr key={idx}>
-                                                <td>${item.baseAmount}</td>
-                                                <td>${item.dailyProfit}</td>
-                                                <td>${item.refEarn}</td>
-                                                <td>${(Number(item.dailyProfit) + Number(item.refEarn)).toFixed(2)}</td>
-                                                <td>{item.date}</td>
-                                            </tr>
-                                        ))
-                                    ) : (
+                            <div
+                                style={{
+                                    width: '100%',
+                                    overflowX: 'auto',
+                                    WebkitOverflowScrolling: 'touch',
+                                    background: '#fff',
+                                    borderRadius: 8,
+                                    boxShadow: '0 2px 12px rgba(0,0,0,0.04)',
+                                    marginBottom: '1.5rem',
+                                    border: '1px solid #eee'
+                                }}
+                                >
+                                <table
+                                    style={{
+                                        width: '100%',
+                                        borderCollapse: 'collapse',
+                                        minWidth: 400,
+                                        fontSize: '15px',
+                                        background: '#fff'
+                                    }}
+                                >
+                                    <thead>
                                         <tr>
-                                            <td colSpan="5" style={{ textAlign: 'center' }}>No earning history found.</td>
+                                            {['Amount', 'Earning', 'Ref Earning', 'Total Earning', 'Date'].map(header => (
+                                                <th
+                                                    key={header}
+                                                    style={{
+                                                        background: '#f8f9fa',
+                                                        fontWeight: 600,
+                                                        color: '#222',
+                                                        padding: '12px 10px',
+                                                        borderBottom: '1px solid #eee',
+                                                        position: 'sticky',
+                                                        top: 0,
+                                                        zIndex: 2,
+                                                        textAlign: 'left',
+                                                        whiteSpace: 'normal'
+                                                    }}
+                                                >
+                                                    {header}
+                                                </th>
+                                            ))}
                                         </tr>
-                                    )}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        {userData.earnings && userData.earnings.length > 0 ? (
+                                            userData.earnings.map((item, idx) => (
+                                                <tr key={idx}>
+                                                    <td style={{
+                                                        padding: '12px 10px',
+                                                        borderBottom: '1px solid #eee',
+                                                        whiteSpace: 'normal',
+                                                        wordBreak: 'break-word',
+                                                        verticalAlign: 'middle',
+                                                        textAlign: 'left'
+                                                    }}>${item.baseAmount}</td>
+                                                    <td style={{
+                                                        padding: '12px 10px',
+                                                        borderBottom: '1px solid #eee',
+                                                        whiteSpace: 'normal',
+                                                        wordBreak: 'break-word',
+                                                        verticalAlign: 'middle',
+                                                        textAlign: 'left'
+                                                    }}>${item.dailyProfit}</td>
+                                                    <td style={{
+                                                        padding: '12px 10px',
+                                                        borderBottom: '1px solid #eee',
+                                                        whiteSpace: 'normal',
+                                                        wordBreak: 'break-word',
+                                                        verticalAlign: 'middle',
+                                                        textAlign: 'left'
+                                                    }}>${item.refEarn}</td>
+                                                    <td style={{
+                                                        padding: '12px 10px',
+                                                        borderBottom: '1px solid #eee',
+                                                        whiteSpace: 'normal',
+                                                        wordBreak: 'break-word',
+                                                        verticalAlign: 'middle',
+                                                        textAlign: 'left'
+                                                    }}>${(Number(item.dailyProfit) + Number(item.refEarn)).toFixed(2)}</td>
+                                                    <td style={{
+                                                        padding: '12px 10px',
+                                                        borderBottom: '1px solid #eee',
+                                                        whiteSpace: 'normal',
+                                                        wordBreak: 'break-word',
+                                                        verticalAlign: 'middle',
+                                                        textAlign: 'left'
+                                                    }}>{item.date}</td>
+                                                </tr>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan="5" style={{ textAlign: 'center', padding: '12px 10px' }}>No earning history found.</td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>

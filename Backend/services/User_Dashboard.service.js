@@ -107,46 +107,16 @@ exports.showEarningHistory = async (userId) => {
 
     const objectId = new mongoose.Types.ObjectId(userId);
 
-    const result = await DailyEarn.aggregate([
+    const result = await UserModel.aggregate([
       {
-        $match: { userId: objectId }
+        $match: { _id: objectId }   // 👈 starting from users collection
       },
       {
         $lookup: {
-          from: "users",
-          localField: "userId",
-          foreignField: "_id",
-          as: "userInfo"
-        }
-      },
-      { $unwind: "$userInfo" },
-      {
-        $group: {
-          _id: "$userId",
-          name: { $first: "$userInfo.name" },
-          email: { $first: "$userInfo.email" },
-          image: { $first: { $ifNull: ["$userInfo.image", ""] } },
-          referralCode: { $first: "$userInfo.referralCode" },
-          referralLevel: { $first: "$userInfo.referralLevel" },
-          totalBalance: { $first: "$userInfo.totalBalance" },
-          totalEarn: { $first: "$userInfo.totalEarn" },
-          refEarn: { $first: "$userInfo.refEarn" },
-          depositAmount: { $first: "$userInfo.depositAmount" },
-          investedAmount: { $first: "$userInfo.investedAmount" },
-          earnings: {
-            $push: {
-              baseAmount: { $ifNull: ["$baseAmount", 0] },
-              dailyProfit: { $ifNull: ["$dailyProfit", 0] },
-              refEarn: { $ifNull: ["$refEarn", 0] },
-              date: {
-                $dateToString: {
-                  format: "%d %b, %Y",   // 👈 24 Oct, 2025
-                  date: "$createdAt",
-                  timezone: "UTC"
-                }
-              }
-            }
-          }
+          from: "dailyearns",
+          localField: "_id",
+          foreignField: "userId",
+          as: "earnings"
         }
       },
       {
@@ -154,7 +124,7 @@ exports.showEarningHistory = async (userId) => {
           _id: 0,
           name: 1,
           email: 1,
-          image: 1,
+          image: { $ifNull: ["$image", ""] },
           referralCode: 1,
           referralLevel: 1,
           totalBalance: 1,
@@ -162,17 +132,34 @@ exports.showEarningHistory = async (userId) => {
           refEarn: 1,
           depositAmount: 1,
           investedAmount: 1,
-          earnings: 1
+          earnings: {
+            $map: {
+              input: "$earnings",
+              as: "e",
+              in: {
+                baseAmount: { $ifNull: ["$$e.baseAmount", 0] },
+                dailyProfit: { $ifNull: ["$$e.dailyProfit", 0] },
+                refEarn: { $ifNull: ["$$e.refEarn", 0] },
+                date: {
+                  $dateToString: {
+                    format: "%d %b, %Y",
+                    date: "$$e.createdAt",
+                    timezone: "UTC"
+                  }
+                }
+              }
+            }
+          }
         }
       }
     ]);
 
-    // console.log(result);
-    return result;
+    return result.length > 0 ? result[0] : null;
   } catch (err) {
-    throw new Error('Error fetching earning history: ' + err.message);
+    throw new Error("Error fetching earning history: " + err.message);
   }
 };
+
 
 
 
@@ -256,74 +243,24 @@ exports.referralUser = async function (userId) {
   try {
     const objectId = new mongoose.Types.ObjectId(userId);
 
-    const result = await RedUserEarning.aggregate([
+    const result = await UserModel.aggregate([
       {
-        $match: { userId: objectId }
+        $match: { _id: objectId } // 👉 Start from users
       },
       {
         $lookup: {
-          from: "users",
-          localField: "userId",
-          foreignField: "_id",
-          as: "mainUser"
+          from: "reduserearnings",   // 👈 referral earnings
+          localField: "_id",
+          foreignField: "userId",
+          as: "refEarnings"
         }
       },
-      { $unwind: "$mainUser" },
       {
         $lookup: {
-          from: "users",
-          localField: "name",
-          foreignField: "name",
-          as: "refUserInfo"
-        }
-      },
-      { $unwind: { path: "$refUserInfo", preserveNullAndEmptyArrays: true } },
-      {
-        $addFields: {
-          refLevel: {
-            $let: {
-              vars: {
-                matchedRef: {
-                  $arrayElemAt: [
-                    {
-                      $filter: {
-                        input: "$mainUser.referredUsers",
-                        as: "ru",
-                        cond: { $eq: ["$$ru.userId", "$refUserInfo._id"] }
-                      }
-                    },
-                    0
-                  ]
-                }
-              },
-              in: "$$matchedRef.refLevel"
-            }
-          }
-        }
-      },
-      {
-        $group: {
-          _id: "$userId",
-          name: { $first: "$mainUser.name" },
-          email: { $first: "$mainUser.email" },
-          image: { $first: "$mainUser.image" },                // 👈 Add image
-          referralCode: { $first: "$mainUser.referralCode" },  // 👈 Add referral code
-          referredUsers: { $first: "$mainUser.referredUsers" }, // 👈 Keep referredUsers for summary
-          refEarnings: {
-            $push: {
-              refName: "$name",
-              amount: "$amount",
-              earningRef: "$earningRef",
-              refLevel: "$refLevel",
-              date: {
-                $dateToString: {
-                  format: "%d %b %Y",
-                  date: "$createdAt",
-                  timezone: "UTC"
-                }
-              }
-            }
-          }
+          from: "dailyearns",   // 👈 daily earns
+          localField: "_id",
+          foreignField: "userId",
+          as: "dailyEarnings"
         }
       },
       {
@@ -332,7 +269,7 @@ exports.referralUser = async function (userId) {
             level1: {
               $size: {
                 $filter: {
-                  input: { $ifNull: ["$referredUsers", []] }, // 👈 Prevent null
+                  input: { $ifNull: ["$referredUsers", []] },
                   as: "ru",
                   cond: { $eq: ["$$ru.refLevel", 1] }
                 }
@@ -341,7 +278,7 @@ exports.referralUser = async function (userId) {
             level2: {
               $size: {
                 $filter: {
-                  input: { $ifNull: ["$referredUsers", []] }, // 👈 Prevent null
+                  input: { $ifNull: ["$referredUsers", []] },
                   as: "ru",
                   cond: { $eq: ["$$ru.refLevel", 2] }
                 }
@@ -350,7 +287,7 @@ exports.referralUser = async function (userId) {
             level3: {
               $size: {
                 $filter: {
-                  input: { $ifNull: ["$referredUsers", []] }, // 👈 Prevent null
+                  input: { $ifNull: ["$referredUsers", []] },
                   as: "ru",
                   cond: { $eq: ["$$ru.refLevel", 3] }
                 }
@@ -364,23 +301,54 @@ exports.referralUser = async function (userId) {
           _id: 0,
           name: 1,
           email: 1,
-          image: 1,
+          image: { $ifNull: ["$image", ""] },
           referralCode: 1,
-          refEarnings: 1,
-          referralSummary: 1
+          referralSummary: 1,
+          refEarnings: {
+            $map: {
+              input: "$refEarnings",
+              as: "e",
+              in: {
+                amount: "$$e.amount",
+                earningRef: "$$e.earningRef",
+                refName: "$$e.name",
+                date: {
+                  $dateToString: {
+                    format: "%d %b %Y",
+                    date: "$$e.createdAt",
+                    timezone: "UTC"
+                  }
+                }
+              }
+            }
+          },
+          dailyEarnings: {
+            $map: {
+              input: "$dailyEarnings",
+              as: "d",
+              in: {
+                baseAmount: { $ifNull: ["$$d.baseAmount", 0] },
+                dailyProfit: { $ifNull: ["$$d.dailyProfit", 0] },
+                date: {
+                  $dateToString: {
+                    format: "%d %b %Y",
+                    date: "$$d.createdAt",
+                    timezone: "UTC"
+                  }
+                }
+              }
+            }
+          }
         }
       }
     ]);
 
-    if (!result.length) {
-      throw new Error("No referral earnings found for this userId");
-    }
-
-    return result[0];
+    return result.length ? result[0] : null;
   } catch (error) {
     throw new Error(error.message || "Error fetching referral user data");
   }
 };
+
 
 
 // withdraw function

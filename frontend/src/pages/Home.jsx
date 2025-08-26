@@ -124,7 +124,7 @@ function Home() {
                 <span className="subtitle">Your Journey to Financial Freedom Begins Here - Unlock Consistent, Automated Returns Through a Platform Designed for Simplicity & Security
                 </span>
                 <div className="button-group d-flex flex-wrap align-items-center">
-                  <a href="sign-up.html" className="cmn--btn btn--secondary">get started</a>
+                  <a href="/sign-up" className="cmn--btn btn--secondary">get started</a>
                   <a href="https://www.youtube.com/rizydra" className="video-button"><i className="las la-play"></i></a>
                 </div>
               </div>
@@ -280,7 +280,7 @@ function Home() {
                   <h4>Safe & Secure</h4>
                 </div>
                 <div className="plan-inner-part">
-                  <a href="login.html" className="cmn--btn-2">Invest now</a>
+                  <a href="/sign-up" className="cmn--btn-2">Invest now</a>
                 </div>
               </div>
             </div>
@@ -698,7 +698,7 @@ function Home() {
                     Level 3 – Get 1% commission from extended network of your level 2 referrals. <br />
                     This 3-level structure allows you to build a passive income stream as your network grows. It’s simple to start: sign up, share your unique affiliate link, and watch your earnings grow!
                   </p>
-                  <a href="affiliate.html" className="cmn--btn">View Details</a>
+                  <a href="/affiliate" className="cmn--btn">View Details</a>
                 </div>
               </div>
             </div>

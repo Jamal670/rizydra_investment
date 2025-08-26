@@ -125,7 +125,7 @@ function Home() {
                 </span>
                 <div className="button-group d-flex flex-wrap align-items-center">
                   <a href="/sign-up" className="cmn--btn btn--secondary">get started</a>
-                  <a href="https://www.youtube.com/rizydra" className="video-button"><i className="las la-play"></i></a>
+                  <a href="https://www.youtube.com/@rizydra" target='_blank' className="video-button"><i className="las la-play"></i></a>
                 </div>
               </div>
             </div>
@@ -732,19 +732,19 @@ function Home() {
                 <div className="sigle-slider">
                   <div className="gateway-item">
                     <img src="./assets/images/gateway/usdttrx.png" alt="gateway" />
-                    <span className="coin-name">Coinbase</span>
+                    <span className="coin-name">TRON (TRC20)</span>
                   </div>
                 </div>
                 <div className="sigle-slider">
                   <div className="gateway-item">
                     <img src="./assets/images/gateway/usdt_eth.png" alt="gateway" />
-                    <span className="coin-name">PayPal</span>
+                    <span className="coin-name">ERC20</span>
                   </div>
                 </div>
                 <div className="sigle-slider">
                   <div className="gateway-item">
                     <img src="./assets/images/gateway/usdt_bnb.png" alt="gateway" />
-                    <span className="coin-name">Stripe</span>
+                    <span className="coin-name">BSC (WEB20)</span>
                   </div>
                 </div>
                 <div className="sigle-slider">

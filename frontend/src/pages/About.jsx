@@ -390,42 +390,42 @@ function About() {
           <div className="row align-items-center gy-4">
             <div className="col-lg-5">
               <div className="section-header">
-                <h2 className="title  fadeInUp" data--delay=".5s">Choose Yor Payment Gateway</h2>
-                <p className=" fadeInUp" data--delay=".6s">
-                  Risus et ut arcu sem nulla. Sit lacus lorem, sed turpis erat rhoncus nibh. Lacinia mauris vel, nibh sociis praesent aliquam proin, sit ut nec ultrices, odio lacus
+                <h2 className="title wow fadeInUp" data-wow-delay=".5s">Choose your Payment Gateway</h2>
+                <p className="wow fadeInUp" data-wow-delay=".6s">
+                  Select the payment method that best suits your needs. We offer secure, fast, and reliable payment gateway options to ensure a smooth checkout experience. You’re in control of how you pay.
                 </p>
               </div>
             </div>
-            <div className="col-lg-7  fadeInRight">
+            <div className="col-lg-7 wow fadeInRight">
               <div className="payment-gateway-slider">
                 <div className="sigle-slider">
                   <div className="gateway-item">
-                    <img src="/assets/images/gateway/icon1.png" alt="gateway" />
-                    <span className="coin-name">Bitcoin</span>
+                    <img src="./assets/images/gateway/BinancePay.png" alt="gateway" />
+                    <span className="coin-name">Binance Pay</span>
                   </div>
                 </div>
                 <div className="sigle-slider">
                   <div className="gateway-item">
-                    <img src="/assets/images/gateway/icon2.png" alt="gateway" />
-                    <span className="coin-name">Bitcoin</span>
+                    <img src="./assets/images/gateway/usdttrx.png" alt="gateway" />
+                    <span className="coin-name">TRON (TRC20)</span>
                   </div>
                 </div>
                 <div className="sigle-slider">
                   <div className="gateway-item">
-                    <img src="/assets/images/gateway/icon3.png" alt="gateway" />
-                    <span className="coin-name">Ethereum</span>
+                    <img src="./assets/images/gateway/usdt_eth.png" alt="gateway" />
+                    <span className="coin-name">ERC20</span>
                   </div>
                 </div>
                 <div className="sigle-slider">
                   <div className="gateway-item">
-                    <img src="/assets/images/gateway/icon4.png" alt="gateway" />
-                    <span className="coin-name">Ripple</span>
+                    <img src="./assets/images/gateway/usdt_bnb.png" alt="gateway" />
+                    <span className="coin-name">BSC (WEB20)</span>
                   </div>
                 </div>
                 <div className="sigle-slider">
                   <div className="gateway-item">
-                    <img src="/assets/images/gateway/icon2.png" alt="gateway" />
-                    <span className="coin-name">Ethereum</span>
+                    <img src="./assets/images/gateway/usdtmatic.png" alt="gateway" />
+                    <span className="coin-name">Skrill</span>
                   </div>
                 </div>
               </div>

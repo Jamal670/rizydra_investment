@@ -237,7 +237,6 @@ function Contact() {
                     <button type="submit" className="custom-button"><i className="lab la-telegram-plane"></i></button>
                   </div>
                 </form>
-                <h2 className="contact-num">Call Us : <a href="tel:0709">+0123-456-789</a></h2>
               </div>
             </div>
             <div className="col-lg-6">
@@ -245,40 +244,41 @@ function Contact() {
                 <div className="section-header">
                   <h2 className="title  fadeInUp">Payment Gateway</h2>
                   <p className=" fadeInUp">
-                    Lorem ipsum dolor sit amet consectetur, adipisicing elit. Tempora, in, minus tempore iusto error molestias.
+                                      Select the payment method that best suits your needs. We offer secure, fast, and reliable payment gateway options to ensure a smooth checkout experience. You’re in control of how you pay.
+
                   </p>
                 </div>
                 <div className="row g-3">
                   <div className="col-6 col-md-4 col-lg-6 col-xl-5  fadeInUp" data--delay=".2s">
                     <div className="payment-item-two">
                       <div className="thumb">
-                        <img src="./assets/images/gateway/icon5.png" alt="gateway" />
+                        <img src="./assets/images/gateway/usdttrx.png" alt="gateway" />
                       </div>
-                      <h6 className="title">Bitcoin</h6>
+                      <h6 className="title">TRON (TRC20)</h6>
                     </div>
                   </div>
                   <div className="col-6 col-md-4 col-lg-6 col-xl-5  fadeInUp" data--delay=".3s">
                     <div className="payment-item-two">
                       <div className="thumb">
-                        <img src="./assets/images/gateway/icon6.png" alt="gateway" />
+                        <img src="./assets/images/gateway/usdt_bnb.png" alt="gateway" />
                       </div>
-                      <h6 className="title">Ripple</h6>
+                      <h6 className="title">BSC (WEB20)</h6>
                     </div>
                   </div>
                   <div className="col-6 col-md-4 col-lg-6 col-xl-5  fadeInUp" data--delay=".4s">
                     <div className="payment-item-two">
                       <div className="thumb">
-                        <img src="./assets/images/gateway/icon7.png" alt="gateway" />
+                        <img src="./assets/images/gateway/usdt_eth.png" alt="gateway" />
                       </div>
-                      <h6 className="title">Litecoin</h6>
+                      <h6 className="title">ERC20</h6>
                     </div>
                   </div>
                   <div className="col-6 col-md-4 col-lg-6 col-xl-5  fadeInUp" data--delay=".5s">
                     <div className="payment-item-two">
                       <div className="thumb">
-                        <img src="./assets/images/gateway/icon8.png" alt="gateway" />
+                        <img src="./assets/images/gateway/usdtmatic.png" alt="gateway" />
                       </div>
-                      <h6 className="title">Zcash Coin</h6>
+                      <h6 className="title">Skrill</h6>
                     </div>
                   </div>
                 </div>

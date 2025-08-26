@@ -88,8 +88,8 @@ function Footer() {
                   <li>
                     medino, kitaniya road , USA
                   </li>
-                  <li>
-                    Call Us Now 1-234-567-890
+                  <li >
+                    <a href="/contact">Contact Us</a>
                   </li>
                   <li>
                     <a href="mailto:demosupport@.com">info@rizydra.com</a>

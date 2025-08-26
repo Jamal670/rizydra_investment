@@ -112,42 +112,42 @@ function EarningHistory() {
             {/* Preloader */}
             {isLoading && (
                 <>
-          <div
-            className="loader-bg"
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              width: '100vw',
-              height: '100vh',
-              background: '#fff',
-              zIndex: 9999,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-          >
-            <img
-              src="/loader.jpeg"
-              alt="Loading..."
-              style={{
-                width: 260,
-                height: 260,
-                animation: 'blink 1s infinite',
-              }}
-            />
-          </div>
-          <style>
-            {`
+                    <div
+                        className="loader-bg"
+                        style={{
+                            position: 'fixed',
+                            top: 0,
+                            left: 0,
+                            width: '100vw',
+                            height: '100vh',
+                            background: '#fff',
+                            zIndex: 9999,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}
+                    >
+                        <img
+                            src="/loader.jpeg"
+                            alt="Loading..."
+                            style={{
+                                width: 260,
+                                height: 260,
+                                animation: 'blink 1s infinite',
+                            }}
+                        />
+                    </div>
+                    <style>
+                        {`
         @keyframes blink {
           0% { opacity: 1; }
           50% { opacity: 0.3; }
           100% { opacity: 1; }
         }
       `}
-          </style>
-        </>
-      )}
+                    </style>
+                </>
+            )}
 
             {/* Banner Section */}
             <section className="inner-banner bg_img padding-bottom" style={{ background: "url(/assets/images/about/bg.png) no-repeat right bottom" }}>
@@ -204,9 +204,9 @@ function EarningHistory() {
                                 </div>
                                 <ul className="user-dashboard-tab">
                                     <li><a href="/user-dashboard">Account Overview</a></li>
-                                    <li><a href="/earning-history" className="active">Earnings History</a></li>
+                                    <li><a href="/earning-history"  className="active">Earnings History</a></li>
                                     <li><a href="/referal-users">Referral Users</a></li>
-                                    <li><a href="/deposit">Deposit</a></li>
+                                    <li><a href="/deposit">Deposit/Withdraw</a></li>
                                     <li><a href="/account-settings">Account Settings</a></li>
                                     <li>
                                         <a
@@ -215,9 +215,9 @@ function EarningHistory() {
                                                 e.preventDefault();
                                                 try {
                                                     await api.get('/logout', { withCredentials: true });
-                                                    navigate('/login');
+                                                    window.location.href = '/';
                                                 } catch (err) {
-                                                    navigate('/login');
+                                                    // Optionally handle error
                                                 }
                                             }}
                                         >
@@ -348,7 +348,7 @@ function EarningHistory() {
                                     marginBottom: '1.5rem',
                                     border: '1px solid #eee'
                                 }}
-                                >
+                            >
                                 <table
                                     style={{
                                         width: '100%',

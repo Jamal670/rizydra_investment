@@ -1194,53 +1194,163 @@ function Deposit() {
                                 </div>
                             </div>
 
-                            <table className="deposit-table">
-                                <thead>
-                                    <tr>
-                                        <th>Amount</th>
-                                        <th>Type</th>
-                                        <th>Status</th>
-                                        <th>Action</th>
-                                        <th>Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {userData?.confirmedInvestments?.map(txn => (
-                                        <tr key={txn._id}>
-                                            <td>
-                                                {txn.type === 'Withdraw'
-                                                    ? `- $${Number(txn.amount).toLocaleString()}`
-                                                    : txn.type === 'Deposit'
-                                                        ? `+ $${Number(txn.amount).toLocaleString()}`
-                                                        : `$${Number(txn.amount).toLocaleString()}`}
-                                            </td>
-                                            <td>{txn.type}</td>
-                                            <td>{txn.status}</td>
-                                            <td>
-                                                <button
-                                                    className="btn btn-sm"
-                                                    style={{
-                                                        backgroundColor: '#C9CDCF',
-                                                        color: '#000',
-                                                        borderRadius: '20px',
-                                                        border: 'none',
-                                                        padding: '6px 10px',
-                                                        fontWeight: 500,
-                                                    }}
-                                                    onClick={() => {
-                                                        setSelectedTransaction(txn);
-                                                        setShowTxnModal(true);
-                                                    }}
-                                                >
-                                                    View
-                                                </button>
-
-                                            </td>
-                                            <td>{txn.date}</td>
+                            <div
+                                style={{
+                                    width: '100%',
+                                    overflowX: 'auto',
+                                    WebkitOverflowScrolling: 'touch',
+                                    background: '#fff',
+                                    borderRadius: 8,
+                                    boxShadow: '0 2px 12px rgba(0,0,0,0.04)',
+                                    marginBottom: '1.5rem',
+                                    border: '1px solid #eee'
+                                }}
+                                >
+                                <table
+                                    style={{
+                                        width: '100%',
+                                        borderCollapse: 'collapse',
+                                        minWidth: 400,
+                                        fontSize: '15px',
+                                        background: '#fff'
+                                    }}
+                                >
+                                    <thead>
+                                        <tr>
+                                            <th style={{
+                                                background: '#f8f9fa',
+                                                fontWeight: 600,
+                                                color: '#222',
+                                                padding: '12px 10px',
+                                                borderBottom: '1px solid #eee',
+                                                position: 'sticky',
+                                                top: 0,
+                                                zIndex: 2,
+                                                textAlign: 'left',
+                                                whiteSpace: 'normal'
+                                            }}>Amount</th>
+                                            <th style={{
+                                                background: '#f8f9fa',
+                                                fontWeight: 600,
+                                                color: '#222',
+                                                padding: '12px 10px',
+                                                borderBottom: '1px solid #eee',
+                                                position: 'sticky',
+                                                top: 0,
+                                                zIndex: 2,
+                                                textAlign: 'left',
+                                                whiteSpace: 'normal'
+                                            }}>Type</th>
+                                            <th style={{
+                                                background: '#f8f9fa',
+                                                fontWeight: 600,
+                                                color: '#222',
+                                                padding: '12px 10px',
+                                                borderBottom: '1px solid #eee',
+                                                position: 'sticky',
+                                                top: 0,
+                                                zIndex: 2,
+                                                textAlign: 'left',
+                                                whiteSpace: 'normal'
+                                            }}>Status</th>
+                                            <th style={{
+                                                background: '#f8f9fa',
+                                                fontWeight: 600,
+                                                color: '#222',
+                                                padding: '12px 10px',
+                                                borderBottom: '1px solid #eee',
+                                                position: 'sticky',
+                                                top: 0,
+                                                zIndex: 2,
+                                                textAlign: 'left',
+                                                whiteSpace: 'normal'
+                                            }}>Action</th>
+                                            <th style={{
+                                                background: '#f8f9fa',
+                                                fontWeight: 600,
+                                                color: '#222',
+                                                padding: '12px 10px',
+                                                borderBottom: '1px solid #eee',
+                                                position: 'sticky',
+                                                top: 0,
+                                                zIndex: 2,
+                                                textAlign: 'left',
+                                                whiteSpace: 'normal'
+                                            }}>Date</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        {userData?.confirmedInvestments?.map(txn => (
+                                            <tr key={txn._id}>
+                                                <td style={{
+                                                    padding: '12px 10px',
+                                                    borderBottom: '1px solid #eee',
+                                                    whiteSpace: 'normal',
+                                                    wordBreak: 'break-word',
+                                                    verticalAlign: 'middle',
+                                                    textAlign: 'left'
+                                                }}>
+                                                    {txn.type === 'Withdraw'
+                                                        ? `- $${Number(txn.amount).toLocaleString()}`
+                                                        : txn.type === 'Deposit'
+                                                            ? `+ $${Number(txn.amount).toLocaleString()}`
+                                                            : `$${Number(txn.amount).toLocaleString()}`}
+                                                </td>
+                                                <td style={{
+                                                    padding: '12px 10px',
+                                                    borderBottom: '1px solid #eee',
+                                                    whiteSpace: 'normal',
+                                                    wordBreak: 'break-word',
+                                                    verticalAlign: 'middle',
+                                                    textAlign: 'left'
+                                                }}>{txn.type}</td>
+                                                <td style={{
+                                                    padding: '12px 10px',
+                                                    borderBottom: '1px solid #eee',
+                                                    whiteSpace: 'normal',
+                                                    wordBreak: 'break-word',
+                                                    verticalAlign: 'middle',
+                                                    textAlign: 'left'
+                                                }}>{txn.status}</td>
+                                                <td style={{
+                                                    padding: '12px 10px',
+                                                    borderBottom: '1px solid #eee',
+                                                    whiteSpace: 'normal',
+                                                    wordBreak: 'break-word',
+                                                    verticalAlign: 'middle',
+                                                    textAlign: 'left'
+                                                }}>
+                                                    <button
+                                                        className="btn btn-sm"
+                                                        style={{
+                                                            backgroundColor: '#C9CDCF',
+                                                            color: '#000',
+                                                            borderRadius: '20px',
+                                                            border: 'none',
+                                                            padding: '6px 10px',
+                                                            fontWeight: 500,
+                                                        }}
+                                                        onClick={() => {
+                                                            setSelectedTransaction(txn);
+                                                            setShowTxnModal(true);
+                                                        }}
+                                                    >
+                                                        View
+                                                    </button>
+                                                </td>
+                                                <td style={{
+                                                    padding: '12px 10px',
+                                                    borderBottom: '1px solid #eee',
+                                                    whiteSpace: 'normal',
+                                                    wordBreak: 'break-word',
+                                                    verticalAlign: 'middle',
+                                                    textAlign: 'left'
+                                                }}>{txn.date}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>

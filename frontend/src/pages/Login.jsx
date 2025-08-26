@@ -68,7 +68,7 @@ function Login() {
             const res = await api.post('/Login', {
                 email: form.email,
                 password: form.password
-            }, { withCredentials: true });
+            });
             alert(res.data.message || 'Login successful!');
             navigate('/user-dashboard');
         } catch (err) {

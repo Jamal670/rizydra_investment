@@ -4,17 +4,19 @@ const multer = require("multer");
 const fs = require("fs");
 
 // multer storage
-const uploadPath = path.join(__dirname, '../public/uploads');
-if (!fs.existsSync(uploadPath)) fs.mkdirSync(uploadPath, { recursive: true });
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
+// const uploadPath = path.join(__dirname, '../public/uploads');
+// if (!fs.existsSync(uploadPath)) fs.mkdirSync(uploadPath, { recursive: true });
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadPath);
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + "-" + file.originalname);
-  },
-});
+// const storage = multer.diskStorage({
+//   destination: function (req, file, cb) {
+//     cb(null, uploadPath);
+//   },
+//   filename: function (req, file, cb) {
+//     cb(null, Date.now() + "-" + file.originalname);
+//   },
+// });
 
 // Ensure uploads folder exists
 
@@ -29,7 +31,7 @@ const storage = multer.diskStorage({
 //   },
 // });
 
-const upload = multer({ storage: storage });
+// const upload = multer({ storage: storage });
 
 
 const UserDashController = require('../controllers/User_Dashboard.controller');

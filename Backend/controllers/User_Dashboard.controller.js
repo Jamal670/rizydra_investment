@@ -30,8 +30,9 @@ exports.deposit = async (req, res) => {
     const { exchangeType, ourExchange, amount, userExchange, type } = req.body;
     let image = null;
     if (req.file) {
-      image = fs.readFileSync(req.file.path, { encoding: "base64" });
+      image = req.file.buffer.toString("base64");
     }
+
 
     const depositData = await userDashService.deposit({
       userId,
@@ -129,7 +130,7 @@ exports.invest = async (req, res) => {
   try {
     const userId = req.user._id; // Comes from auth middleware
     console.log(userId);
-    
+
     const { from, to, amount } = req.body;
 
     const investmentData = await userDashService.invest(userId, from, to, amount);
@@ -161,7 +162,7 @@ exports.profile = async (req, res) => {
 exports.updateProfile = async (req, res) => {
   try {
     const userId = req.user._id; // req.user middleware se aata hai
-    const { name, password} = req.body;
+    const { name, password } = req.body;
     let profileImage = null;
     if (req.file) {
       profileImage = fs.readFileSync(req.file.path, { encoding: "base64" });

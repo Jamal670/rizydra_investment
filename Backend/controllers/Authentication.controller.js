@@ -43,7 +43,7 @@ exports.Login = async (req, res) => {
     // Store in HttpOnly cookie for security
     res.cookie("token", token, {
       httpOnly: true,   // ✅ make it secure
-      secure: process.env.NODE_ENV === "production",
+      secure: true,
       sameSite: "none", // agar frontend aur backend alag domains pe hain
       maxAge: 24 * 60 * 60 * 1000,
       path: "/"

@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 function UpdatePassword() {
     const [isLoading, setIsLoading] = useState(true);
     const [form, setForm] = useState({ password: '', cPassword: '' });
+    const [resetLoading, setResetLoading] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -76,17 +77,18 @@ function UpdatePassword() {
             alert('Password must be at least 8 characters long, contain at least one uppercase letter, and one digit.');
             return;
         }
+        setResetLoading(true);
         try {
-            // Replace with correct API call for password update
-            // You need userId from route or props
             const userId = window.location.pathname.split('/').pop();
             const res = await api.put(`/forgotpass/${userId}`, {
                 newPassword: form.password
             });
             alert(res.data.message || 'Password updated successfully!');
+            setResetLoading(false);
             navigate('/login');
         } catch (err) {
             alert(err.response?.data?.error || 'Error updating password');
+            setResetLoading(false);
         }
     };
 
@@ -193,9 +195,37 @@ function UpdatePassword() {
                                             required
                                         />
                                     </div>
-
                                     <div className="form--group">
-                                        <button className="custom-button" type="submit">Reset</button>
+                                        <button
+                                            className="custom-button"
+                                            type="submit"
+                                            disabled={resetLoading}
+                                            style={{
+                                                position: 'relative',
+                                                minWidth: 140,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                opacity: resetLoading ? 0.7 : 1,
+                                                cursor: resetLoading ? 'not-allowed' : 'pointer'
+                                            }}
+                                            aria-busy={resetLoading}
+                                            aria-disabled={resetLoading}
+                                        >
+                                            {resetLoading ? (
+                                                <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+                                                    <span
+                                                        className="spinner-border spinner-border-sm"
+                                                        role="status"
+                                                        aria-hidden="true"
+                                                        style={{ marginRight: 8 }}
+                                                    ></span>
+                                                    <span style={{ fontSize: '1rem', fontWeight: 500 }}>Resetting...</span>
+                                                </span>
+                                            ) : (
+                                                <span style={{ width: '100%' }}>Reset</span>
+                                            )}
+                                        </button>
                                     </div>
                                 </form>
                                 <div className="shape">

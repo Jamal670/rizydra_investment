@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 function Login() {
     const [isLoading, setIsLoading] = useState(true);
     const [form, setForm] = useState({ email: '', password: '' });
+    const [loginLoading, setLoginLoading] = useState(false); // Add loading state for button
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -64,15 +65,17 @@ function Login() {
 
     const handleSubmit = async e => {
         e.preventDefault();
+        setLoginLoading(true);
         try {
             const res = await api.post('/Login', {
                 email: form.email,
                 password: form.password
             });
-            // alert(res.data.message || 'Login successful!');
+            setLoginLoading(false);
             navigate('/user-dashboard');
         } catch (err) {
             alert(err.response?.data?.error || 'Invalid credentials');
+            setLoginLoading(false);
         }
     };
 
@@ -190,7 +193,36 @@ function Login() {
                                         </div>
                                     </div>
                                     <div className="form--group">
-                                        <button className="custom-button" type="submit">SIGN IN NOW</button>
+                                        <button
+                                            className="custom-button"
+                                            type="submit"
+                                            disabled={loginLoading}
+                                            style={{
+                                                position: 'relative',
+                                                minWidth: 140,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                opacity: loginLoading ? 0.7 : 1,
+                                                cursor: loginLoading ? 'not-allowed' : 'pointer'
+                                            }}
+                                            aria-busy={loginLoading}
+                                            aria-disabled={loginLoading}
+                                        >
+                                            {loginLoading ? (
+                                                <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+                                                    <span
+                                                        className="spinner-border spinner-border-sm"
+                                                        role="status"
+                                                        aria-hidden="true"
+                                                        style={{ marginRight: 8 }}
+                                                    ></span>
+                                                    <span style={{ fontSize: '1rem', fontWeight: 500 }}>Signing In...</span>
+                                                </span>
+                                            ) : (
+                                                <span style={{ width: '100%' }}>SIGN IN NOW</span>
+                                            )}
+                                        </button>
                                     </div>
                                 </form>
                                 <span className="subtitle">Don't have an account yet?</span>

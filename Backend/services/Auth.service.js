@@ -40,6 +40,8 @@ exports.RegUser = async (name, email, password, referralCode) => {
 
   if (referralCode) {
     const referrer = await UserModel.findOne({ referralCode });
+    console.log(referrer);
+    
     if (!referrer) {
       throw new Error('Invalid referral code');
     }

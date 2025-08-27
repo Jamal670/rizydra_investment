@@ -5,9 +5,10 @@ import api from '../Api';
 function Otp() {
   const [isLoading, setIsLoading] = useState(true);
   const [otp, setOtp] = useState('');
-  const [timer, setTimer] = useState(10); // Start at 10 seconds
+  const [timer, setTimer] = useState(30); // Start at 30 seconds
   const [resendLoading, setResendLoading] = useState(false);
   const [resendError, setResendError] = useState('');
+  const [verifyLoading, setVerifyLoading] = useState(false);
   const params = useParams();
   const navigate = useNavigate();
 
@@ -74,14 +75,17 @@ function Otp() {
 
   const handleSubmit = async e => {
     e.preventDefault();
+    setVerifyLoading(true);
     const id = params.id;
     const type = params.type;
     if (!id) {
       alert('User ID is missing in the URL.');
+      setVerifyLoading(false);
       return;
     }
     try {
       const res = await api.put(`/VerifyOtp/${id}`, { otp, type });
+      setVerifyLoading(false);
       if (type === "reg") {
         navigate('/login');
       } else {
@@ -89,6 +93,7 @@ function Otp() {
       }
     } catch (err) {
       alert(err.response?.data?.error || 'Invalid OTP');
+      setVerifyLoading(false);
     }
   };
 
@@ -241,7 +246,36 @@ function Otp() {
                     </div>
                   )}
                   <div className="form--group mt-5">
-                    <button className="custom-button" type="submit">VERIFY OTP</button>
+                    <button
+                      className="custom-button"
+                      type="submit"
+                      disabled={verifyLoading}
+                      style={{
+                        position: 'relative',
+                        minWidth: 140,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        opacity: verifyLoading ? 0.7 : 1,
+                        cursor: verifyLoading ? 'not-allowed' : 'pointer'
+                      }}
+                      aria-busy={verifyLoading}
+                      aria-disabled={verifyLoading}
+                    >
+                      {verifyLoading ? (
+                        <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+                          <span
+                            className="spinner-border spinner-border-sm"
+                            role="status"
+                            aria-hidden="true"
+                            style={{ marginRight: 8 }}
+                          ></span>
+                          <span style={{ fontSize: '1rem', fontWeight: 500 }}>Verifying...</span>
+                        </span>
+                      ) : (
+                        <span style={{ width: '100%' }}>VERIFY OTP</span>
+                      )}
+                    </button>
                   </div>
                 </form>
                 <div className="shape">

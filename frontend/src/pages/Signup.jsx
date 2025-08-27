@@ -18,6 +18,8 @@ function Signup() {
     referralCode: ''
   });
   const [showTermsModal, setShowTermsModal] = useState(false);
+  const [registerLoading, setRegisterLoading] = useState(false);
+  const [isReferralLocked, setIsReferralLocked] = useState(false);
 
   // Get referral code from URL on mount
   useEffect(() => {
@@ -25,6 +27,7 @@ function Signup() {
     const ref = params.get("ref");
     if (ref) {
       setForm(prev => ({ ...prev, referralCode: ref }));
+      setIsReferralLocked(true);
     }
 
     // Dynamically load CSS files
@@ -101,8 +104,8 @@ function Signup() {
       alert('Passwords do not match.');
       return;
     }
+    setRegisterLoading(true);
     try {
-      console.log(api.defaults.baseURL);
       const res = await api.post('/UserRegister', {
         name: form.name,
         email: form.email,
@@ -111,10 +114,10 @@ function Signup() {
       }, {
         withCredentials: true
       });
-      // alert(res.data.message || 'Registration successful!');
       navigate(`/otp/${res.data.user._id}/${"reg"}`);
     } catch (err) {
       alert(err.response?.data?.error || 'Registration failed');
+      setRegisterLoading(false);
     }
   };
 
@@ -345,10 +348,18 @@ function Signup() {
                     <input
                       type="text"
                       className="form--control"
-                      placeholder="Referral Code"
+                      placeholder={isReferralLocked ? "Referral Code (locked)" : "Referral Code (optional)"}
                       name="referralCode"
                       value={form.referralCode}
                       onChange={handleChange}
+                      readOnly={isReferralLocked}
+                      style={{
+                        background: isReferralLocked ? '#f5f5f5' : undefined,
+                        color: isReferralLocked ? '#888' : undefined,
+                        cursor: isReferralLocked ? 'not-allowed' : undefined,
+                        fontWeight: isReferralLocked ? 600 : undefined,
+                        borderColor: isReferralLocked ? '#007bff' : undefined
+                      }}
                     />
                   </div>
                   <div className="d-flex">
@@ -360,7 +371,36 @@ function Signup() {
                     </div>
                   </div>
                   <div className="form--group">
-                    <button className="custom-button" type="submit">REGISTRATION</button>
+                    <button
+                      className="custom-button"
+                      type="submit"
+                      disabled={registerLoading}
+                      style={{
+                        position: 'relative',
+                        minWidth: 140,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        opacity: registerLoading ? 0.7 : 1,
+                        cursor: registerLoading ? 'not-allowed' : 'pointer'
+                      }}
+                      aria-busy={registerLoading}
+                      aria-disabled={registerLoading}
+                    >
+                      {registerLoading ? (
+                        <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+                          <span
+                            className="spinner-border spinner-border-sm"
+                            role="status"
+                            aria-hidden="true"
+                            style={{ marginRight: 8 }}
+                          ></span>
+                          <span style={{ fontSize: '1rem', fontWeight: 500 }}>Registering...</span>
+                        </span>
+                      ) : (
+                        <span style={{ width: '100%' }}>REGISTRATION</span>
+                      )}
+                    </button>
                   </div>
                 </form>
                 <span className="subtitle">Already you have an account here? </span>

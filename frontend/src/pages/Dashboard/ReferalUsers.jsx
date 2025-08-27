@@ -86,7 +86,7 @@ function ReferalUsers() {
 
     const handleAddReferralUser = async () => {
         const frontendUrl = process.env.REACT_APP_API_URL_FRONTEND;
-        const referralLink = `${frontendUrl}sign-up?ref=${referralData.referralCode}`;
+        const referralLink = `www.rizydra.com/sign-up?ref=${referralData.referralCode}`;
         await navigator.clipboard.writeText(referralLink);
         alert("Referral link copied to clipboard!");
     };

@@ -5,6 +5,7 @@ import api from '../Api';
 function PassReset() {
   const [isLoading, setIsLoading] = useState(true);
   const [email, setEmail] = useState('');
+  const [submitLoading, setSubmitLoading] = useState(false);
 //   const params = useParams();
   const navigate = useNavigate();
 
@@ -63,21 +64,15 @@ function PassReset() {
 
   const handleSubmit = async e => {
     e.preventDefault();
-    // Try to get id from params (for /otp/:id)
-    // const id = params.id;
-    // if (!id) {
-    //   alert('User ID is missing in the URL.');
-    //   return;
-    // }
+    setSubmitLoading(true);
     try {
-  const res = await api.post('/forgotPassSendOtp', { email });
-  console.log(res);
-  
-        // alert(res.data.message || 'OTP verified!');
-        navigate(`/otp/${res.data._id}/${"fgt"}`);
-//   navigate(`/otp/${res.data._id}`);
+      const res = await api.post('/forgotPassSendOtp', { email });
+      // Optionally show a success message here
+      setSubmitLoading(false);
+      navigate(`/otp/${res.data._id}/${"fgt"}`);
     } catch (err) {
       alert(err.response?.data?.message || 'Invalid Credentials');
+      setSubmitLoading(false);
     }
   };
 
@@ -161,7 +156,6 @@ function PassReset() {
                 <h2 className="title">Enter Your Email</h2>
                 <form className="account-form" onSubmit={handleSubmit}>
                   <div className="form--group">
-                    
                     <i className="las la-key"></i>
                     <input
                       type="text"
@@ -173,7 +167,36 @@ function PassReset() {
                     />
                   </div>
                   <div className="form--group">
-                    <button className="custom-button" type="submit">Submit</button>
+                    <button
+                      className="custom-button"
+                      type="submit"
+                      disabled={submitLoading}
+                      style={{
+                        position: 'relative',
+                        minWidth: 140,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        opacity: submitLoading ? 0.7 : 1,
+                        cursor: submitLoading ? 'not-allowed' : 'pointer'
+                      }}
+                      aria-busy={submitLoading}
+                      aria-disabled={submitLoading}
+                    >
+                      {submitLoading ? (
+                        <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+                          <span
+                            className="spinner-border spinner-border-sm"
+                            role="status"
+                            aria-hidden="true"
+                            style={{ marginRight: 8 }}
+                          ></span>
+                          <span style={{ fontSize: '1rem', fontWeight: 500 }}>Submitting...</span>
+                        </span>
+                      ) : (
+                        <span style={{ width: '100%' }}>Submit</span>
+                      )}
+                    </button>
                   </div>
                 </form>
                 <div className="shape">

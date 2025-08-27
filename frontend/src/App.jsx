@@ -29,6 +29,7 @@ function App() {
         <Route path="/affiliate" element={<Affiliate />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/sign-up" element={<Signup />} />   {/* ✅ fixed */}
+        <Route path="/sign-up?ref" element={<Signup />} />
         <Route path="/pass-reset" element={<PassReset />} />
         <Route path="/pass-update/:id" element={<UpdatePassword />} />
         <Route path="/login" element={<Login />} /> 

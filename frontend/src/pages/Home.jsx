@@ -141,7 +141,7 @@ function Home() {
                       Dashboard
                     </a>
                   ) : (
-                    <a href="/login" className="cmn--btn btn--secondary">
+                    <a href="/sign-up" className="cmn--btn btn--secondary">
                       Get Started
                     </a>
                   )}

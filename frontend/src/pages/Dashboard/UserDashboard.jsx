@@ -43,7 +43,7 @@ function UserDashboard() {
         depositAmount: '0.00',
         investedAmount: '0.00'
     });
-    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [sidebarOpen, setSidebarOpen] = useState(true);
 
     useEffect(() => {
         // Only load assets once per session

@@ -132,7 +132,7 @@ function AcSetting() {
                         <div className="inner-banner-content">
                             <h2 className="inner-banner-title">User <br /> Dashboard</h2>
                             <ul className="breadcums">
-                                <li><a href="/">Home</a></li>
+                                {/* <li><a href="/">Home</a></li> */}
                                 <li><a href="/user-dashboard">Dashboard</a></li>
                                 <li><span>Account Setting</span></li>
                             </ul>

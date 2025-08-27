@@ -5,7 +5,8 @@ import api from '../Api';
 function Otp() {
   const [isLoading, setIsLoading] = useState(true);
   const [otp, setOtp] = useState('');
-  const [timer, setTimer] = useState(30); // Start at 30 seconds
+  const [timer, setTimer] = useState(30); // First resend after 30s
+  const [cooldown, setCooldown] = useState(false); // Track if 1-min cooldown is active
   const [resendLoading, setResendLoading] = useState(false);
   const [resendError, setResendError] = useState('');
   const [verifyLoading, setVerifyLoading] = useState(false);
@@ -97,14 +98,19 @@ function Otp() {
     }
   };
 
+  // Handle OTP resend
   const handleResend = async () => {
+    if (cooldown) return; // Prevent resend during cooldown
     setResendLoading(true);
     setResendError('');
     try {
       const id = params.id;
       const res = await api.put(`/resendOtp/${id}`);
       alert(res.data.message || 'New OTP sent successfully. Please check your email.');
-      setTimer(10); // Reset timer to 10 seconds
+      setTimer(60); // 1-minute cooldown after first resend
+      setCooldown(true);
+      // Reset cooldown after 1 minute
+      setTimeout(() => setCooldown(false), 60000);
     } catch (err) {
       setResendError(err.response?.data?.error || 'Failed to resend OTP');
     } finally {
@@ -227,15 +233,15 @@ function Otp() {
                         <span
                           style={{
                             fontWeight: 'bold',
-                            color: '#007bff',
+                            color: cooldown ? '#aaa' : '#007bff',
                             fontSize: '0.95rem',
                             textDecoration: 'underline',
-                            cursor: resendLoading ? 'not-allowed' : 'pointer',
+                            cursor: resendLoading || cooldown ? 'not-allowed' : 'pointer',
                             transition: 'none',
                           }}
-                          onClick={!resendLoading ? handleResend : undefined}
+                          onClick={!resendLoading && !cooldown ? handleResend : undefined}
                         >
-                          {resendLoading ? 'Sending...' : 'Resend OTP'}
+                          {resendLoading ? 'Sending...' : cooldown ? 'Please wait...' : 'Resend OTP'}
                         </span>
                       )}
                     </div>

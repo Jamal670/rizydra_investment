@@ -3,6 +3,7 @@ const InvestmentModel = require('../models/Investment.model');
 const DailyEarn = require('../models/dailyEarn.model');
 const RedUserEarning = require('../models/refUserEarn.model'); // Model ka import
 const mongoose = require('mongoose');
+const { sendWithdrawEmail } = require('./sendMailer'); // Import the mailer function
 
 // Service function
 exports.showDashboard = async function showDashboard(userId) {
@@ -162,7 +163,6 @@ exports.showEarningHistory = async (userId) => {
 
 
 
-
 // deposit function
 exports.deposit = async function ({
   userId,
@@ -303,6 +303,7 @@ exports.referralUser = async function (userId) {
           email: 1,
           image: { $ifNull: ["$image", ""] },
           referralCode: 1,
+          investedAmount: 1,
           referralSummary: 1,
           refEarnings: {
             $map: {
@@ -359,7 +360,7 @@ exports.withdraw = async ({ userId, exchangeType, ourExchange, amount, userExcha
     // 1. Find user
     const user = await UserModel.findById(userId);
     if (!user) {
-      throw new Error("Invalid credentials");
+      throw new Error("Invalid user");
     }
 
     // 🚨 Minimum withdraw limit check
@@ -384,14 +385,22 @@ exports.withdraw = async ({ userId, exchangeType, ourExchange, amount, userExcha
       amount,
       userExchange,
       type,
-      status: "Pending", // default status
+      status: "Pending",
     });
+
+    // 5. Send withdraw notification email
+    try {
+      await sendWithdrawEmail(userId, amount, exchangeType, userExchange, type);
+    } catch (mailErr) {
+      console.error("Withdraw email failed:", mailErr);
+    }
 
     return withdrawRecord;
   } catch (error) {
     throw new Error(error.message || "Error creating withdraw record");
   }
 };
+
 
 
 

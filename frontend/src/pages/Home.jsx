@@ -25,48 +25,50 @@ function Home() {
     };
   }, []);
 
-  // Dynamically load CSS files
-  const cssFiles = [
-    '/assets/css/bootstrap.min.css',
-    '/assets/css/all.min.css',
-    '/assets/css/line-awesome.min.css',
-    '/assets/css/animate.css',
-    '/assets/css/magnific-popup.css',
-    '/assets/css/nice-select.css',
-    '/assets/css/odometer.css',
-    '/assets/css/slick.css',
-    '/assets/css/main.css'
-  ];
-  cssFiles.forEach(href => {
-    if (!document.querySelector(`link[href="${href}"]`)) {
-      const link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = href;
-      document.head.appendChild(link);
-    }
-  });
+  useEffect(() => {
+    // Dynamically load CSS files (Bootstrap first)
+    const cssFiles = [
+      '/assets/css/bootstrap.min.css',
+      '/assets/css/all.min.css',
+      '/assets/css/line-awesome.min.css',
+      '/assets/css/animate.css',
+      '/assets/css/magnific-popup.css',
+      '/assets/css/nice-select.css',
+      '/assets/css/odometer.css',
+      '/assets/css/slick.css',
+      '/assets/css/main.css'
+    ];
+    cssFiles.forEach(href => {
+      if (!document.querySelector(`link[href="${href}"]`)) {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = href;
+        document.head.appendChild(link);
+      }
+    });
 
-  // Dynamically load JS files
-  const jsFiles = [
-    '/assets/js/jquery-3.3.1.min.js',
-    '/assets/js/bootstrap.min.js',
-    '/assets/js/jquery.ui.js',
-    '/assets/js/slick.min.js',
-    '/assets/js/wow.min.js',
-    '/assets/js/magnific-popup.min.js',
-    '/assets/js/odometer.min.js',
-    '/assets/js/viewport.jquery.js',
-    '/assets/js/nice-select.js',
-    '/assets/js/main.js'
-  ];
-  jsFiles.forEach(src => {
-    if (!document.querySelector(`script[src="${src}"]`)) {
-      const script = document.createElement('script');
-      script.src = src;
-      script.async = false;
-      document.body.appendChild(script);
-    }
-  });
+    // Dynamically load JS files
+    const jsFiles = [
+      '/assets/js/jquery-3.3.1.min.js',
+      '/assets/js/bootstrap.min.js',
+      '/assets/js/jquery.ui.js',
+      '/assets/js/slick.min.js',
+      '/assets/js/wow.min.js',
+      '/assets/js/magnific-popup.min.js',
+      '/assets/js/odometer.min.js',
+      '/assets/js/viewport.jquery.js',
+      '/assets/js/nice-select.js',
+      '/assets/js/main.js'
+    ];
+    jsFiles.forEach(src => {
+      if (!document.querySelector(`script[src="${src}"]`)) {
+        const script = document.createElement('script');
+        script.src = src;
+        script.async = false;
+        document.body.appendChild(script);
+      }
+    });
+  }, []);
 
 
   return (
@@ -379,9 +381,9 @@ function Home() {
                   </p>
                 </div>
                 <div className="row g-4">
-                  <div className="col-lg-4 col-md-4 col-sm-6">
-                    <div className="choose-item">
-                      <div className="choose-thumb">
+                  <div className="col-12 col-sm-6 col-lg-4">
+                    <div className="choose-item h-100 d-flex flex-column align-items-center justify-content-center">
+                      <div className="choose-thumb mb-3">
                         <img src="/assets/images/choose-us/lock.png" alt="choose-us" />
                       </div>
                       <div className="choose-content">
@@ -389,9 +391,9 @@ function Home() {
                       </div>
                     </div>
                   </div>
-                  <div className="col-lg-4 col-md-4 col-sm-6">
-                    <div className="choose-item">
-                      <div className="choose-thumb">
+                  <div className="col-12 col-sm-6 col-lg-4">
+                    <div className="choose-item h-100 d-flex flex-column align-items-center justify-content-center">
+                      <div className="choose-thumb mb-3">
                         <img src="/assets/images/choose-us/business-ico.png" alt="choose-us" />
                       </div>
                       <div className="choose-content">
@@ -399,13 +401,13 @@ function Home() {
                       </div>
                     </div>
                   </div>
-                  <div className="col-lg-4 col-md-4 col-sm-6">
-                    <div className="choose-item">
-                      <div className="choose-thumb">
+                  <div className="col-12 col-sm-6 col-lg-4">
+                    <div className="choose-item h-100 d-flex flex-column align-items-center justify-content-center">
+                      <div className="choose-thumb mb-3">
                         <img src="/assets/images/choose-us/user.png" alt="choose-us" />
                       </div>
                       <div className="choose-content">
-                        <h6 className="title">Supper Dashboard</h6>
+                        <h6 className="title">Super Dashboard</h6>
                       </div>
                     </div>
                   </div>
@@ -735,7 +737,7 @@ function Home() {
           <div className="row align-items-center gy-4">
             <div className="col-lg-5">
               <div className="section-header">
-                <h2 className="title wow fadeInUp" data-wow-delay=".5s">Choose your Payment Gateway</h2>
+                <h2 className="title wow fadeInUp p-2" data-wow-delay=".5s">Choose your Payment Gateway</h2>
                 <p className="wow fadeInUp" data-wow-delay=".6s">
                   Select the payment method that best suits your needs. We offer secure, fast, and reliable payment gateway options to ensure a smooth checkout experience. You’re in control of how you pay.
                 </p>

@@ -193,7 +193,7 @@ function Contact() {
                       <img src="./assets/images/contact/phone.png" alt="contact" />
                     </div>
                     <div className="contact-item-content">
-                      <h4 className="title">Contact Number</h4>
+                      <h4 className="title">Contact</h4>
                       <a href="https://t.me/rizydra">Telegram</a>
                       {/* <a href="Tel:90172834">(123) 456-7891 - 00626</a> */}
                     </div>

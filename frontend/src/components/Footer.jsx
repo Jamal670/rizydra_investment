@@ -86,7 +86,8 @@ function Footer() {
                 <h4 className="widget-title">Contact Information</h4>
                 <ul className="contact-info">
                   <li>
-                    medino, kitaniya road , USA
+                    742 Evergreen Terrace,
+Springfield, IL 62704, USA
                   </li>
                   <li >
                     <a href="/contact">Contact Us</a>

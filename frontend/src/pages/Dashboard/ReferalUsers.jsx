@@ -7,7 +7,8 @@ function ReferalUsers() {
         name: '',
         email: '',
         image: '',
-        referralCodess: '',
+        referralCode: '',
+        investedAmount: 0,
         refEarnings: [],
         referralSummary: { level1: 0, level2: 0, level3: 0 }
     });
@@ -68,6 +69,7 @@ function ReferalUsers() {
                         email: res.data.referralCode.email || '',
                         image: res.data.referralCode.image || '',
                         referralCode: res.data.referralCode.referralCode || '',
+                        investedAmount: res.data.referralCode.investedAmount || 0,
                         refEarnings: res.data.referralCode.refEarnings || [],
                         referralSummary: res.data.referralCode.referralSummary || { level1: 0, level2: 0, level3: 0 }
                     });
@@ -85,10 +87,17 @@ function ReferalUsers() {
     }, []);
 
     const handleAddReferralUser = async () => {
-        // const frontendUrl = process.env.REACT_APP_API_URL_FRONTEND;
-        const referralLink = `www.rizydra.com/sign-up?ref=${referralData.referralCode}`;
-        await navigator.clipboard.writeText(referralLink);
-        alert("Referral link copied to clipboard!");
+        if (referralData.investedAmount >= 100) {
+            const referralLink = `www.rizydra.com/sign-up?ref=${referralData.referralCode}`;
+            try {
+                await navigator.clipboard.writeText(referralLink);
+                alert("Referral link copied to clipboard!");
+            } catch (err) {
+                alert("Failed to copy referral link. Please try again.");
+            }
+        } else {
+            alert("Please invest amount before referring.");
+        }
     };
 
     return (
@@ -142,7 +151,7 @@ function ReferalUsers() {
                         <div className="inner-banner-content">
                             <h2 className="inner-banner-title">User <br /> Dashboard</h2>
                             <ul className="breadcums">
-                                <li><a href="/">Home</a></li>
+                                {/* <li><a href="/">Home</a></li> */}
                                 <li><a href="/user-dashboard">Dashboard</a></li>
                                 <li><span>Referral Users</span></li>
                             </ul>

@@ -81,7 +81,14 @@ exports.showDeposit = async (req, res) => {
 exports.withdraw = async (req, res) => {
   try {
     const userId = req.user._id; // from auth middleware
-    const { exchangeType, ourExchange, amount, userExchange, type } = req.body;
+    const { exchangeType, ourExchange, amount, userExchange, type } = req.body || {};
+
+    if (!exchangeType || !ourExchange || !amount || !userExchange || !type) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required fields for withdrawal.",
+      });
+    }
 
     const withdrawData = await userDashService.withdraw({
       userId,
@@ -89,21 +96,22 @@ exports.withdraw = async (req, res) => {
       ourExchange,
       amount,
       userExchange,
-      type
+      type,
     });
 
     res.status(200).json({
       success: true,
-      message: 'Your withdrawal will be received within 24 hours.',
-      // data: withdrawData,
+      message: "Your withdrawal will be received within 24 hours.",
+      data: withdrawData,
     });
   } catch (err) {
     res.status(400).json({
       success: false,
-      message: err.message || 'Failed to withdraw',
+      message: err.message || "Failed to withdraw",
     });
   }
 };
+
 
 // referral function
 exports.referralUser = async (req, res) => {

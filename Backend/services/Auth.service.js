@@ -8,77 +8,70 @@ function generateReferralCode() {
 }
 
 // -----------------Register a new user---------------------  
-exports.RegUser = async (name, email, password, referralCode) => {
-  // Check if there is a pending user with OTP for same credentials
-  const pendingUser = await UserModel.findOne({
-    $or: [{ email }, { name }],
-    status: 'Pending',
-    otp: { $ne: null }
-  });
+import UserModel from "../models/UserModel.js";
+import bcrypt from "bcrypt";
+import { generateOTP, sendEmail, generateReferralCode } from "../utils/helpers.js";
 
-  if (pendingUser) {
-    console.log(`Deleting pending user with id: ${pendingUser._id}`);
-    await UserModel.deleteOne({ _id: pendingUser._id });
-  } else {
-    // Regular check for existing verified user
-    const existingUser = await UserModel.findOne({
-      $or: [{ email }, { name }]
-    });
+export const RegUserService = async (name, email, password, referralCode) => {
 
-    if (existingUser) {
-      if (existingUser.email === email) {
-        throw new Error('Email already exists');
-      }
-      if (existingUser.name === name) {
-        throw new Error('Name already exists');
-      }
-    }
+  // Check if user already exists (verified or pending)
+  const existingUser = await UserModel.findOne({ email });
+  if (existingUser && existingUser.status === "Verified") {
+    throw new Error("Email already exists");
   }
 
-  let referredBy = null;
-  let referralLevel = 0;
-
-  if (referralCode) {
-    const referrer = await UserModel.findOne({ referralCode });
-    if (!referrer) {
-      throw new Error('Invalid referral code');
-    }
-    referredBy = referrer._id;
-    referralLevel = referrer.referralLevel === 3 ? 3 : referrer.referralLevel + 1;
-  }
-
-  const generatedReferralCode = generateReferralCode();
+  // Generate OTP
   const otp = generateOTP();
 
-    // Hash password before saving
-    const hashedPassword = await bcrypt.hash(password, 10);
+  // If pending user exists, just update OTP
+  let user;
+  if (existingUser && existingUser.status === "Pending") {
+    existingUser.name = name; // update name if changed
+    existingUser.password = await bcrypt.hash(password, 10);
+    existingUser.otp = otp;
+    user = await existingUser.save();
+  } else {
+    // Handle referral
+    let referredBy = null;
+    let referralLevel = 0;
+
+    if (referralCode) {
+      const referrer = await UserModel.findOne({ referralCode });
+      if (!referrer) throw new Error("Invalid referral code");
+      referredBy = referrer._id;
+      referralLevel = referrer.referralLevel === 3 ? 3 : referrer.referralLevel + 1;
+    }
+
+    // Create new user
     const newUser = new UserModel({
       name,
       email,
-      password: hashedPassword,
-      referralCode: generatedReferralCode,
+      password: await bcrypt.hash(password, 10),
+      referralCode: generateReferralCode(),
       referredBy,
       referralLevel,
       otp,
-      status: 'Pending'
+      status: "Pending"
     });
+    user = await newUser.save();
+  }
 
-  const savedUser = await newUser.save();
-
-  // Send OTP email asynchronously
-  (async () => {
+  // Send OTP email
+  try {
     await sendEmail(email, otp);
-  })();
+  } catch (err) {
+    console.log("OTP email send failed:", err);
+  }
 
   return {
-    message: 'User registered successfully. OTP sent to your email.',
+    message: "User registered successfully. OTP sent to your email.",
     user: {
-      _id: savedUser._id,
-      name: savedUser.name,
-      email: savedUser.email,
-      referralCode: savedUser.referralCode,
-      referralLevel: savedUser.referralLevel,
-      status: savedUser.status
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      referralCode: user.referralCode,
+      referralLevel: user.referralLevel,
+      status: user.status
     }
   };
 };

@@ -28,6 +28,19 @@ exports.VerifyOtp = async (req, res) => {
   }
 };
 
+//------------resend OTP----------------
+exports.ResendOtp = async (req, res) => {
+  try {
+    const _id = req.params.id;   // <-- FIXED
+    console.log(_id);            // Should now log: 68af01b2621c7e88390b2e71
+    const result = await userAuthService.ResendOtp(_id);
+    res.status(200).json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+
 //---------------Login------------------------
 exports.Login = async (req, res) => {
   try {

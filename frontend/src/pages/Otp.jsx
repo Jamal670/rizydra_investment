@@ -5,6 +5,9 @@ import api from '../Api';
 function Otp() {
   const [isLoading, setIsLoading] = useState(true);
   const [otp, setOtp] = useState('');
+  const [timer, setTimer] = useState(10); // Start at 10 seconds
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendError, setResendError] = useState('');
   const params = useParams();
   const navigate = useNavigate();
 
@@ -53,17 +56,24 @@ function Otp() {
     });
 
     // Hide loader after 1 second
-    const timer = setTimeout(() => {
+    const timerId = setTimeout(() => {
       setIsLoading(false);
     }, 1000);
-    return () => clearTimeout(timer);
+    return () => clearTimeout(timerId);
   }, []);
+
+  // Timer countdown
+  useEffect(() => {
+    if (timer > 0) {
+      const interval = setInterval(() => setTimer(t => t - 1), 1000);
+      return () => clearInterval(interval);
+    }
+  }, [timer]);
 
   const handleChange = e => setOtp(e.target.value);
 
   const handleSubmit = async e => {
     e.preventDefault();
-    // Try to get id from params (for /otp/:id)
     const id = params.id;
     const type = params.type;
     if (!id) {
@@ -72,16 +82,28 @@ function Otp() {
     }
     try {
       const res = await api.put(`/VerifyOtp/${id}`, { otp, type });
-      if(type === "reg") {
-        // alert(res.data.message || 'OTP verified!');
+      if (type === "reg") {
         navigate('/login');
-      }
-      else{
-        // alert(res.data.message || 'OTP verified!');
+      } else {
         navigate(`/pass-update/${id}`);
       }
     } catch (err) {
       alert(err.response?.data?.error || 'Invalid OTP');
+    }
+  };
+
+  const handleResend = async () => {
+    setResendLoading(true);
+    setResendError('');
+    try {
+      const id = params.id;
+      const res = await api.put(`/resendOtp/${id}`);
+      alert(res.data.message || 'New OTP sent successfully. Please check your email.');
+      setTimer(10); // Reset timer to 10 seconds
+    } catch (err) {
+      setResendError(err.response?.data?.error || 'Failed to resend OTP');
+    } finally {
+      setResendLoading(false);
     }
   };
 
@@ -164,8 +186,8 @@ function Otp() {
             <div className="col-lg-5">
               <div className="account-wrapper">
                 <h2 className="title">Enter OTP</h2>
-                <form className="account-form" onSubmit={handleSubmit}>
-                  <div className="form--group">
+                <form className="account-form" onSubmit={handleSubmit} style={{ position: 'relative' }}>
+                  <div className="form--group" style={{ position: 'relative' }}>
                     <p style={{ marginBottom: '10px', color: '#333' }}>
                       Your OTP has been sent to your email.
                     </p>
@@ -177,9 +199,48 @@ function Otp() {
                       value={otp}
                       onChange={handleChange}
                       required
+                      style={{ paddingRight: '120px' }}
                     />
+                    {/* Resend OTP UI */}
+                    <div
+                      style={{
+                        position: 'absolute',
+                        right: 0,
+                        bottom: '-45px',
+                        padding: '8px 0',
+                        fontSize: '0.95rem',
+                        color: '#007bff',
+                        minWidth: '120px',
+                        textAlign: 'right',
+                      }}
+                    >
+                      {timer > 0 ? (
+                        <span>
+                          Resend OTP? <b>{timer}s</b>
+                        </span>
+                      ) : (
+                        <span
+                          style={{
+                            fontWeight: 'bold',
+                            color: '#007bff',
+                            fontSize: '0.95rem',
+                            textDecoration: 'underline',
+                            cursor: resendLoading ? 'not-allowed' : 'pointer',
+                            transition: 'none',
+                          }}
+                          onClick={!resendLoading ? handleResend : undefined}
+                        >
+                          {resendLoading ? 'Sending...' : 'Resend OTP'}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <div className="form--group">
+                  {resendError && (
+                    <div style={{  fontSize: '0.9rem', marginTop: '20px', textAlign: 'right' }}>
+                      {resendError}
+                    </div>
+                  )}
+                  <div className="form--group mt-5">
                     <button className="custom-button" type="submit">VERIFY OTP</button>
                   </div>
                 </form>

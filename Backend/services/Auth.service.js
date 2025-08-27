@@ -8,66 +8,77 @@ function generateReferralCode() {
 }
 
 // -----------------Register a new user---------------------  
-export const RegUserService = async (name, email, password, referralCode) => {
+exports.RegUser = async (name, email, password, referralCode) => {
+  // Check if there is a pending user with OTP for same credentials
+  const pendingUser = await UserModel.findOne({
+    $or: [{ email }, { name }],
+    status: 'Pending',
+    otp: { $ne: null }
+  });
 
-  // Check if user already exists (verified or pending)
-  const existingUser = await UserModel.findOne({ email });
-  if (existingUser && existingUser.status === "Verified") {
-    throw new Error("Email already exists");
+  if (pendingUser) {
+    console.log(`Deleting pending user with id: ${pendingUser._id}`);
+    await UserModel.deleteOne({ _id: pendingUser._id });
+  } else {
+    // Regular check for existing verified user
+    const existingUser = await UserModel.findOne({
+      $or: [{ email }, { name }]
+    });
+
+    if (existingUser) {
+      if (existingUser.email === email) {
+        throw new Error('Email already exists');
+      }
+      if (existingUser.name === name) {
+        throw new Error('Name already exists');
+      }
+    }
   }
 
-  // Generate OTP
+  let referredBy = null;
+  let referralLevel = 0;
+
+  if (referralCode) {
+    const referrer = await UserModel.findOne({ referralCode });
+    if (!referrer) {
+      throw new Error('Invalid referral code');
+    }
+    referredBy = referrer._id;
+    referralLevel = referrer.referralLevel === 3 ? 3 : referrer.referralLevel + 1;
+  }
+
+  const generatedReferralCode = generateReferralCode();
   const otp = generateOTP();
 
-  // If pending user exists, just update OTP
-  let user;
-  if (existingUser && existingUser.status === "Pending") {
-    existingUser.name = name; // update name if changed
-    existingUser.password = await bcrypt.hash(password, 10);
-    existingUser.otp = otp;
-    user = await existingUser.save();
-  } else {
-    // Handle referral
-    let referredBy = null;
-    let referralLevel = 0;
-
-    if (referralCode) {
-      const referrer = await UserModel.findOne({ referralCode });
-      if (!referrer) throw new Error("Invalid referral code");
-      referredBy = referrer._id;
-      referralLevel = referrer.referralLevel === 3 ? 3 : referrer.referralLevel + 1;
-    }
-
-    // Create new user
+    // Hash password before saving
+    const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = new UserModel({
       name,
       email,
-      password: await bcrypt.hash(password, 10),
-      referralCode: generateReferralCode(),
+      password: hashedPassword,
+      referralCode: generatedReferralCode,
       referredBy,
       referralLevel,
       otp,
-      status: "Pending"
+      status: 'Pending'
     });
-    user = await newUser.save();
-  }
 
-  // Send OTP email
-  try {
+  const savedUser = await newUser.save();
+
+  // Send OTP email asynchronously
+  (async () => {
     await sendEmail(email, otp);
-  } catch (err) {
-    console.log("OTP email send failed:", err);
-  }
+  })();
 
   return {
-    message: "User registered successfully. OTP sent to your email.",
+    message: 'User registered successfully. OTP sent to your email.',
     user: {
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      referralCode: user.referralCode,
-      referralLevel: user.referralLevel,
-      status: user.status
+      _id: savedUser._id,
+      name: savedUser.name,
+      email: savedUser.email,
+      referralCode: savedUser.referralCode,
+      referralLevel: savedUser.referralLevel,
+      status: savedUser.status
     }
   };
 };
@@ -146,6 +157,34 @@ exports.VerifyOtp = async (_id, otp, type) => {
   throw new Error("Invalid type provided"); // in case type is neither fgt nor reg
 };
 
+//---------------resend------------------------
+exports.ResendOtp = async (_id) => {
+  console.log(`Resending OTP to user with ID: ${_id}`);
+
+  // 1. Find user by ID
+  const user = await UserModel.findById(_id);
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  // // 2. Check if user is verified
+  // if (user.status !== 'Verified') {
+  //   throw new Error('User not verified');
+  // }
+
+  // 3. Generate new OTP
+  const newOtp = generateOTP();
+  user.otp = newOtp;
+  await user.save();
+
+  // 4. Send new OTP via email
+  await sendEmail(user.email, newOtp);
+
+  return {
+    message: 'New OTP sent successfully. Please check your email.',
+    _id: user._id
+  };
+};
 
 //---------------Login------------------------
 exports.Login = async (identifier, password) => {

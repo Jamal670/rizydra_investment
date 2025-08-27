@@ -238,29 +238,54 @@ exports.showDeposit = async (userId) => {
 };
 
 
-// referal user function
+// referral user function
 exports.referralUser = async function (userId) {
   try {
     const objectId = new mongoose.Types.ObjectId(userId);
 
     const result = await UserModel.aggregate([
       {
-        $match: { _id: objectId } // 👉 Start from users
+        $match: { _id: objectId } // 👉 Base user
       },
       {
         $lookup: {
-          from: "reduserearnings",   // 👈 referral earnings
-          localField: "_id",
-          foreignField: "userId",
+          from: "refuserearnings",
+          let: { userId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ["$userId", "$$userId"] } // 👈 Match userId with User._id
+              }
+            },
+            {
+              $lookup: {
+                from: "users", // 👈 join with User collection
+                localField: "userId",
+                foreignField: "_id",
+                as: "userInfo"
+              }
+            },
+            { $unwind: { path: "$userInfo", preserveNullAndEmptyArrays: true } },
+            {
+              $project: {
+                _id: 1,
+                amount: 1,
+                refLevel: 1,
+                earningRef: 1,
+                refName: "$name",
+                userId: 1,
+                image: { $ifNull: ["$userInfo.image", ""] }, // 👈 User image
+                date: {
+                  $dateToString: {
+                    format: "%d%b, %Y", // 👈 25Oct, 2025
+                    date: "$createdAt",
+                    timezone: "UTC"
+                  }
+                }
+              }
+            }
+          ],
           as: "refEarnings"
-        }
-      },
-      {
-        $lookup: {
-          from: "dailyearns",   // 👈 daily earns
-          localField: "_id",
-          foreignField: "userId",
-          as: "dailyEarnings"
         }
       },
       {
@@ -298,48 +323,14 @@ exports.referralUser = async function (userId) {
       },
       {
         $project: {
-          _id: 0,
+          _id: 1,
           name: 1,
           email: 1,
-          image: { $ifNull: ["$image", ""] },
+          image: { $ifNull: ["$image", ""] }, // Base user image
           referralCode: 1,
           investedAmount: 1,
           referralSummary: 1,
-          refEarnings: {
-            $map: {
-              input: "$refEarnings",
-              as: "e",
-              in: {
-                amount: "$$e.amount",
-                earningRef: "$$e.earningRef",
-                refName: "$$e.name",
-                date: {
-                  $dateToString: {
-                    format: "%d %b %Y",
-                    date: "$$e.createdAt",
-                    timezone: "UTC"
-                  }
-                }
-              }
-            }
-          },
-          dailyEarnings: {
-            $map: {
-              input: "$dailyEarnings",
-              as: "d",
-              in: {
-                baseAmount: { $ifNull: ["$$d.baseAmount", 0] },
-                dailyProfit: { $ifNull: ["$$d.dailyProfit", 0] },
-                date: {
-                  $dateToString: {
-                    format: "%d %b %Y",
-                    date: "$$d.createdAt",
-                    timezone: "UTC"
-                  }
-                }
-              }
-            }
-          }
+          refEarnings: 1
         }
       }
     ]);
@@ -349,6 +340,7 @@ exports.referralUser = async function (userId) {
     throw new Error(error.message || "Error fetching referral user data");
   }
 };
+
 
 
 

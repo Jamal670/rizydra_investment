@@ -26,11 +26,15 @@ cron.schedule('5 0 * * *', async () => {
   console.log('⏳ Running Daily Earnings Calculation...');
   try {
     await dailyEarningService.calculateDailyEarnings();
-    console.log('✅ Daily earnings calculated successfully');
+    console.log('✅ Daily earnings calculated successfully (UTC)');
   } catch (err) {
     console.error('❌ Error in daily earnings calculation:', err);
   }
+}, {
+  scheduled: true,
+  timezone: "UTC"   // ✅ Force UTC timezone
 });
+
 
 
 

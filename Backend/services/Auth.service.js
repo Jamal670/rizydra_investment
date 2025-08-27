@@ -8,10 +8,6 @@ function generateReferralCode() {
 }
 
 // -----------------Register a new user---------------------  
-import UserModel from "../models/UserModel.js";
-import bcrypt from "bcrypt";
-import { generateOTP, sendEmail, generateReferralCode } from "../utils/helpers.js";
-
 export const RegUserService = async (name, email, password, referralCode) => {
 
   // Check if user already exists (verified or pending)

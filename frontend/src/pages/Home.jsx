@@ -5,15 +5,14 @@ import Cookies from "js-cookie";
 
 function Home() {
   const [isLoading, setIsLoading] = useState(true);
-  const [token, setToken] = useState(Cookies.get("token"));
+  const [isAuthenticated, setIsAuthenticated] = useState(localStorage.getItem("authenticated") === "true");
 
   useEffect(() => {
-    // Check token on mount and whenever cookies change
-    const checkToken = () => setToken(Cookies.get("token"));
-    checkToken();
-
-    // Optionally, set up an interval to check for cookie changes
-    const interval = setInterval(checkToken, 1000);
+    // Listen for changes to localStorage (e.g., login from another tab)
+    const handleStorage = () => {
+      setIsAuthenticated(localStorage.getItem("authenticated") === "true");
+    };
+    window.addEventListener("storage", handleStorage);
 
     // Hide loader after 1 second
     const timer = setTimeout(() => {
@@ -21,8 +20,8 @@ function Home() {
     }, 1000);
 
     return () => {
+      window.removeEventListener("storage", handleStorage);
       clearTimeout(timer);
-      clearInterval(interval);
     };
   }, []);
 
@@ -137,12 +136,12 @@ function Home() {
                 <span className="subtitle">Your Journey to Financial Freedom Begins Here - Unlock Consistent, Automated Returns Through a Platform Designed for Simplicity & Security
                 </span>
                 <div className="button-group d-flex flex-wrap align-items-center">
-                  {token ? (
+                  {isAuthenticated ? (
                     <a href="/user-dashboard" className="cmn--btn btn--secondary">
                       Dashboard
                     </a>
                   ) : (
-                    <a href="/sign-up" className="cmn--btn btn--secondary">
+                    <a href="/login" className="cmn--btn btn--secondary">
                       Get Started
                     </a>
                   )}

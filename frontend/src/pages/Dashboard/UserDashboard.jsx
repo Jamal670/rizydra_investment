@@ -226,43 +226,43 @@ function UserDashboard() {
     return (
         <>
             {isLoading && (
-        <>
-          <div
-            className="loader-bg"
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              width: '100vw',
-              height: '100vh',
-              background: '#fff',
-              zIndex: 9999,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-          >
-            <img
-              src="/loader.jpeg"
-              alt="Loading..."
-              style={{
-                width: 260,
-                height: 260,
-                animation: 'blink 1s infinite',
-              }}
-            />
-          </div>
-          <style>
-            {`
+                <>
+                    <div
+                        className="loader-bg"
+                        style={{
+                            position: 'fixed',
+                            top: 0,
+                            left: 0,
+                            width: '100vw',
+                            height: '100vh',
+                            background: '#fff',
+                            zIndex: 9999,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}
+                    >
+                        <img
+                            src="/loader.jpeg"
+                            alt="Loading..."
+                            style={{
+                                width: 260,
+                                height: 260,
+                                animation: 'blink 1s infinite',
+                            }}
+                        />
+                    </div>
+                    <style>
+                        {`
         @keyframes blink {
           0% { opacity: 1; }
           50% { opacity: 0.3; }
           100% { opacity: 1; }
         }
       `}
-          </style>
-        </>
-      )}
+                    </style>
+                </>
+            )}
 
 
 
@@ -299,9 +299,9 @@ function UserDashboard() {
                                 <div className="dashboard-user">
                                     <div className="user-thumb">
                                         <img
-                                            src={userData.image ? (userData.image.startsWith('data:image') ? userData.image : `data:image/png;base64,${userData.image}`) : "/assets/images/dashboard/userIconss.png"}
+                                            src={userData.image ? (userData.image.startsWith('data:image') ? userData.image : `data:image/png;base64,${userData.image}`) : "/assets/images/testimonial/aa.png"}
                                             alt="dashboard"
-                                            style={{ width: "100px", height: "100px", borderRadius: "50%", objectFit: "cover" }}
+                                            style={{ width: "100px", height: "100px", borderRadius: "50%", objectFit: "cover", padding: "1px" }}
                                         />
                                     </div>
                                     <div className="user-content">
@@ -330,16 +330,24 @@ function UserDashboard() {
                                             onClick={async (e) => {
                                                 e.preventDefault();
                                                 try {
+                                                    // Call logout API
                                                     await api.get('/logout', { withCredentials: true });
+
+                                                    // Remove localStorage flag
+                                                    localStorage.removeItem("authenticated");
+
+                                                    // Redirect to homepage
                                                     window.location.href = '/';
                                                 } catch (err) {
-                                                    // Optionally handle error
+                                                    console.error("Logout failed:", err);
+                                                    // Optionally show an error message
                                                 }
                                             }}
                                         >
                                             Sign Out
                                         </a>
                                     </li>
+
                                 </ul>
                             </div>
                         </div>

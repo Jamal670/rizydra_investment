@@ -85,7 +85,7 @@ function ReferalUsers() {
     }, []);
 
     const handleAddReferralUser = async () => {
-        const frontendUrl = process.env.REACT_APP_API_URL_FRONTEND;
+        // const frontendUrl = process.env.REACT_APP_API_URL_FRONTEND;
         const referralLink = `www.rizydra.com/sign-up?ref=${referralData.referralCode}`;
         await navigator.clipboard.writeText(referralLink);
         alert("Referral link copied to clipboard!");
@@ -95,43 +95,43 @@ function ReferalUsers() {
         <>
             {/* Preloader */}
             {isLoading && (
-        <>
-          <div
-            className="loader-bg"
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              width: '100vw',
-              height: '100vh',
-              background: '#fff',
-              zIndex: 9999,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-          >
-            <img
-              src="/loader.jpeg"
-              alt="Loading..."
-              style={{
-                width: 260,
-                height: 260,
-                animation: 'blink 1s infinite',
-              }}
-            />
-          </div>
-          <style>
-            {`
+                <>
+                    <div
+                        className="loader-bg"
+                        style={{
+                            position: 'fixed',
+                            top: 0,
+                            left: 0,
+                            width: '100vw',
+                            height: '100vh',
+                            background: '#fff',
+                            zIndex: 9999,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}
+                    >
+                        <img
+                            src="/loader.jpeg"
+                            alt="Loading..."
+                            style={{
+                                width: 260,
+                                height: 260,
+                                animation: 'blink 1s infinite',
+                            }}
+                        />
+                    </div>
+                    <style>
+                        {`
         @keyframes blink {
           0% { opacity: 1; }
           50% { opacity: 0.3; }
           100% { opacity: 1; }
         }
       `}
-          </style>
-        </>
-      )}
+                    </style>
+                </>
+            )}
 
 
 
@@ -169,7 +169,7 @@ function ReferalUsers() {
                                 <div className="dashboard-user">
                                     <div className="user-thumb">
                                         <img
-                                            src={referralData.image ? (referralData.image.startsWith('data:image') ? referralData.image : `data:image/png;base64,${referralData.image}`) : "/assets/images/dashboard/userIconss.png"}
+                                            src={referralData.image ? (referralData.image.startsWith('data:image') ? referralData.image : `data:image/png;base64,${referralData.image}`) : "/assets/images/testimonial/aa.png"}
                                             alt="dashboard"
                                             style={{ width: "100px", height: "100px", borderRadius: "50%", objectFit: "cover" }}
                                         />
@@ -200,10 +200,17 @@ function ReferalUsers() {
                                             onClick={async (e) => {
                                                 e.preventDefault();
                                                 try {
+                                                    // Call logout API
                                                     await api.get('/logout', { withCredentials: true });
+
+                                                    // Remove localStorage flag
+                                                    localStorage.removeItem("authenticated");
+
+                                                    // Redirect to homepage
                                                     window.location.href = '/';
                                                 } catch (err) {
-                                                    // Optionally handle error
+                                                    console.error("Logout failed:", err);
+                                                    // Optionally show an error message
                                                 }
                                             }}
                                         >
@@ -224,120 +231,74 @@ function ReferalUsers() {
 
                             {/* Dashboard Boxes Section */}
                             <div className="dashboard-boxes">
-                                <div className="row justify-content-center g-4 mb-3">
-                                    {/* Total Users */}
-                                    <div className="col-12 col-sm-6 col-md-3">
-                                        <div className="dashboard-item">
-                                            <div className="row align-items-center">
-                                                <div className="col-4 text-center">
-                                                    <img src="/assets/images/dashboard/icon6.png" alt="dashboard" style={{ width: 48, height: 48 }} />
-                                                </div>
-                                                <div className="col-8">
-                                                    <h6 className="title mb-0" style={{ fontWeight: 600 }}>Total Users</h6>
-                                                </div>
-                                            </div>
-                                            <div className="row mt-2">
-                                                <div className="col-12 text-center">
-                                                    <h3 className="ammount theme-one" style={{ fontWeight: 700, fontSize: 22 }}>
-                                                        {(referralData.referralSummary.level1 || 0) + (referralData.referralSummary.level2 || 0) + (referralData.referralSummary.level3 || 0)}
-                                                    </h3>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {/* Level 1 Users */}
-                                    <div className="col-12 col-sm-6 col-md-3">
-                                        <div className="dashboard-item">
-                                            <div className="row align-items-center">
-                                                <div className="col-4 text-center">
-                                                    <img src="/assets/images/dashboard/icon6.png" alt="dashboard" style={{ width: 48, height: 48 }} />
-                                                </div>
-                                                <div className="col-8">
-                                                    <h6 className="title mb-0" style={{ fontWeight: 600 }}>Level 1 Users</h6>
-                                                </div>
-                                            </div>
-                                            <div className="row mt-2">
-                                                <div className="col-12 text-center">
-                                                    <h3 className="ammount theme-two" style={{ fontWeight: 700, fontSize: 22 }}>
-                                                        {referralData.referralSummary.level1 || 0}
-                                                    </h3>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {/* Level 2 Users */}
-                                    <div className="col-12 col-sm-6 col-md-3">
-                                        <div className="dashboard-item">
-                                            <div className="row align-items-center">
-                                                <div className="col-4 text-center">
-                                                    <img src="/assets/images/dashboard/icon6.png" alt="dashboard" style={{ width: 48, height: 48 }} />
-                                                </div>
-                                                <div className="col-8">
-                                                    <h6 className="title mb-0" style={{ fontWeight: 600 }}>Level 2 Users</h6>
-                                                </div>
-                                            </div>
-                                            <div className="row mt-2">
-                                                <div className="col-12 text-center">
-                                                    <h3 className="ammount theme-three" style={{ fontWeight: 700, fontSize: 22 }}>
-                                                        {referralData.referralSummary.level2 || 0}
-                                                    </h3>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {/* Level 3 Users */}
-                                    <div className="col-12 col-sm-6 col-md-3">
-                                        <div className="dashboard-item">
-                                            <div className="row align-items-center">
-                                                <div className="col-4 text-center">
-                                                    <img src="/assets/images/dashboard/icon6.png" alt="dashboard" style={{ width: 48, height: 48 }} />
-                                                </div>
-                                                <div className="col-8">
-                                                    <h6 className="title mb-0" style={{ fontWeight: 600 }}>Level 3 Users</h6>
-                                                </div>
-                                            </div>
-                                            <div className="row mt-2">
-                                                <div className="col-12 text-center">
-                                                    <h3 className="ammount theme-three" style={{ fontWeight: 700, fontSize: 22 }}>
-                                                        {referralData.referralSummary.level3 || 0}
-                                                    </h3>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+  <div className="row justify-content-center g-4 mb-3">
+    {/* Total Users */}
+    <div className="col-12 col-sm-6 col-md-6 col-lg-3">
+      <DashboardItem 
+        icon="/assets/images/dashboard/icon6.png" 
+        title="Total Users" 
+        value={(referralData.referralSummary.level1 || 0) + (referralData.referralSummary.level2 || 0) + (referralData.referralSummary.level3 || 0)}
+        theme="theme-one"
+      />
+    </div>
+    {/* Level 1 Users */}
+    <div className="col-12 col-sm-6 col-md-6 col-lg-3">
+      <DashboardItem 
+        icon="/assets/images/dashboard/icon6.png" 
+        title="Level 1 Users" 
+        value={referralData.referralSummary.level1 || 0} 
+        theme="theme-two"
+      />
+    </div>
+    {/* Level 2 Users */}
+    <div className="col-12 col-sm-6 col-md-6 col-lg-3">
+      <DashboardItem 
+        icon="/assets/images/dashboard/icon6.png" 
+        title="Level 2 Users" 
+        value={referralData.referralSummary.level2 || 0} 
+        theme="theme-three"
+      />
+    </div>
+    {/* Level 3 Users */}
+    <div className="col-12 col-sm-6 col-md-6 col-lg-3">
+      <DashboardItem 
+        icon="/assets/images/dashboard/icon6.png" 
+        title="Level 3 Users" 
+        value={referralData.referralSummary.level3 || 0} 
+        theme="theme-three"
+      />
+    </div>
+  </div>
+</div>
+
 
                             <div className="col-lg-11">
                                 <div
-                                    className="d-flex"
+                                    className="d-flex flex-wrap align-items-center mb-3"
                                     style={{
                                         justifyContent: "space-between",
-                                        alignItems: "center",
-                                        marginBottom: "20px"
+                                        gap: "10px", // space between elements on smaller screens
                                     }}
                                 >
                                     <div>
-                                        <h4 className="title mb-0">Referal Users</h4>
+                                        <h4 className="title mb-0">Referral Users</h4>
                                     </div>
                                     <div>
                                         <button
-                                            className=""
+                                            className="btn btn-primary"
                                             style={{
-                                                padding: "6px 46px",
+                                                padding: "6px 20px",
                                                 cursor: "pointer",
-                                                marginLeft: "80px",
-                                                backgroundColor: "#007bff",
-                                                color: "#fff",
-                                                border: "none"
+                                                minWidth: "150px"
                                             }}
                                             onClick={handleAddReferralUser}
                                         >
-                                            Add Referal User
+                                            Add Referral User
                                         </button>
                                     </div>
                                 </div>
                             </div>
+
 
 
 
@@ -444,7 +405,7 @@ function ReferalUsers() {
                 </div>
             </section>
 
-            
+
 
 
 
@@ -454,3 +415,25 @@ function ReferalUsers() {
 }
 
 export default ReferalUsers;
+
+function DashboardItem({ icon, title, value, theme }) {
+  return (
+    <div className="dashboard-item">
+      <div className="row align-items-center">
+        <div className="col-4 text-center">
+          <img src={icon} alt="dashboard" style={{ width: 48, height: 48 }} />
+        </div>
+        <div className="col-8">
+          <h6 className="title mb-0" style={{ fontWeight: 600 }}>{title}</h6>
+        </div>
+      </div>
+      <div className="row mt-2">
+        <div className="col-12 text-center">
+          <h3 className={`ammount ${theme}`} style={{ fontWeight: 700, fontSize: 22 }}>
+            {value}
+          </h3>
+        </div>
+      </div>
+    </div>
+  );
+}

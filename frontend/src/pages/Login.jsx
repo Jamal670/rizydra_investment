@@ -64,20 +64,26 @@ function Login() {
     };
 
     const handleSubmit = async e => {
-        e.preventDefault();
-        setLoginLoading(true);
-        try {
-            const res = await api.post('/Login', {
-                email: form.email,
-                password: form.password
-            });
-            setLoginLoading(false);
-            navigate('/user-dashboard');
-        } catch (err) {
-            alert(err.response?.data?.error || 'Invalid credentials');
-            setLoginLoading(false);
-        }
-    };
+    e.preventDefault();
+    setLoginLoading(true);
+    try {
+        const res = await api.post('/Login', {
+            email: form.email,
+            password: form.password
+        });
+
+        // Store authenticated flag in localStorage
+        localStorage.setItem("authenticated", "true");
+
+        setLoginLoading(false);
+        // navigate('/user-dashboard');
+        window.location.href = '/user-dashboard';
+    } catch (err) {
+        alert(err.response?.data?.error || 'Invalid credentials');
+        setLoginLoading(false);
+    }
+};
+
 
     return (
         <>

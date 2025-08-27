@@ -349,9 +349,9 @@ function Deposit() {
                             position: 'relative'
                         }}
                     >
-                        <img src="/assets/images/account/binanceLogo.png" alt="Binance" style={{ width: 36, height: 36, marginRight: 12 }} />
+                        <img src="/loader.jpeg" alt="Binance" style={{ width: 50, height: 50, marginRight: 12 }} />
                         <h5 className="modal-title" style={{ fontWeight: 600, fontSize: 20, margin: 0, lineHeight: '36px' }}>
-                            Deposit through Binance
+                            Deposit
                         </h5>
                         <button
                             type="button"
@@ -623,9 +623,9 @@ function Deposit() {
                             position: 'relative'
                         }}
                     >
-                        <img src="/assets/images/account/binanceLogo.png" alt="Binance" style={{ width: 36, height: 36, marginRight: 12 }} />
+                        <img src="/loader.jpeg" alt="Binance" style={{ width: 50, height: 50, marginRight: 12 }} />
                         <h5 className="modal-title" style={{ fontWeight: 600, fontSize: 20, margin: 0, lineHeight: '36px' }}>
-                            Withdraw through Binance
+                            Withdraw
                         </h5>
                         <button
                             type="button"
@@ -825,9 +825,9 @@ function Deposit() {
                             position: 'relative'
                         }}
                     >
-                        <img src="/assets/images/account/binanceLogo.png" alt="Binance" style={{ width: 36, height: 36, marginRight: 12 }} />
+                        <img src="/loader.jpeg" alt="Binance" style={{ width: 50, height: 50, marginRight: 12 }} />
                         <h5 className="modal-title" style={{ fontWeight: 600, fontSize: 20, margin: 0, lineHeight: '36px' }}>
-                            Invest Your Balance
+                            Invest
                         </h5>
                         <button
                             type="button"
@@ -1018,7 +1018,7 @@ function Deposit() {
                                 <div className="dashboard-user">
                                     <div className="user-thumb">
                                         <img
-                                            src={userData?.image ? (userData?.image.startsWith('data:image') ? userData?.image : `data:image/png;base64,${userData?.image}`) : "/assets/images/dashboard/userIconss.png"}
+                                            src={userData?.image ? (userData?.image.startsWith('data:image') ? userData?.image : `data:image/png;base64,${userData?.image}`) : "/assets/images/testimonial/aa.png"}
                                             alt="dashboard"
                                             style={{ width: "100px", height: "100px", borderRadius: "50%", objectFit: "cover" }}
                                         />
@@ -1049,10 +1049,17 @@ function Deposit() {
                                             onClick={async (e) => {
                                                 e.preventDefault();
                                                 try {
+                                                    // Call logout API
                                                     await api.get('/logout', { withCredentials: true });
+
+                                                    // Remove localStorage flag
+                                                    localStorage.removeItem("authenticated");
+
+                                                    // Redirect to homepage
                                                     window.location.href = '/';
                                                 } catch (err) {
-                                                    // Optionally handle error
+                                                    console.error("Logout failed:", err);
+                                                    // Optionally show an error message
                                                 }
                                             }}
                                         >

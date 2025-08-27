@@ -183,7 +183,7 @@ function EarningHistory() {
                                 <div className="dashboard-user">
                                     <div className="user-thumb">
                                         <img
-                                            src={userData.image ? (userData.image.startsWith('data:image') ? userData.image : `data:image/png;base64,${userData.image}`) : "/assets/images/dashboard/userIconss.png"}
+                                            src={userData.image ? (userData.image.startsWith('data:image') ? userData.image : `data:image/png;base64,${userData.image}`) : "/assets/images/testimonial/aa.png"}
                                             alt="dashboard"
                                             style={{ width: "100px", height: "100px", borderRadius: "50%", objectFit: "cover" }}
                                         />
@@ -214,10 +214,17 @@ function EarningHistory() {
                                             onClick={async (e) => {
                                                 e.preventDefault();
                                                 try {
+                                                    // Call logout API
                                                     await api.get('/logout', { withCredentials: true });
+
+                                                    // Remove localStorage flag
+                                                    localStorage.removeItem("authenticated");
+
+                                                    // Redirect to homepage
                                                     window.location.href = '/';
                                                 } catch (err) {
-                                                    // Optionally handle error
+                                                    console.error("Logout failed:", err);
+                                                    // Optionally show an error message
                                                 }
                                             }}
                                         >

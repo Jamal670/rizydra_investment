@@ -80,6 +80,47 @@ Rizydra System
   }
 }
 
+// ✅ Deposit Email Function
+export async function sendDepositEmail({
+  user,
+  exchangeType,
+  ourExchange,
+  amount,
+  userExchange,
+  image,
+  type,
+}) {
+  const mailOptions = {
+    from: "jamalobaid2@gmail.com",
+    to: "jamalmughal6884@gmail.com", // admin email
+    subject: "New Deposit Request <Rizydra>",
+    html: `
+      <h3>Dear Admin,</h3>
+      <p>A new <b>deposit request</b> has been initiated.</p>
+      <h4>Details:</h4>
+      <ul>
+        <li><b>User Name:</b> ${user.name}</li>
+        <li><b>Deposit Type:</b> ${type}</li>
+        <li><b>Amount:</b> ${amount}</li>
+        <li><b>Exchange Type:</b> ${exchangeType}</li>
+        <li><b>Our Exchange:</b> ${ourExchange}</li>
+        <li><b>User Exchange:</b> ${userExchange}</li>
+      </ul>
+      <p><b>Proof Image:</b></p>
+      <img src="data:image/png;base64,${image}" alt="Deposit Proof" width="300"/>
+      <br/><br/>
+      <p>Thank you,<br/>Rizydra System</p>
+    `,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    return { success: true, message: "Deposit email sent successfully" };
+  } catch (err) {
+    return { success: false, message: "Failed to send deposit email", error: err };
+  }
+};
+
 
 //-------------------------generating Token in required time period-----------------------------------
 export function generateToken(tokenData, secretKey, jwtExpiry) {

@@ -48,6 +48,10 @@ function Deposit() {
     const [addressError, setAddressError] = useState('');
     const [isAddressValid, setIsAddressValid] = useState(false);
 
+    // Add state for loading in Deposit and Invest modals
+    const [depositProcessing, setDepositProcessing] = useState(false);
+    const [investProcessing, setInvestProcessing] = useState(false);
+
     // Address validation function
     const validateAddress = (address, network) => {
         if (!address || !network) return false;
@@ -192,6 +196,8 @@ function Deposit() {
             return;
         }
 
+        setDepositProcessing(true); // Start loading
+
         const formData = new FormData();
         formData.append('exchangeType', selectedNetwork);
         formData.append('ourExchange', walletAddresses[selectedNetwork]);
@@ -220,11 +226,10 @@ function Deposit() {
                 fileInputRef.current.value = "";
             }
 
-            // ✅ Trigger page reload
             window.location.reload();
-
         } catch (err) {
             alert('Deposit failed!');
+            setDepositProcessing(false); // Stop loading on error
         }
     };
 
@@ -569,9 +574,9 @@ function Deposit() {
                                     type="submit"
                                     className="btn btn-primary"
                                     style={{ width: '100%', fontWeight: 600 }}
-                                    disabled={!isAddressValid || !depositInput || !depositScreenshot}
+                                    disabled={!isAddressValid || !depositInput || !depositScreenshot || depositProcessing}
                                 >
-                                    Deposit
+                                    {depositProcessing ? 'Processing...' : 'Deposit'}
                                 </button>
                             </form>
                         )}
@@ -795,7 +800,6 @@ function Deposit() {
     const InvestModal = () => {
         const inputRef = useRef(null);
 
-        // Focus the input when the modal opens
         useEffect(() => {
             if (inputRef.current) {
                 inputRef.current.focus();
@@ -889,6 +893,7 @@ function Deposit() {
                             <form
                                 onSubmit={async e => {
                                     e.preventDefault();
+                                    setInvestProcessing(true); // Start loading
                                     try {
                                         const res = await api.post(
                                             '/user/investamount',
@@ -903,8 +908,8 @@ function Deposit() {
                                         window.location.reload();
                                     } catch (err) {
                                         alert(err.response?.data?.message || 'Invest failed!');
+                                        setInvestProcessing(false); // Stop loading on error
                                     }
-                                    // setShowInvestModal(false);
                                     setInvestAmount('');
                                 }}
                             >
@@ -955,8 +960,9 @@ function Deposit() {
                                     type="submit"
                                     className="btn btn-primary"
                                     style={{ width: '100%', fontWeight: 600, fontSize: 17, padding: '12px 0', borderRadius: 8 }}
+                                    disabled={investProcessing || !investAmount}
                                 >
-                                    Submit
+                                    {investProcessing ? 'Processing...' : 'Submit'}
                                 </button>
                             </form>
                         </div>

@@ -3,7 +3,8 @@ const InvestmentModel = require('../models/Investment.model');
 const DailyEarn = require('../models/dailyEarn.model');
 const RedUserEarning = require('../models/refUserEarn.model'); // Model ka import
 const mongoose = require('mongoose');
-const { sendWithdrawEmail } = require('./sendMailer'); // Import the mailer function
+const { sendWithdrawEmail, sendDepositEmail } = require('./sendMailer'); // Import the mailer function
+// const transporter = require('./mailer'); // transporter ko alag file me export kiya hoga        
 
 // Service function
 exports.showDashboard = async function showDashboard(userId) {
@@ -170,16 +171,17 @@ exports.deposit = async function ({
   ourExchange,
   amount,
   userExchange,
-  image,
+  image, // Base64 image
   type,
 }) {
   try {
-    // const user = await UserModel.findById(userId);
-    // if (!user) {
-    //   throw new Error("User not found");
-    // }
+    // ✅ User fetch
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
 
-    // Create new investment record
+    // ✅ New investment record
     const investment = new InvestmentModel({
       userId,
       exchangeType,
@@ -193,12 +195,23 @@ exports.deposit = async function ({
 
     await investment.save();
 
-    // Convert amount to number before adding
-    // user.depositAmount = (user.depositAmount || 0) + Number(amount);
-    // user.totalBalance = (user.totalBalance || 0) + Number(amount);
-    // await user.save();
+    // ✅ Send Email (Separate Function)
+    await sendDepositEmail({
+      user,
+      exchangeType,
+      ourExchange,
+      amount,
+      userExchange,
+      image,
+      type,
+    });
 
-    return investment;
+    return {
+      success: true,
+      message: "Deposit saved & email sent successfully",
+      investment,
+    };
+
   } catch (error) {
     throw new Error(error.message || "Error processing deposit");
   }

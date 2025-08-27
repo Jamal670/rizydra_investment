@@ -42,17 +42,17 @@ function Footer() {
                 <h4 className="widget-title">Company</h4>
                 <ul className="footer-links">
                   <li>
-                    <a href="contact.html">
+                    <a href="/contact">
                       <i className="las la-angle-double-right"></i>Support
                     </a>
                   </li>
                   <li>
-                    <a href="terms-fo-service.html">
+                    <a href="#">
                       <i className="las la-angle-double-right"></i>Terms & Conditions
                     </a>
                   </li>
                   <li>
-                    <a href="privacy-policy.html">
+                    <a href="#">
                       <i className="las la-angle-double-right"></i>Privacy
                     </a>
                   </li>
@@ -64,17 +64,17 @@ function Footer() {
                 <h4 className="widget-title">Useful Link</h4>
                 <ul className="footer-links">
                   <li>
-                    <a href="investment-plan-01.html">
+                    <a href="/earning-plan">
                       <i className="las la-angle-double-right"></i>Earning Plan
                     </a>
                   </li>
                   <li>
-                    <a href="affiliate.html">
+                    <a href="/affiliate">
                       <i className="las la-angle-double-right"></i>Affiliate Program
                     </a>
                   </li>
                   <li>
-                    <a href="investment-plan-01.html">
+                    <a href="/affiliate">
                       <i className="las la-angle-double-right"></i>Investment
                     </a>
                   </li>
@@ -93,7 +93,7 @@ Springfield, IL 62704, USA
                     <a href="/contact">Contact Us</a>
                   </li>
                   <li>
-                    <a href="mailto:demosupport@.com">info@rizydra.com</a>
+                    info@rizydra.com
                   </li>
                 </ul>
               </div>

@@ -219,10 +219,15 @@ function Deposit() {
             if (fileInputRef.current) {
                 fileInputRef.current.value = "";
             }
+
+            // ✅ Trigger page reload
+            window.location.reload();
+
         } catch (err) {
             alert('Deposit failed!');
         }
     };
+
 
     const handleScreenshotChange = (e) => {
         if (e.target.files && e.target.files[0]) {
@@ -670,6 +675,7 @@ function Deposit() {
                                     !withdrawAmount ||
                                     !withdrawUserExchange
                                 ) return;
+
                                 setWithdrawLoading(true);
                                 try {
                                     const payload = {
@@ -679,17 +685,23 @@ function Deposit() {
                                         userExchange: withdrawUserExchange,
                                         type: "Withdraw"
                                     };
+
                                     const res = await api.post('/user/withdraw', payload, { withCredentials: true });
+
                                     alert(res.data.message || 'Withdraw request submitted!');
                                     setShowWithdrawModal(false);
                                     setWithdrawExchange('Select');
                                     setWithdrawAmount('');
                                     setWithdrawUserExchange('');
+                                    window.location.reload();
                                 } catch (err) {
-                                    alert('Withdraw failed!');
+                                    // ✅ Show backend message if available
+                                    const errorMessage = err.response?.data?.message || 'Withdraw failed!';
+                                    alert(errorMessage);
                                 }
                                 setWithdrawLoading(false);
                             }}
+
                             style={{ marginTop: 10 }}
                         >
                             <div className="mb-3">
@@ -780,209 +792,222 @@ function Deposit() {
     );
 
     // Invest Modal Component
-    const InvestModal = () => (
-        <div
-            className="modal"
-            style={{
-                display: 'block',
-                background: 'rgba(0,0,0,0.5)',
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                width: '100vw',
-                height: '100vh',
-                zIndex: 1050
-            }}
-            tabIndex="-1"
-            role="dialog"
-        >
+    const InvestModal = () => {
+        const inputRef = useRef(null);
+
+        // Focus the input when the modal opens
+        useEffect(() => {
+            if (inputRef.current) {
+                inputRef.current.focus();
+            }
+        }, []);
+
+        return (
             <div
-                className="modal-dialog modal-dialog-centered"
+                className="modal"
                 style={{
-                    width: '40vw',
-                    minWidth: 320,
-                    maxWidth: 600,
-                    margin: 'auto'
+                    display: 'block',
+                    background: 'rgba(0,0,0,0.5)',
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    width: '100vw',
+                    height: '100vh',
+                    zIndex: 1050
                 }}
-                role="document"
+                tabIndex="-1"
+                role="dialog"
             >
                 <div
-                    className="modal-content"
-                    style={{ position: 'relative', borderRadius: 12, padding: 0 }}
+                    className="modal-dialog modal-dialog-centered"
+                    style={{
+                        width: '40vw',
+                        minWidth: 320,
+                        maxWidth: 600,
+                        margin: 'auto'
+                    }}
+                    role="document"
                 >
                     <div
-                        className="modal-header"
-                        style={{
-                            borderBottom: 'none',
-                            alignItems: 'center',
-                            padding: '1.2rem 1.5rem 0.5rem 1.5rem',
-                            background: '#fff',
-                            borderTopLeftRadius: 12,
-                            borderTopRightRadius: 12,
-                            display: 'flex',
-                            flexDirection: 'row',
-                            justifyContent: 'flex-start',
-                            position: 'relative'
-                        }}
+                        className="modal-content"
+                        style={{ position: 'relative', borderRadius: 12, padding: 0 }}
                     >
-                        <img src="/loader.jpeg" alt="Binance" style={{ width: 50, height: 50, marginRight: 12 }} />
-                        <h5 className="modal-title" style={{ fontWeight: 600, fontSize: 20, margin: 0, lineHeight: '36px' }}>
-                            Invest
-                        </h5>
-                        <button
-                            type="button"
-                            onClick={() => setShowInvestModal(false)}
+                        <div
+                            className="modal-header"
                             style={{
-                                position: 'absolute',
-                                top: 12,
-                                right: 18,
-                                width: 28,
-                                height: 28,
-                                background: 'transparent',
-                                border: 'none',
-                                fontSize: '1.5rem',
-                                lineHeight: '1rem',
-                                cursor: 'pointer',
-                                color: '#222',
-                                zIndex: 2
-                            }}
-                            aria-label="Close"
-                        >
-                            &times;
-                        </button>
-                    </div>
-                    <div className="modal-body" style={{ padding: '2rem 1.5rem', background: '#fff' }}>
-                        <div className="d-flex flex-column flex-md-row justify-content-evenly mb-4" style={{ gap: 24 }}>
-                            <div>
-                                <div style={{ fontWeight: 500, fontSize: 15, color: '#888' }}>Total Balance:</div>
-                                <div style={{ fontWeight: 700, fontSize: 18, color: '#222' }}>
-                                    ${(userData?.totalBalance || 0).toLocaleString()}
-                                </div>
-                            </div>
-                            <div>
-                                <div style={{ fontWeight: 500, fontSize: 15, color: '#888' }}>Invest Balance:</div>
-                                <div style={{ fontWeight: 700, fontSize: 18, color: '#222' }}>${(userData?.investedAmount || 0).toLocaleString()}</div>
-                            </div>
-                        </div>
-                        <form
-                            onSubmit={async e => {
-                                e.preventDefault();
-                                try {
-                                    const res = await api.post(
-                                        '/user/investamount',
-                                        {
-                                            from: investFrom,
-                                            to: investTo,
-                                            amount: investAmount
-                                        },
-                                        { withCredentials: true }
-                                    );
-                                    alert(res.data.message || 'Invest submitted!');
-                                } catch (err) {
-                                    alert(err.response?.data?.message || 'Invest failed!');
-                                }
-                                setShowInvestModal(false);
-                                setInvestAmount('');
+                                borderBottom: 'none',
+                                alignItems: 'center',
+                                padding: '1.2rem 1.5rem 0.5rem 1.5rem',
+                                background: '#fff',
+                                borderTopLeftRadius: 12,
+                                borderTopRightRadius: 12,
+                                display: 'flex',
+                                flexDirection: 'row',
+                                justifyContent: 'flex-start',
+                                position: 'relative'
                             }}
                         >
-
-                            <div className="d-flex flex-column flex-md-row justify-content-between mb-3" style={{ gap: 16 }}>
-                                <div style={{ flex: 1 }}>
-                                    <label className="form-label" style={{ fontWeight: 500 }}>From</label>
-                                    <select
-                                        className="form-select"
-                                        value={investFrom}
-                                        onChange={e => setInvestFrom(e.target.value)}
-                                        style={{ width: '100%' }}
-                                    >
-                                        <option value="Deposit">Balance</option>
-                                        <option value="Invest">Invest</option>
-                                    </select>
-                                </div>
-                                <div style={{ flex: 1 }}>
-                                    <label className="form-label" style={{ fontWeight: 500 }}>To</label>
-                                    <select
-                                        className="form-select"
-                                        value={investTo}
-                                        onChange={e => setInvestTo(e.target.value)}
-                                        style={{ width: '100%' }}
-                                    >
-                                        <option value="Deposit">Balance</option>
-                                        <option value="Invest">Invest</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div className="mb-4">
-                                <label className="form-label" style={{ fontWeight: 500 }}>Enter Your Amount (USDT)</label>
-                                <input
-                                    type="text"
-                                    className="form-control"
-                                    value={investAmount}
-                                    onChange={e => {
-                                        const value = e.target.value;
-                                        if (/^\d*\.?\d*$/.test(value)) setInvestAmount(value);
-                                    }}
-                                    required
-                                    placeholder="Minimum Invest Amount 100"
-                                    style={{ fontSize: 16 }}
-                                />
-                            </div>
+                            <img src="/loader.jpeg" alt="Binance" style={{ width: 50, height: 50, marginRight: 12 }} />
+                            <h5 className="modal-title" style={{ fontWeight: 600, fontSize: 20, margin: 0, lineHeight: '36px' }}>
+                                Invest
+                            </h5>
                             <button
-                                type="submit"
-                                className="btn btn-primary"
-                                style={{ width: '100%', fontWeight: 600, fontSize: 17, padding: '12px 0', borderRadius: 8 }}
+                                type="button"
+                                onClick={() => setShowInvestModal(false)}
+                                style={{
+                                    position: 'absolute',
+                                    top: 12,
+                                    right: 18,
+                                    width: 28,
+                                    height: 28,
+                                    background: 'transparent',
+                                    border: 'none',
+                                    fontSize: '1.5rem',
+                                    lineHeight: '1rem',
+                                    cursor: 'pointer',
+                                    color: '#222',
+                                    zIndex: 2
+                                }}
+                                aria-label="Close"
                             >
-                                Submit
+                                &times;
                             </button>
-                        </form>
+                        </div>
+                        <div className="modal-body" style={{ padding: '2rem 1.5rem', background: '#fff' }}>
+                            <div className="d-flex flex-column flex-md-row justify-content-evenly mb-4" style={{ gap: 24 }}>
+                                <div>
+                                    <div style={{ fontWeight: 500, fontSize: 15, color: '#888' }}>Total Balance:</div>
+                                    <div style={{ fontWeight: 700, fontSize: 18, color: '#222' }}>
+                                        ${(userData?.totalBalance || 0).toLocaleString()}
+                                    </div>
+                                </div>
+                                <div>
+                                    <div style={{ fontWeight: 500, fontSize: 15, color: '#888' }}>Invest Balance:</div>
+                                    <div style={{ fontWeight: 700, fontSize: 18, color: '#222' }}>${(userData?.investedAmount || 0).toLocaleString()}</div>
+                                </div>
+                            </div>
+                            <form
+                                onSubmit={async e => {
+                                    e.preventDefault();
+                                    try {
+                                        const res = await api.post(
+                                            '/user/investamount',
+                                            {
+                                                from: investFrom,
+                                                to: investTo,
+                                                amount: investAmount
+                                            },
+                                            { withCredentials: true }
+                                        );
+                                        alert(res.data.message || 'Invest submitted!');
+                                        window.location.reload();
+                                    } catch (err) {
+                                        alert(err.response?.data?.message || 'Invest failed!');
+                                    }
+                                    // setShowInvestModal(false);
+                                    setInvestAmount('');
+                                }}
+                            >
+
+                                <div className="d-flex flex-column flex-md-row justify-content-between mb-3" style={{ gap: 16 }}>
+                                    <div style={{ flex: 1 }}>
+                                        <label className="form-label" style={{ fontWeight: 500 }}>From</label>
+                                        <select
+                                            className="form-select"
+                                            value={investFrom}
+                                            onChange={e => setInvestFrom(e.target.value)}
+                                            style={{ width: '100%' }}
+                                        >
+                                            <option value="Deposit">Balance</option>
+                                            <option value="Invest">Invest</option>
+                                        </select>
+                                    </div>
+                                    <div style={{ flex: 1 }}>
+                                        <label className="form-label" style={{ fontWeight: 500 }}>To</label>
+                                        <select
+                                            className="form-select"
+                                            value={investTo}
+                                            onChange={e => setInvestTo(e.target.value)}
+                                            style={{ width: '100%' }}
+                                        >
+                                            <option value="Deposit">Balance</option>
+                                            <option value="Invest">Invest</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div className="mb-4">
+                                    <label className="form-label" style={{ fontWeight: 500 }}>Enter Your Amount (USDT)</label>
+                                    <input
+                                        ref={inputRef}
+                                        type="text"
+                                        className="form-control"
+                                        value={investAmount}
+                                        onChange={e => {
+                                            const value = e.target.value;
+                                            if (/^\d*\.?\d*$/.test(value)) setInvestAmount(value);
+                                        }}
+                                        required
+                                        placeholder="Minimum Invest Amount 100"
+                                        style={{ fontSize: 16 }}
+                                    />
+                                </div>
+                                <button
+                                    type="submit"
+                                    className="btn btn-primary"
+                                    style={{ width: '100%', fontWeight: 600, fontSize: 17, padding: '12px 0', borderRadius: 8 }}
+                                >
+                                    Submit
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    );
+        );
+    };
 
     const totalBalance = Number(userData?.totalBalance) || 0;
 
     return (
         <>
             {isLoading && (
-        <>
-          <div
-            className="loader-bg"
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              width: '100vw',
-              height: '100vh',
-              background: '#fff',
-              zIndex: 9999,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-          >
-            <img
-              src="/loader.jpeg"
-              alt="Loading..."
-              style={{
-                width: 260,
-                height: 260,
-                animation: 'blink 1s infinite',
-              }}
-            />
-          </div>
-          <style>
-            {`
+                <>
+                    <div
+                        className="loader-bg"
+                        style={{
+                            position: 'fixed',
+                            top: 0,
+                            left: 0,
+                            width: '100vw',
+                            height: '100vh',
+                            background: '#fff',
+                            zIndex: 9999,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}
+                    >
+                        <img
+                            src="/loader.jpeg"
+                            alt="Loading..."
+                            style={{
+                                width: 260,
+                                height: 260,
+                                animation: 'blink 1s infinite',
+                            }}
+                        />
+                    </div>
+                    <style>
+                        {`
         @keyframes blink {
           0% { opacity: 1; }
           50% { opacity: 0.3; }
           100% { opacity: 1; }
         }
       `}
-          </style>
-        </>
-      )}
+                    </style>
+                </>
+            )}
 
             {/* Banner Section */}
             <section className="inner-banner bg_img padding-bottom" style={{ background: "url(/assets/images/about/bg.png) no-repeat right bottom" }}>
@@ -1219,7 +1244,7 @@ function Deposit() {
                                     marginBottom: '1.5rem',
                                     border: '1px solid #eee'
                                 }}
-                                >
+                            >
                                 <table
                                     style={{
                                         width: '100%',
@@ -1370,7 +1395,7 @@ function Deposit() {
                 </div>
             </section>
 
-            
+
 
             <a href="#0" className="scrollToTop active"><i className="las la-chevron-up"></i></a>
 

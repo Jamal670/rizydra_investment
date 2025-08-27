@@ -170,7 +170,7 @@ function Login() {
                                         <input
                                             type="email"
                                             className="form--control"
-                                            placeholder="Email or User Name"
+                                            placeholder="Email"
                                             name="email"
                                             value={form.email}
                                             onChange={handleChange}

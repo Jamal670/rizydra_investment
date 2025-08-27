@@ -39,15 +39,20 @@ exports.RegUser = async (name, email, password, referralCode) => {
   let referralLevel = 0;
 
   if (referralCode) {
-    const referrer = await UserModel.findOne({ referralCode });
-    console.log(referrer);
-    
-    if (!referrer) {
-      throw new Error('Invalid referral code');
-    }
-    referredBy = referrer._id;
-    referralLevel = referrer.referralLevel === 3 ? 3 : referrer.referralLevel + 1;
+  const referrer = await UserModel.findOne({ referralCode });
+
+  if (!referrer) {
+    throw new Error('Invalid referral code');
   }
+
+  if (referrer.investedAmount < 100) {
+    throw new Error('Your referrer must have a minimum investment of 100 USDT.');
+  }
+
+  referredBy = referrer._id;
+  referralLevel = referrer.referralLevel === 3 ? 3 : referrer.referralLevel + 1;
+}
+
 
   const generatedReferralCode = generateReferralCode();
   const otp = generateOTP();

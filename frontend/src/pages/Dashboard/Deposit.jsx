@@ -17,6 +17,7 @@ function Deposit() {
     const [focusedAddress, setFocusedAddress] = useState(false);
     const fileInputRef = useRef(null);
 
+
     const [userData, setUserData] = useState(null);
     const [selectedTransaction, setSelectedTransaction] = useState(null);
     const [showTxnModal, setShowTxnModal] = useState(false);
@@ -51,6 +52,9 @@ function Deposit() {
     // Add state for loading in Deposit and Invest modals
     const [depositProcessing, setDepositProcessing] = useState(false);
     const [investProcessing, setInvestProcessing] = useState(false);
+
+    // Add new state for transaction ID validation
+    const [txnIdError, setTxnIdError] = useState('');
 
     // Address validation function
     const validateAddress = (address, network) => {
@@ -188,11 +192,31 @@ function Deposit() {
 
     const handleDepositVerification = () => setShowVerification(true);
 
+    // ...existing code...
     const handleDepositSubmit = async (e) => {
         e.preventDefault();
 
+        // Validate exchange selection
+        if (selectedNetwork !== 'TRC20' && selectedNetwork !== 'BEP20') {
+            alert('Please select your exchange.');
+            return;
+        }
+
+        // Validate deposit amount
+        if (!depositInput || isNaN(depositInput) || Number(depositInput) <= 0) {
+            alert('Please enter deposit amount.');
+            return;
+        }
+
+        // Validate transaction ID
+        if (!binanceTR20 || binanceTR20.length < 5) {
+            alert('Please enter transaction ID.');
+            return;
+        }
+
+        // Validate screenshot
         if (!depositScreenshot) {
-            alert('Please upload a file.');
+            alert('Please upload an image of your deposit.');
             return;
         }
 
@@ -232,8 +256,7 @@ function Deposit() {
             setDepositProcessing(false); // Stop loading on error
         }
     };
-
-
+    // ...existing
     const handleScreenshotChange = (e) => {
         if (e.target.files && e.target.files[0]) {
             setDepositScreenshot(e.target.files[0]);
@@ -312,6 +335,19 @@ function Deposit() {
             </style>
         </div>
     );
+    const handleTxnIdChange = (value) => {
+        setBinanceTR20(value);
+        if (value.length > 0 && value.length < 5) {
+            setTxnIdError('');
+            setIsAddressValid(false);
+        } else if (value.length >= 5) {
+            setTxnIdError('');
+            setIsAddressValid(true);
+        } else {
+            setTxnIdError('');
+            setIsAddressValid(false);
+        }
+    };
 
     // Modal JSX
     const DepositModal = () => (
@@ -511,13 +547,13 @@ function Deposit() {
 
                                 <div className="mb-3">
                                     <label className="form-label" style={{ fontWeight: 500 }}>
-                                        Enter your exchange address
+                                        Enter your transaction ID
                                     </label>
                                     <input
                                         type="text"
                                         className="form-control"
                                         value={binanceTR20}
-                                        onChange={e => handleAddressChange(e.target.value)}
+                                        onChange={e => handleTxnIdChange(e.target.value)}
                                         onFocus={() => setFocusedAddress(true)}
                                         onBlur={() => setFocusedAddress(false)}
                                         ref={(input) => {
@@ -525,17 +561,17 @@ function Deposit() {
                                                 input.focus();
                                             }
                                         }}
-                                        placeholder={selectedNetwork === 'TRC20' ? 'Enter your TRC20 address (34 characters)' : 'Enter your BEP20 address (42 characters)'}
+                                        placeholder="Enter your transaction ID"
                                         required
                                         style={{
-                                            borderColor: addressError ? '#dc3545' : isAddressValid ? '#28a745' : '#ced4da'
+                                            borderColor: txnIdError ? '#dc3545' : isAddressValid ? '#28a745' : '#ced4da'
                                         }}
                                     />
-                                    {addressError && (
-                                        <div style={{ color: '#dc3545', fontSize: 12, marginTop: 4 }}>{addressError}</div>
+                                    {txnIdError && (
+                                        <div style={{ color: '#dc3545', fontSize: 12, marginTop: 4 }}>{txnIdError}</div>
                                     )}
                                     {isAddressValid && (
-                                        <div style={{ color: '#28a745', fontSize: 12, marginTop: 4 }}>✓ Valid address</div>
+                                        <div style={{ color: '#28a745', fontSize: 12, marginTop: 4 }}>✓ Looks good</div>
                                     )}
                                 </div>
                                 <div className="mb-3">
@@ -952,7 +988,7 @@ function Deposit() {
                                             if (/^\d*\.?\d*$/.test(value)) setInvestAmount(value);
                                         }}
                                         required
-                                        placeholder="Minimum Invest Amount 100"
+                                        placeholder="Minimum Invest Amount 20"
                                         style={{ fontSize: 16 }}
                                     />
                                 </div>
@@ -973,6 +1009,70 @@ function Deposit() {
     };
 
     const totalBalance = Number(userData?.totalBalance) || 0;
+
+    // --- Add this TableLayout component at the top of your file (after imports) ---
+    function TableLayout({ columns, data, renderRow, emptyText }) {
+        return (
+            <div
+                style={{
+                    width: '100%',
+                    overflowX: 'auto',
+                    WebkitOverflowScrolling: 'touch',
+                    background: '#fff',
+                    borderRadius: 8,
+                    boxShadow: '0 2px 12px rgba(0,0,0,0.04)',
+                    marginBottom: '1.5rem',
+                    border: '1px solid #eee'
+                }}
+            >
+                <table
+                    style={{
+                        width: '100%',
+                        borderCollapse: 'collapse',
+                        minWidth: 400,
+                        fontSize: '15px',
+                        background: '#fff'
+                    }}
+                >
+                    <thead>
+                        <tr>
+                            {columns.map(header => (
+                                <th
+                                    key={header}
+                                    style={{
+                                        background: '#f8f9fa',
+                                        fontWeight: 600,
+                                        color: '#222',
+                                        padding: '12px 10px',
+                                        borderBottom: '1px solid #eee',
+                                        position: 'sticky',
+                                        top: 0,
+                                        zIndex: 2,
+                                        textAlign: 'left',
+                                        whiteSpace: 'normal'
+                                    }}
+                                >
+                                    {header}
+                                </th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {data && data.length > 0 ? (
+                            data.map(renderRow)
+                        ) : (
+                            <tr>
+                                <td colSpan={columns.length} style={{ textAlign: 'center', padding: '12px 10px' }}>
+                                    {emptyText || 'No data found.'}
+                                </td>
+                            </tr>
+                        )}
+                    </tbody>
+                </table>
+            </div>
+        );
+    }
+    // --- End TableLayout component ---
 
     return (
         <>
@@ -1239,122 +1339,79 @@ function Deposit() {
                                 </div>
                             </div>
 
-                            <div
-                                style={{
-                                    width: '100%',
-                                    overflowX: 'auto',
-                                    WebkitOverflowScrolling: 'touch',
-                                    background: '#fff',
-                                    borderRadius: 8,
-                                    boxShadow: '0 2px 12px rgba(0,0,0,0.04)',
-                                    marginBottom: '1.5rem',
-                                    border: '1px solid #eee'
-                                }}
-                            >
-                                <table
-                                    style={{
-                                        width: '100%',
-                                        borderCollapse: 'collapse',
-                                        minWidth: 400,
-                                        fontSize: '15px',
-                                        background: '#fff'
-                                    }}
-                                >
-                                    <thead>
-                                        <tr>
-                                            {['Amount', 'Type', 'Status', 'Action', 'Date'].map(header => (
-                                                <th
-                                                    key={header}
-                                                    style={{
-                                                        background: '#f8f9fa',
-                                                        fontWeight: 600,
-                                                        color: '#222',
-                                                        padding: '12px 10px',
-                                                        borderBottom: '1px solid #eee',
-                                                        position: 'sticky',
-                                                        top: 0,
-                                                        zIndex: 2,
-                                                        textAlign: 'left',
-                                                        whiteSpace: 'normal'
-                                                    }}
-                                                >
-                                                    {header}
-                                                </th>
-                                            ))}
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {userData?.confirmedInvestments?.map(txn => (
-                                            <tr key={txn._id}>
-                                                <td style={{
-                                                    padding: '12px 10px',
-                                                    borderBottom: '1px solid #eee',
-                                                    whiteSpace: 'normal',
-                                                    wordBreak: 'break-word',
-                                                    verticalAlign: 'middle',
-                                                    textAlign: 'left'
-                                                }}>
-                                                    {txn.type === 'Withdraw'
-                                                        ? `- $${Number(txn.amount).toLocaleString()}`
-                                                        : txn.type === 'Deposit'
-                                                            ? `+ $${Number(txn.amount).toLocaleString()}`
-                                                            : `$${Number(txn.amount).toLocaleString()}`}
-                                                </td>
-                                                <td style={{
-                                                    padding: '12px 10px',
-                                                    borderBottom: '1px solid #eee',
-                                                    whiteSpace: 'normal',
-                                                    wordBreak: 'break-word',
-                                                    verticalAlign: 'middle',
-                                                    textAlign: 'left'
-                                                }}>{txn.type}</td>
-                                                <td style={{
-                                                    padding: '12px 10px',
-                                                    borderBottom: '1px solid #eee',
-                                                    whiteSpace: 'normal',
-                                                    wordBreak: 'break-word',
-                                                    verticalAlign: 'middle',
-                                                    textAlign: 'left'
-                                                }}>{txn.status}</td>
-                                                <td style={{
-                                                    padding: '12px 10px',
-                                                    borderBottom: '1px solid #eee',
-                                                    whiteSpace: 'normal',
-                                                    wordBreak: 'break-word',
-                                                    verticalAlign: 'middle',
-                                                    textAlign: 'left'
-                                                }}>
-                                                    <button
-                                                        className="btn btn-sm"
-                                                        style={{
-                                                            backgroundColor: '#C9CDCF',
-                                                            color: '#000',
-                                                            borderRadius: '20px',
-                                                            border: 'none',
-                                                            padding: '6px 10px',
-                                                            fontWeight: 500,
-                                                        }}
-                                                        onClick={() => {
-                                                            setSelectedTransaction(txn);
-                                                            setShowTxnModal(true);
-                                                        }}
-                                                    >
-                                                        View
-                                                    </button>
-                                                </td>
-                                                <td style={{
-                                                    padding: '12px 10px',
-                                                    borderBottom: '1px solid #eee',
-                                                    whiteSpace: 'normal',
-                                                    wordBreak: 'break-word',
-                                                    verticalAlign: 'middle',
-                                                    textAlign: 'left'
-                                                }}>{txn.date}</td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
+                            <TableLayout
+                                columns={['Amount', 'Type', 'Status', 'Action', 'Date']}
+                                data={userData?.confirmedInvestments || []}
+                                emptyText="No deposit history found."
+                                renderRow={txn => (
+                                    <tr key={txn._id}>
+                                        <td style={{
+                                            padding: '12px 10px',
+                                            borderBottom: '1px solid #eee',
+                                            whiteSpace: 'normal',
+                                            wordBreak: 'break-word',
+                                            verticalAlign: 'middle',
+                                            textAlign: 'left'
+                                        }}>
+                                            {txn.type === 'Withdraw'
+                                                ? `- $${Number(txn.amount).toLocaleString()}`
+                                                : txn.type === 'Deposit'
+                                                    ? `+ $${Number(txn.amount).toLocaleString()}`
+                                                    : `$${Number(txn.amount).toLocaleString()}`}
+                                        </td>
+                                        <td style={{
+                                            padding: '3px 3px',
+                                            borderBottom: '1px solid #eee',
+                                            whiteSpace: 'normal',
+                                            wordBreak: 'break-word',
+                                            verticalAlign: 'middle',
+                                            textAlign: 'left'
+                                        }}>{txn.type}</td>
+                                        <td style={{
+                                            padding: '3px 3px',
+                                            borderBottom: '1px solid #eee',
+                                            whiteSpace: 'normal',
+                                            wordBreak: 'break-word',
+                                            verticalAlign: 'middle',
+                                            textAlign: 'left'
+                                        }}>{txn.status}</td>
+                                        <td style={{
+                                            padding: '8px 8px',
+                                            borderBottom: '1px solid #eee',
+                                            whiteSpace: 'normal',
+                                            wordBreak: 'break-word',
+                                            verticalAlign: 'middle',
+                                            textAlign: 'left'
+                                        }}>
+                                            <button
+                                                className="btn btn-sm"
+                                                style={{
+                                                    backgroundColor: '#C9CDCF',
+                                                    color: '#000',
+                                                    borderRadius: '20px',
+                                                    border: 'none',
+                                                    padding: '6px 6px',
+                                                    fontWeight: 500,
+                                                }}
+                                                onClick={() => {
+                                                    setSelectedTransaction(txn);
+                                                    setShowTxnModal(true);
+                                                }}
+                                            >
+                                                View
+                                            </button>
+                                        </td>
+                                        <td style={{
+                                            padding: '12px 10px',
+                                            borderBottom: '1px solid #eee',
+                                            whiteSpace: 'normal',
+                                            wordBreak: 'break-word',
+                                            verticalAlign: 'middle',
+                                            textAlign: 'left'
+                                        }}>{txn.date}</td>
+                                    </tr>
+                                )}
+                            />
                         </div>
                     </div>
                 </div>

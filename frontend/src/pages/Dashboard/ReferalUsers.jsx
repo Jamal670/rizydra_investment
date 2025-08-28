@@ -87,7 +87,7 @@ function ReferalUsers() {
     }, []);
 
     const handleAddReferralUser = async () => {
-        if (referralData.investedAmount >= 100) {
+        if (referralData.investedAmount >= 20) {
             const referralLink = `www.rizydra.com/sign-up?ref=${referralData.referralCode}`;
             try {
                 await navigator.clipboard.writeText(referralLink);
@@ -96,7 +96,7 @@ function ReferalUsers() {
                 alert("Failed to copy referral link. Please try again.");
             }
         } else {
-            alert("Please invest 100 dollars before referring.");
+            alert("Please invest 20 dollars before referring.");
         }
     };
 

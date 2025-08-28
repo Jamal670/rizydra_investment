@@ -427,8 +427,8 @@ exports.invest = async (userId, from, to, amount) => {
     }
 
     if (from === "Deposit" && to === "Invest") {
-      if (amt < 100) {
-        throw new Error("Minimum transfer amount from Balance to Invest is 100");
+      if (amt < 20) {
+        throw new Error("Minimum transfer amount from Balance to Invest is 20");
       }
       if (user.totalBalance < amt) {
         throw new Error("Insufficient Balance");
@@ -438,12 +438,12 @@ exports.invest = async (userId, from, to, amount) => {
       user.totalBalance -= amt;
     }
     else if (from === "Invest" && to === "Deposit") {
-      if (user.investedAmount < 100) {
-        throw new Error("Insufficient Invest Balance (minimum 100 required)");
+      if (user.investedAmount < 20) {
+        throw new Error("Insufficient Invest Balance (minimum 20 required)");
       }
 
-      if (amt < 100) {
-        throw new Error("Minimum withdraw amount is 100");
+      if (amt < 20) {
+        throw new Error("Minimum withdraw amount is 20");
       }
 
       if (user.investedAmount < amt) {

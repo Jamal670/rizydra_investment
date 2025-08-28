@@ -106,10 +106,10 @@ function EarningPlan() {
         <div className="container">
           <div className="inner-banner-wrapper">
             <div className="inner-banner-content">
-              <h2 className="inner-banner-title">investment plan</h2>
+              <h2 className="inner-banner-title">Earning plan</h2>
               <ul className="breadcums">
                 <li><a href="index.html">Home</a></li>
-                <li><span>investment plan</span></li>
+                <li><span>Earning plan</span></li>
               </ul>
             </div>
             <div className="inner-banner-thumb d-none d-md-block">

@@ -96,7 +96,7 @@ function ReferalUsers() {
                 alert("Failed to copy referral link. Please try again.");
             }
         } else {
-            alert("Please invest amount before referring.");
+            alert("Please invest 100 dollars before referring.");
         }
     };
 

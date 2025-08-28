@@ -1262,66 +1262,25 @@ function Deposit() {
                                 >
                                     <thead>
                                         <tr>
-                                            <th style={{
-                                                background: '#f8f9fa',
-                                                fontWeight: 600,
-                                                color: '#222',
-                                                padding: '12px 10px',
-                                                borderBottom: '1px solid #eee',
-                                                position: 'sticky',
-                                                top: 0,
-                                                zIndex: 2,
-                                                textAlign: 'left',
-                                                whiteSpace: 'normal'
-                                            }}>Amount</th>
-                                            <th style={{
-                                                background: '#f8f9fa',
-                                                fontWeight: 600,
-                                                color: '#222',
-                                                padding: '12px 10px',
-                                                borderBottom: '1px solid #eee',
-                                                position: 'sticky',
-                                                top: 0,
-                                                zIndex: 2,
-                                                textAlign: 'left',
-                                                whiteSpace: 'normal'
-                                            }}>Type</th>
-                                            <th style={{
-                                                background: '#f8f9fa',
-                                                fontWeight: 600,
-                                                color: '#222',
-                                                padding: '12px 10px',
-                                                borderBottom: '1px solid #eee',
-                                                position: 'sticky',
-                                                top: 0,
-                                                zIndex: 2,
-                                                textAlign: 'left',
-                                                whiteSpace: 'normal'
-                                            }}>Status</th>
-                                            <th style={{
-                                                background: '#f8f9fa',
-                                                fontWeight: 600,
-                                                color: '#222',
-                                                padding: '12px 10px',
-                                                borderBottom: '1px solid #eee',
-                                                position: 'sticky',
-                                                top: 0,
-                                                zIndex: 2,
-                                                textAlign: 'left',
-                                                whiteSpace: 'normal'
-                                            }}>Action</th>
-                                            <th style={{
-                                                background: '#f8f9fa',
-                                                fontWeight: 600,
-                                                color: '#222',
-                                                padding: '12px 10px',
-                                                borderBottom: '1px solid #eee',
-                                                position: 'sticky',
-                                                top: 0,
-                                                zIndex: 2,
-                                                textAlign: 'left',
-                                                whiteSpace: 'normal'
-                                            }}>Date</th>
+                                            {['Amount', 'Type', 'Status', 'Action', 'Date'].map(header => (
+                                                <th
+                                                    key={header}
+                                                    style={{
+                                                        background: '#f8f9fa',
+                                                        fontWeight: 600,
+                                                        color: '#222',
+                                                        padding: '12px 10px',
+                                                        borderBottom: '1px solid #eee',
+                                                        position: 'sticky',
+                                                        top: 0,
+                                                        zIndex: 2,
+                                                        textAlign: 'left',
+                                                        whiteSpace: 'normal'
+                                                    }}
+                                                >
+                                                    {header}
+                                                </th>
+                                            ))}
                                         </tr>
                                     </thead>
                                     <tbody>

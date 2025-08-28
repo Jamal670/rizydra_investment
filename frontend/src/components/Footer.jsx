@@ -1,6 +1,17 @@
 import React from "react";
 
 function Footer() {
+  // Handler for Investment link click
+  const handleInvestmentClick = (e) => {
+    e.preventDefault();
+    const isAuthenticated = localStorage.getItem("authenticated") === "true";
+    if (isAuthenticated) {
+      window.location.href = "/referal-users";
+    } else {
+      window.location.href = "/login";
+    }
+  };
+
   return (
     <div>
       {/* Footer Section */}
@@ -74,7 +85,7 @@ function Footer() {
                     </a>
                   </li>
                   <li>
-                    <a href="/affiliate">
+                    <a href="/referal-users" onClick={handleInvestmentClick}>
                       <i className="las la-angle-double-right"></i>Investment
                     </a>
                   </li>

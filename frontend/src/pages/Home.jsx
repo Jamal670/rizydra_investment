@@ -178,7 +178,7 @@ function Home() {
                           <i className="las la-atlas"></i>
                         </div>
                         <div className="how-work-item-content">
-                          <h4 className="title"><a href="sign-up.html">Quick Registration</a></h4>
+                          <h4 className="title" style={{ color: '#ffffffff' }}>Quick Registration</h4>
                           <p>Start your investment journey in minutes. Our fast and secure registration process ensures you're ready to go without delay.</p>
                         </div>
                       </div>
@@ -189,7 +189,7 @@ function Home() {
                           <i className="las la-hand-holding-usd"></i>
                         </div>
                         <div className="how-work-item-content">
-                          <h4 className="title"><a href="investment-plan-01.html">Make An Invest</a></h4>
+                          <h4 className="title" style={{ color: '#ffffffff' }}>Make An Invest</h4>
                           <p>Explore diverse investment opportunities and fund your portfolio with ease. Our platform makes investing straightforward for everyone.</p>
                         </div>
                       </div>
@@ -202,7 +202,7 @@ function Home() {
                       <i className="las la-wallet"></i>
                     </div>
                     <div className="how-work-item-content">
-                      <h4 className="title"><a href="login.html">Get Your Profit</a></h4>
+                      <h4 className="title" style={{ color: '#ffffffff' }}>Get Your Profit</h4>
                       <p>Watch your investments grow and easily withdraw your returns. We ensure a transparent and efficient profit realization process.</p>
                     </div>
                   </div>

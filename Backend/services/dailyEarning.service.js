@@ -29,9 +29,9 @@ exports.calculateDailyEarnings = async () => {
   for (const user of allUsers) {
     const baseAmount = user.investedAmount || 0;
 
-    // 🚨 ensure at least 100 USDT
-    if (baseAmount < 100) {
-      console.log(`Skipping ${user.name} - investedAmount less than 100`);
+    // 🚨 ensure at least 20 USDT
+    if (baseAmount < 20) {
+      console.log(`Skipping ${user.name} - investedAmount less than 20`);
       continue;
     }
 

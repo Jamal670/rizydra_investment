@@ -55,3 +55,4 @@ const investmentSchema = new mongoose.Schema(
 
 // module.exports = mongoose.models.Investment || mongoose.model('Investment', investmentSchema);
 module.exports = mongoose.model('Investment', investmentSchema);
+//helper function

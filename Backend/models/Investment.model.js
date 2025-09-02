@@ -8,6 +8,11 @@ const investmentSchema = new mongoose.Schema(
       ref: 'User', // Reference to User model
       required: true,
     },
+    reDepId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Investment', // Reference to Investment model
+      required: false,
+    },
     exchangeType: {
       type: String,
       required: true,
@@ -41,8 +46,11 @@ const investmentSchema = new mongoose.Schema(
       enum: ['Deposit', 'Withdraw'],
       required: true,
     },
+      comment: {
+    type: String,
+  },
   },
   { timestamps: true }
 );
 
-module.exports = mongoose.model('Investment', investmentSchema);
+module.exports = mongoose.models.Investment || mongoose.model('Investment', investmentSchema);

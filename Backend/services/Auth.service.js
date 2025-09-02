@@ -1,5 +1,6 @@
 const bcrypt = require("bcryptjs");
 const UserModel = require('../models/user.model');
+const ContactModel = require('../models/contactUs.model');
 const { sendEmail, generateOTP, generateToken } = require('./sendMailer');
 
 // Generate unique referral code
@@ -298,5 +299,17 @@ exports.ForgotPass = async (userId, newPassword) => {
   }
 };
 
-
+//---------------contact us------------------------
+exports.contactUs = async (name, email, phone, message) => {
+  try {
+    const contact = new ContactModel({ name, email, phone, message });
+    await contact.save();
+    return {
+      message: "Message sent successfully",
+    };
+  } catch (error) {
+    console.error("Contact Us Error:", error.message);
+    throw error;
+  }
+};
 

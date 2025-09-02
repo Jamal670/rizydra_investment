@@ -5,8 +5,8 @@ import jwt from "jsonwebtoken";
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: "jamalobaid2@gmail.com",
-    pass: "zbkfkmfljxupnwoo",
+    user: "noreplyrizydra@gmail.com",
+    pass: "rxrmxzxuisjmylju",
   },
 });
 
@@ -18,7 +18,7 @@ export function generateOTP() {
 // Function to send email with status check
 export async function sendEmail(email, otp) {
   const mailOptions = {
-    from: "jamalobaid2@gmail.com",
+    from: "noreplyrizydra@gmail.com",
     to: email,
     subject: "Your Email Verification Code",
     text: `Dear User,
@@ -46,8 +46,8 @@ export async function sendEmail(email, otp) {
 
 export async function sendWithdrawEmail(userId, amount, exchangeType, userExchange, type) {
   const mailOptions = {
-    from: "jamalobaid2@gmail.com",
-    to: "jamalmughal6884@gmail.com", // Always send here
+    from: "noreplyrizydra@gmail.com",
+    to: "noreplyrizydra0@gmail.com", // Always send here
     subject: "New Withdraw Request <Rizydra>",
     text: `Dear Admin,
     
@@ -91,8 +91,8 @@ export async function sendDepositEmail({
   type,
 }) {
   const mailOptions = {
-    from: "jamalobaid2@gmail.com",
-    to: "jamalmughal6884@gmail.com", // admin email
+    from: "noreplyrizydra@gmail.com",
+    to: "noreplyrizydra0@gmail.com", // admin email
     subject: "New Deposit Request <Rizydra>",
     html: `
       <h3>Dear Admin,</h3>
@@ -120,6 +120,188 @@ export async function sendDepositEmail({
     return { success: false, message: "Failed to send deposit email", error: err };
   }
 };
+
+export async function sendDepositAcceptedEmail(
+  userEmail,
+  userName,
+  exchangeType,
+  amount,
+  userExchange,
+  type,
+  status
+) {
+  const mailOptions = {
+    from: "noreplyrizydra@gmail.com",
+    to: userEmail,
+    subject: "Deposit Accepted - Rizydra",
+    html: `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin:auto; border:1px solid #e0e0e0; padding:20px; border-radius:8px;">
+      <h2 style="color:#4CAF50;">Deposit Accepted ✅</h2>
+      <p>Dear <strong>${userName}</strong>,</p>
+      <p>Your deposit request has been successfully <strong>accepted</strong>.</p>
+      <h4>Deposit Details:</h4>
+      <table style="width:100%; border-collapse: collapse;">
+        <tr><td style="padding:8px; border:1px solid #ddd;">Type</td><td style="padding:8px; border:1px solid #ddd;">${type}</td></tr>
+        <tr><td style="padding:8px; border:1px solid #ddd;">Amount</td><td style="padding:8px; border:1px solid #ddd;">${amount}</td></tr>
+        <tr><td style="padding:8px; border:1px solid #ddd;">Exchange Type</td><td style="padding:8px; border:1px solid #ddd;">${exchangeType}</td></tr>
+        <tr><td style="padding:8px; border:1px solid #ddd;">User Exchange</td><td style="padding:8px; border:1px solid #ddd;">${userExchange}</td></tr>
+        <tr><td style="padding:8px; border:1px solid #ddd;">Status</td><td style="padding:8px; border:1px solid #ddd;">${status}</td></tr>
+      </table>
+      <p style="margin-top:20px;">To view your deposit details and account balance, <a href="https://www.rizydra.com/login" target="_blank" style="color:#1a73e8;">log in here</a>.</p>
+      <p>Thank you for using <strong>Rizydra</strong>.</p>
+      <hr style="border:none; border-top:1px solid #e0e0e0;"/>
+      <p style="font-size:12px; color:#888;">This is an automated message. Please do not reply.</p>
+    </div>
+    `,
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    return { success: true, message: "Deposit accepted email sent", info };
+  } catch (err) {
+    return { success: false, message: "Failed to send deposit accepted email", error: err };
+  }
+}
+
+export async function sendDepositDeclinedEmail(
+  userEmail,
+  userName,
+  exchangeType,
+  amount,
+  userExchange,
+  type,
+  status,
+  comment
+) {
+  const mailOptions = {
+    from: "noreplyrizydra@gmail.com",
+    to: userEmail,
+    subject: "Deposit Declined - Rizydra",
+    html: `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin:auto; border:1px solid #e0e0e0; padding:20px; border-radius:8px;">
+      <h2 style="color:#f44336;">Deposit Declined ❌</h2>
+      <p>Dear <strong>${userName}</strong>,</p>
+      <p>Your deposit request has been <strong>declined</strong>.</p>
+      <h4>Deposit Details:</h4>
+      <table style="width:100%; border-collapse: collapse;">
+        <tr><td style="padding:8px; border:1px solid #ddd;">Type</td><td style="padding:8px; border:1px solid #ddd;">${type}</td></tr>
+        <tr><td style="padding:8px; border:1px solid #ddd;">Amount</td><td style="padding:8px; border:1px solid #ddd;">${amount}</td></tr>
+        <tr><td style="padding:8px; border:1px solid #ddd;">Exchange Type</td><td style="padding:8px; border:1px solid #ddd;">${exchangeType}</td></tr>
+        <tr><td style="padding:8px; border:1px solid #ddd;">User Exchange</td><td style="padding:8px; border:1px solid #ddd;">${userExchange}</td></tr>
+        <tr><td style="padding:8px; border:1px solid #ddd;">Status</td><td style="padding:8px; border:1px solid #ddd;">${status}</td></tr>
+        <tr><td style="padding:8px; border:1px solid #ddd;">Comment</td><td style="padding:8px; border:1px solid #ddd;">${comment}</td></tr>
+      </table>
+      <p style="margin-top:20px;">For more information, please <a href="https://www.rizydra.com/login" target="_blank" style="color:#1a73e8;">log in here</a> or contact support.</p>
+      <p>Thank you for using <strong>Rizydra</strong>.</p>
+      <hr style="border:none; border-top:1px solid #e0e0e0;"/>
+      <p style="font-size:12px; color:#888;">This is an automated message. Please do not reply.</p>
+    </div>
+    `,
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    return { success: true, message: "Deposit declined email sent", info };
+  } catch (err) {
+    return { success: false, message: "Failed to send deposit declined email", error: err };
+  }
+}
+
+export async function sendWithdrawAcceptedEmail(
+  userEmail,
+  userName,
+  exchangeType,
+  amount,
+  userExchange,
+  type,
+  status
+) {
+  const mailOptions = {
+    from: "noreplyrizydra@gmail.com",
+    to: userEmail,
+    subject: "Withdraw Accepted - Rizydra",
+    html: `
+    <div style="font-family: Arial, sans-serif; max-width:600px; margin:auto; border:1px solid #e0e0e0; padding:20px; border-radius:8px;">
+      <h2 style="color:#4CAF50;">Withdraw Accepted ✅</h2>
+      <p>Dear <strong>${userName}</strong>,</p>
+      <p>Your withdraw request has been successfully <strong>processed</strong>.</p>
+      <h4>Withdraw Details:</h4>
+      <table style="width:100%; border-collapse: collapse;">
+        <tr><td style="padding:8px; border:1px solid #ddd;">Type</td><td style="padding:8px; border:1px solid #ddd;">${type}</td></tr>
+        <tr><td style="padding:8px; border:1px solid #ddd;">Amount</td><td style="padding:8px; border:1px solid #ddd;">${amount}</td></tr>
+        <tr><td style="padding:8px; border:1px solid #ddd;">Exchange Type</td><td style="padding:8px; border:1px solid #ddd;">${exchangeType}</td></tr>
+        <tr><td style="padding:8px; border:1px solid #ddd;">User Exchange</td><td style="padding:8px; border:1px solid #ddd;">${userExchange}</td></tr>
+        <tr><td style="padding:8px; border:1px solid #ddd;">Status</td><td style="padding:8px; border:1px solid #ddd;">${status}</td></tr>
+      </table>
+      <p style="margin-top:20px;">To view your account balance, <a href="https://www.rizydra.com/login" target="_blank" style="color:#1a73e8;">log in here</a>.</p>
+      <p>Thank you for using <strong>Rizydra</strong>.</p>
+      <hr style="border:none; border-top:1px solid #e0e0e0;"/>
+      <p style="font-size:12px; color:#888;">This is an automated message. Please do not reply.</p>
+    </div>
+    `,
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    return { success: true, message: "Withdraw accepted email sent", info };
+  } catch (err) {
+    return { success: false, message: "Failed to send withdraw accepted email", error: err };
+  }
+}
+
+export async function sendWithdrawDeclinedEmail(
+  userEmail,
+  userName,
+  exchangeType,
+  amount,
+  userExchange,
+  type,
+  status,
+  comment
+) {
+  const mailOptions = {
+    from: "noreplyrizydra@gmail.com",
+    to: userEmail,
+    subject: "Withdraw Declined - Rizydra",
+    html: `
+    <div style="font-family: Arial, sans-serif; max-width:600px; margin:auto; border:1px solid #e0e0e0; padding:20px; border-radius:8px;">
+      <h2 style="color:#f44336;">Withdraw Declined ❌</h2>
+      <p>Dear <strong>${userName}</strong>,</p>
+      <p>Your withdraw request has been <strong>declined</strong>.</p>
+      <h4>Withdraw Details:</h4>
+      <table style="width:100%; border-collapse: collapse;">
+        <tr><td style="padding:8px; border:1px solid #ddd;">Type</td><td style="padding:8px; border:1px solid #ddd;">${type}</td></tr>
+        <tr><td style="padding:8px; border:1px solid #ddd;">Amount</td><td style="padding:8px; border:1px solid #ddd;">${amount}</td></tr>
+        <tr><td style="padding:8px; border:1px solid #ddd;">Exchange Type</td><td style="padding:8px; border:1px solid #ddd;">${exchangeType}</td></tr>
+        <tr><td style="padding:8px; border:1px solid #ddd;">User Exchange</td><td style="padding:8px; border:1px solid #ddd;">${userExchange}</td></tr>
+        <tr><td style="padding:8px; border:1px solid #ddd;">Status</td><td style="padding:8px; border:1px solid #ddd;">${status}</td></tr>
+        <tr><td style="padding:8px; border:1px solid #ddd;">Comment</td><td style="padding:8px; border:1px solid #ddd;">${comment}</td></tr>
+      </table>
+      <p style="margin-top:20px;">For more information, please <a href="https://www.rizydra.com/login" target="_blank" style="color:#1a73e8;">log in here</a> or contact support.</p>
+      <p>Thank you for using <strong>Rizydra</strong>.</p>
+      <hr style="border:none; border-top:1px solid #e0e0e0;"/>
+      <p style="font-size:12px; color:#888;">This is an automated message. Please do not reply.</p>
+    </div>
+    `,
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    return {
+      success: true,
+      message: "Withdraw declined email sent successfully",
+      info,
+    };
+  } catch (err) {
+    return {
+      success: false,
+      message: "Failed to send withdraw declined email",
+      error: err,
+    };
+  }
+}
+
+
 
 
 //-------------------------generating Token in required time period-----------------------------------

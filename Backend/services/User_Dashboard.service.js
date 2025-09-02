@@ -1,8 +1,9 @@
 const UserModel = require('../models/user.model');
-const InvestmentModel = require('../models/Investment.model');
+const InvestmentModel = require("../models/investment.model");
 const DailyEarn = require('../models/dailyEarn.model');
 const RedUserEarning = require('../models/refUserEarn.model'); // Model ka import
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 const { sendWithdrawEmail, sendDepositEmail } = require('./sendMailer'); // Import the mailer function
 // const transporter = require('./mailer'); // transporter ko alag file me export kiya hoga        
 
@@ -229,10 +230,28 @@ exports.showDeposit = async (userId) => {
           pipeline: [
             { $match: { $expr: { $and: [{ $eq: ['$userId', '$$userId'] }] } } },
             {
+              $lookup: {
+                from: 'investments',
+                let: { currentId: '$_id' },
+                pipeline: [
+                  { $match: { $expr: { $eq: ['$reDepId', '$$currentId'] } } },
+                  { $limit: 1 }
+                ],
+                as: 'linkedRedeposits'
+              }
+            },
+            {
+              $addFields: {
+                alreadyRedeposit: { $gt: [{ $size: '$linkedRedeposits' }, 0] }
+              }
+            },
+            {
               $project: {
-                exchangeType: 1, ourExchange: 1, amount: 1, userExchange: 1, image: 1, status: 1, type: 1, date: {
-                  $dateToString: { format: "%d %b %Y", date: "$createdAt" }
-                }
+                _id: 1,
+                exchangeType: 1, ourExchange: 1, amount: 1, userExchange: 1, image: 1,
+                status: 1, type: 1, reDepId: 1, comment: 1,
+                alreadyRedeposit: 1,
+                date: { $dateToString: { format: "%d %b %Y", date: "$createdAt" } }
               }
             }
           ],
@@ -504,7 +523,7 @@ exports.updateProfile = async function updateProfile(userId, name, password, pro
     }
 
     if (password) {
-      user.password = password;
+      user.password = await bcrypt.hash(password, 10);
     }
 
     if (profileImage) {
@@ -529,4 +548,63 @@ exports.updateProfile = async function updateProfile(userId, name, password, pro
     throw new Error("Error updating profile: " + error.message);
   }
 }
+
+// Redeposit function
+exports.redeposit = async function ({
+  userId,
+  exchangeType,
+  ourExchange,
+  amount,
+  userExchange,
+  image, // Base64 image
+  type,
+  reDepId
+}) {
+  try {
+    // ✅ User fetch
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    // ✅ New investment record
+    const investment = new InvestmentModel({
+      userId,
+      exchangeType,
+      ourExchange,
+      amount,
+      userExchange,
+      image,
+      type,
+      status: "Pending",
+      reDepId: reDepId  
+    });
+
+    await investment.save();
+
+    // ✅ Send Email in background (no await)
+    sendDepositEmail({
+      user,
+      exchangeType,
+      ourExchange,
+      amount,
+      userExchange,
+      image,
+      type,
+    }).catch(err => {
+      console.error("Email sending failed:", err.message);
+    });
+
+    // ✅ Return fast response
+    return {
+      success: true,
+      message: "Deposit saved, email is being sent in background",
+      investment,
+    };
+
+  } catch (error) {
+    throw new Error(error.message || "Error processing deposit");
+  }
+};
+
 

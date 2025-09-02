@@ -181,6 +181,39 @@ exports.updateProfile = async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 };
+// Redeposit function
+exports.redeposit = async (req, res) => {
+  try {
+    const userId = req.user._id; // from auth middleware
+    const { exchangeType, ourExchange, amount, userExchange, type, reDepId } = req.body;
+    let image = null;
+    if (req.file) {
+      image = req.file.buffer.toString("base64");
+    }
 
+
+    const depositData = await userDashService.redeposit({
+      userId,
+      exchangeType,
+      ourExchange,
+      amount,
+      userExchange,
+      image,
+      type: type,
+      reDepId: reDepId
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Your Deposit will be received within 24 hours.",
+      data: depositData,
+    });
+  } catch (err) {
+    res.status(400).json({
+      success: false,
+      message: err.message || "Redeposit failed",
+    });
+  }
+};
 
 

@@ -511,41 +511,125 @@ function UserDashboard() {
                                 </div>
                             </div>
 
-                            {/* All Graphs Section - Below the cards in 2x2 grid */}
+                            {/* All Graphs Section - Single Row with Horizontal Scrolling */}
                             <section className="charts-section mt-4">
-                                <div className="container">
-                                    <div className="row g-4">
-                                        {/* Row 1: Daily Earnings Trend and Balance Distribution */}
-                                        <div className="col-12 col-lg-6">
-                                            <div className="chart-container" style={{ background: '#fff', padding: '20px', borderRadius: '10px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-                                                <h5 className="mb-3">Daily Earnings Trend</h5>
-                                                <Line data={lineChartData} options={chartOptions} />
+                                <div className="container-fluid px-0">
+                                    <div className="charts-scroll-container" style={{
+                                        overflowX: 'auto',
+                                        overflowY: 'hidden',
+                                        whiteSpace: 'nowrap',
+                                        padding: '0 20px',
+                                        scrollbarWidth: 'thin',
+                                        scrollbarColor: '#888 #f1f1f1'
+                                    }}>
+                                        <div className="charts-row" style={{
+                                            display: 'inline-flex',
+                                            gap: '20px',
+                                            minWidth: 'max-content',
+                                            padding: '10px 0'
+                                        }}>
+                                            {/* Daily Earnings Trend */}
+                                            <div className="chart-item" style={{
+                                                minWidth: '400px',
+                                                maxWidth: '400px',
+                                                background: '#fff',
+                                                padding: '20px',
+                                                borderRadius: '10px',
+                                                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                                                border: '1px solid #e9ecef'
+                                            }}>
+                                                <h5 className="mb-3" style={{ fontSize: '16px', fontWeight: '600' }}>Daily Earnings Trend</h5>
+                                                <div style={{ height: '250px' }}>
+                                                    <Line data={lineChartData} options={{
+                                                        ...chartOptions,
+                                                        maintainAspectRatio: false,
+                                                        plugins: {
+                                                            ...chartOptions.plugins,
+                                                            title: { display: false }
+                                                        }
+                                                    }} />
+                                                </div>
                                             </div>
-                                        </div>
 
-                                        <div className="col-12 col-lg-6">
-                                            <div className="chart-container" style={{ background: '#fff', padding: '20px', borderRadius: '10px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', height: '300px' }}>
-                                                <h5 className="mb-3">Balance Distribution</h5>
-                                                <div style={{ height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                    <Pie data={pieChartData} options={chartOptions} />
+                                            {/* Balance Distribution */}
+                                            <div className="chart-item" style={{
+                                                minWidth: '350px',
+                                                maxWidth: '350px',
+                                                background: '#fff',
+                                                padding: '20px',
+                                                borderRadius: '10px',
+                                                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                                                border: '1px solid #e9ecef'
+                                            }}>
+                                                <h5 className="mb-3" style={{ fontSize: '16px', fontWeight: '600' }}>Balance Distribution</h5>
+                                                <div style={{ height: '250px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                    <Pie data={pieChartData} options={{
+                                                        ...chartOptions,
+                                                        maintainAspectRatio: false,
+                                                        plugins: {
+                                                            ...chartOptions.plugins,
+                                                            title: { display: false }
+                                                        }
+                                                    }} />
+                                                </div>
+                                            </div>
+
+                                            {/* Referral Earnings Comparison */}
+                                            <div className="chart-item" style={{
+                                                minWidth: '400px',
+                                                maxWidth: '400px',
+                                                background: '#fff',
+                                                padding: '20px',
+                                                borderRadius: '10px',
+                                                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                                                border: '1px solid #e9ecef'
+                                            }}>
+                                                <h5 className="mb-3" style={{ fontSize: '16px', fontWeight: '600' }}>Referral Earnings</h5>
+                                                <div style={{ height: '250px' }}>
+                                                    <Bar data={barChartData} options={{
+                                                        ...chartOptions,
+                                                        maintainAspectRatio: false,
+                                                        plugins: {
+                                                            ...chartOptions.plugins,
+                                                            title: { display: false }
+                                                        }
+                                                    }} />
+                                                </div>
+                                            </div>
+
+                                            {/* Combined Growth Analysis */}
+                                            <div className="chart-item" style={{
+                                                minWidth: '400px',
+                                                maxWidth: '400px',
+                                                background: '#fff',
+                                                padding: '20px',
+                                                borderRadius: '10px',
+                                                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                                                border: '1px solid #e9ecef'
+                                            }}>
+                                                <h5 className="mb-3" style={{ fontSize: '16px', fontWeight: '600' }}>Growth Analysis</h5>
+                                                <div style={{ height: '250px' }}>
+                                                    <StackedArea data={stackedAreaChartData} options={{
+                                                        ...chartOptions,
+                                                        maintainAspectRatio: false,
+                                                        plugins: {
+                                                            ...chartOptions.plugins,
+                                                            title: { display: false }
+                                                        }
+                                                    }} />
                                                 </div>
                                             </div>
                                         </div>
-
-                                        {/* Row 2: Referral Earnings Comparison and Combined Growth Analysis */}
-                                        <div className="col-12 col-lg-6">
-                                            <div className="chart-container" style={{ background: '#fff', padding: '20px', borderRadius: '10px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-                                                <h5 className="mb-3">Referral Earnings Comparison</h5>
-                                                <Bar data={barChartData} options={chartOptions} />
-                                            </div>
-                                        </div>
-
-                                        <div className="col-12 col-lg-6">
-                                            <div className="chart-container" style={{ background: '#fff', padding: '20px', borderRadius: '10px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-                                                <h5 className="mb-3">Combined Growth Analysis</h5>
-                                                <StackedArea data={stackedAreaChartData} options={chartOptions} />
-                                            </div>
-                                        </div>
+                                    </div>
+                                    
+                                    {/* Scroll Indicator */}
+                                    <div className="scroll-indicator mt-3" style={{
+                                        textAlign: 'center',
+                                        color: '#666',
+                                        fontSize: '14px'
+                                    }}>
+                                        <i className="las la-arrows-alt-h" style={{ marginRight: '8px' }}></i>
+                                        Scroll horizontally to view all graphs
                                     </div>
                                 </div>
                             </section>

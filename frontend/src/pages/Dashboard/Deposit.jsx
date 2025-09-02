@@ -21,6 +21,9 @@ function Deposit() {
     const [userData, setUserData] = useState(null);
     const [selectedTransaction, setSelectedTransaction] = useState(null);
     const [showTxnModal, setShowTxnModal] = useState(false);
+    const [isRedeposit, setIsRedeposit] = useState(false);
+    const [reDepId, setReDepId] = useState(null);
+    const [showDeclineDetailModal, setShowDeclineDetailModal] = useState(false);
 
     const [showWithdrawModal, setShowWithdrawModal] = useState(false);
     const [withdrawExchange, setWithdrawExchange] = useState('Select');
@@ -229,22 +232,30 @@ function Deposit() {
         formData.append('userExchange', binanceTR20);
         formData.append('type', 'Deposit');
         if (depositScreenshot) {
-            formData.append('image', depositScreenshot);
+            if (isRedeposit) {
+                formData.append('images', depositScreenshot);
+                if (reDepId) formData.append('reDepId', reDepId);
+            } else {
+                formData.append('image', depositScreenshot);
+            }
         }
 
         try {
-            const res = await api.post('/user/deposit', formData, {
+            const endpoint = isRedeposit ? '/user/redeposit' : '/user/deposit';
+            const res = await api.post(endpoint, formData, {
                 withCredentials: true,
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 }
             });
-            alert(res.data.message || 'Deposit submitted!');
+            alert(res.data.message || (isRedeposit ? 'Redeposit submitted!' : 'Deposit submitted!'));
             setShowVerification(false);
             setDepositInput('');
             setBinanceTR20('');
             setDepositScreenshot(null);
             setShowModal(false);
+            setIsRedeposit(false);
+            setReDepId(null);
 
             if (fileInputRef.current) {
                 fileInputRef.current.value = "";
@@ -252,7 +263,7 @@ function Deposit() {
 
             window.location.reload();
         } catch (err) {
-            alert('Deposit failed!');
+            alert(err.response?.data?.message || (isRedeposit ? 'Redeposit failed!' : 'Deposit failed!'));
             setDepositProcessing(false); // Stop loading on error
         }
     };
@@ -401,7 +412,7 @@ function Deposit() {
                         </h5>
                         <button
                             type="button"
-                            onClick={() => setShowModal(false)}
+                            onClick={() => { setShowModal(false); setIsRedeposit(false); setReDepId(null); }}
                             style={{
                                 position: 'absolute',
                                 top: 12,
@@ -523,8 +534,9 @@ function Deposit() {
                                         Enter your deposit amount (USDT)
                                     </label>
                                     <input
-                                        type="text"
+                                        type="tel"
                                         inputMode="decimal"
+                                        pattern="[0-9]*[.,]?[0-9]*"
                                         className="form-control"
                                         placeholder='Enter your deposit amount'
                                         value={depositInput}
@@ -542,6 +554,7 @@ function Deposit() {
                                             }
                                         }}
                                         required
+                                        autoComplete="off"
                                     />
                                 </div>
 
@@ -612,7 +625,7 @@ function Deposit() {
                                     style={{ width: '100%', fontWeight: 600 }}
                                     disabled={!isAddressValid || !depositInput || !depositScreenshot || depositProcessing}
                                 >
-                                    {depositProcessing ? 'Processing...' : 'Deposit'}
+                                    {depositProcessing ? 'Processing...' : (isRedeposit ? 'Redeposit' : 'Deposit')}
                                 </button>
                             </form>
                         )}
@@ -767,8 +780,9 @@ function Deposit() {
                                             Enter your withdraw amount (USDT)
                                         </label>
                                         <input
-                                            type="text"
+                                            type="tel"
                                             inputMode="decimal"
+                                            pattern="[0-9]*[.,]?[0-9]*"
                                             className="form-control"
                                             value={withdrawAmount}
                                             onChange={(e) => {
@@ -785,6 +799,7 @@ function Deposit() {
                                                 }
                                             }} // Add ref
                                             required
+                                            autoComplete="off"
                                         />
                                     </div>
 
@@ -980,7 +995,9 @@ function Deposit() {
                                     <label className="form-label" style={{ fontWeight: 500 }}>Enter Your Amount (USDT)</label>
                                     <input
                                         ref={inputRef}
-                                        type="text"
+                                        type="tel"
+                                        inputMode="decimal"
+                                        pattern="[0-9]*[.,]?[0-9]*"
                                         className="form-control"
                                         value={investAmount}
                                         onChange={e => {
@@ -990,6 +1007,7 @@ function Deposit() {
                                         required
                                         placeholder="Minimum Invest Amount 20"
                                         style={{ fontSize: 16 }}
+                                        autoComplete="off"
                                     />
                                 </div>
                                 <button
@@ -1475,6 +1493,20 @@ function Deposit() {
                                 <div style={{ marginBottom: '12px' }}><b>Status:</b> {selectedTransaction.status}</div>
                                 <div style={{ marginBottom: '12px' }}><b>Type:</b> {selectedTransaction.type}</div>
                                 <div style={{ marginBottom: '12px' }}><b>Date:</b> {selectedTransaction.date}</div>
+                                {selectedTransaction.status === 'Declined' && selectedTransaction.type === 'Deposit' && (
+                                    <div className="text-start mt-2">
+                                    <button
+                                      className="btn btn-primary btn-sm"
+                                      onClick={() => {
+                                        setShowTxnModal(false);
+                                        setShowDeclineDetailModal(true);
+                                      }}
+                                    >
+                                      View Detail
+                                    </button>
+                                  </div>
+                                  
+                                )}
                                 {selectedTransaction.image && selectedTransaction.image.length > 30 && (
                                     <div style={{ marginTop: 12 }}>
                                         <b>Screenshot:</b><br />
@@ -1498,6 +1530,85 @@ function Deposit() {
                                 >
                                     Close
                                 </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* Decline Detail Modal */}
+            {showDeclineDetailModal && selectedTransaction && (
+                <div
+                    className="modal"
+                    style={{
+                        display: 'block',
+                        background: 'rgba(0,0,0,0.5)',
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        width: '100vw',
+                        height: '100vh',
+                        zIndex: 2100
+                    }}
+                    tabIndex="-1"
+                    role="dialog"
+                >
+                    <div
+                        className="modal-dialog modal-dialog-centered"
+                        style={{ width: '90vw', maxWidth: 520, margin: 'auto' }}
+                        role="document"
+                    >
+                        <div className="modal-content" style={{ borderRadius: 12, padding: 0 }}>
+                            <div className="modal-header" style={{ justifyContent: 'center', borderBottom: 'none' }}>
+                                <h5 className="modal-title" style={{ fontWeight: 700, fontSize: 20, margin: 'auto' }}>
+                                    Deposit Information
+                                </h5>
+                            </div>
+                            <div className="modal-body" style={{ padding: '1.5rem' }}>
+                                <div style={{ marginBottom: 12 }}>
+                                    <b>Reason</b>
+                                </div>
+                                <div
+                                    style={{
+                                        padding: '12px',
+                                        background: '#f8f9fa',
+                                        border: '1px solid #eee',
+                                        borderRadius: 8,
+                                        whiteSpace: 'pre-wrap'
+                                    }}
+                                >
+                                    {selectedTransaction.comment || 'No reason provided'}
+                                </div>
+                            </div>
+                            <div className="modal-footer" style={{ justifyContent: 'space-between', borderTop: 'none', padding: '1rem 1.5rem 1.25rem' }}>
+                                <button
+                                    className="btn btn-secondary"
+                                    onClick={() => setShowDeclineDetailModal(false)}
+                                >
+                                    Close
+                                </button>
+                                {selectedTransaction.alreadyRedeposit ? (
+                                    <div style={{ color: '#0c5460', background: '#d1ecf1', border: '1px solid #bee5eb', borderRadius: 6, padding: '8px 12px' }}>
+                                        You have already redeposited
+                                    </div>
+                                ) : (
+                                    <button
+                                        className="btn btn-primary"
+                                        onClick={() => {
+                                            setShowDeclineDetailModal(false);
+                                            setIsRedeposit(true);
+                                            setReDepId(selectedTransaction._id);
+                                            setSelectedNetwork('Select');
+                                            setDepositInput('');
+                                            setBinanceTR20('');
+                                            setDepositScreenshot(null);
+                                            setShowVerification(false);
+                                            setDepositProcessing(false);
+                                            setShowModal(true);
+                                        }}
+                                    >
+                                        Redeposit
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </div>

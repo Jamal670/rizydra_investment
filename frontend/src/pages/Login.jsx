@@ -64,25 +64,35 @@ function Login() {
     };
 
     const handleSubmit = async e => {
-    e.preventDefault();
-    setLoginLoading(true);
-    try {
-        const res = await api.post('/Login', {
-            email: form.email,
-            password: form.password
-        });
+        e.preventDefault();
+        setLoginLoading(true);
+        try {
+            const res = await api.post('/Login', {
+                email: form.email,
+                password: form.password
+            });
 
-        // Store authenticated flag in localStorage
-        localStorage.setItem("authenticated", "true");
+            const { user } = res.data;
 
-        setLoginLoading(false);
-        // navigate('/user-dashboard');
-        window.location.href = '/user-dashboard';
-    } catch (err) {
-        alert(err.response?.data?.error || 'Invalid credentials');
-        setLoginLoading(false);
-    }
-};
+            // ✅ just keep simple flags
+            localStorage.setItem("authenticated", "true");
+
+            if (user.email === "rizydra342@gmail.com") {
+                localStorage.setItem("isAdmin", "true");   // admin flag
+                window.location.href = "/admin-dashboard";
+            } else {
+                localStorage.setItem("isAdmin", "false");  // normal user
+                window.location.href = "/user-dashboard";
+            }
+
+            setLoginLoading(false);
+
+        } catch (err) {
+            alert(err.response?.data?.error || "Invalid credentials");
+            setLoginLoading(false);
+        }
+    };
+
 
 
     return (

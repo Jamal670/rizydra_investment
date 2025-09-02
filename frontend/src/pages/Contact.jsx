@@ -1,7 +1,13 @@
 import React, { useEffect, useState } from 'react';
+import api from '../Api.jsx';
 
 function Contact() {
   const [isLoading, setIsLoading] = useState(true);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [message, setMessage] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     // Dynamically load CSS files
@@ -126,22 +132,77 @@ function Contact() {
             </div>
             <div className="contact-wrapper  fadeInUp">
               <h4 className="title">Send Us a Message</h4>
-              <form className="contact-form">
+              <form
+                className="contact-form"
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  // Basic validation
+                  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                  if (!name || name.trim().length < 2) { alert('Please enter your name.'); return; }
+                  if (!email || !emailRegex.test(email)) { alert('Please enter a valid email.'); return; }
+                  if (!message || message.trim().length < 5) { alert('Please enter your message.'); return; }
+
+                  setSubmitting(true);
+                  try {
+                    const payload = { name: name.trim(), email: email.trim(), phone: phone.trim(), message: message.trim() };
+                    const res = await api.post('/contactus', payload, { withCredentials: true });
+                    alert(res.data?.message || 'Message sent successfully');
+                    setName(''); setEmail(''); setPhone(''); setMessage('');
+                  } catch (err) {
+                    alert(err.response?.data?.error || 'Failed to send message');
+                  }
+                  setSubmitting(false);
+                }}
+              >
                 <div className="form--group">
-                  <input type="text" className="form--control" placeholder="Name" />
+                  <input
+                    type="text"
+                    className="form--control"
+                    placeholder="Name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    autoComplete="name"
+                    required
+                  />
                 </div>
                 <div className="form--group">
-                  <input type="email" className="form--control" placeholder="Email" />
+                  <input
+                    type="email"
+                    className="form--control"
+                    placeholder="Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    autoComplete="email"
+                    required
+                  />
                 </div>
                 <div className="form--group">
-                  <input type="tel" className="form--control" placeholder="Phone" />
+                  <input
+                    type="tel"
+                    inputMode="numeric"
+                    pattern="[0-9+()\-\s]*"
+                    className="form--control"
+                    placeholder="Phone (Optional)"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    autoComplete="tel"
+                  />
                 </div>
-                
                 <div className="form--group">
-                  <textarea className="form--control" cols="30" rows="10" placeholder="Message"></textarea>
+                  <textarea
+                    className="form--control"
+                    cols="30"
+                    rows="10"
+                    placeholder="Message"
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    required
+                  ></textarea>
                 </div>
                 <div className="form--group">
-                  <button className="custom-button" type="submit">SUBMIT NOW</button>
+                  <button className="custom-button" type="submit" disabled={submitting}>
+                    {submitting ? 'SENDING…' : 'SUBMIT NOW'}
+                  </button>
                 </div>
               </form>
             </div>

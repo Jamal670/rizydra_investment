@@ -11,6 +11,7 @@ require('dotenv').config();
 const dailyEarningService = require('./services/dailyEarning.service'); // Daily earnings service
 const authRoutes = require('./routers/Auth.Router'); 
 const userRoutes = require('./routers/user.Router');
+const adminRoutes = require('./routers/admin.routes');
 
 // Initialize express app
 const app = express();
@@ -41,7 +42,7 @@ cron.schedule('5 0 * * *', async () => {
 const allowedOrigins = [
   process.env.CLIENT_URL,
   "http://localhost:3000",
-  "https://rizydra-investment-rmky.vercel.app"
+  // "https://rizydra-investment-rmky.vercel.app"
 ];
 
 app.use(cors({
@@ -60,5 +61,6 @@ app.use(cors({
 
 app.use('/', authRoutes); // authentation path
 app.use('/user', userRoutes); // user_dashboard path
+app.use('/admin', adminRoutes); // admin_dashboard path
 
 module.exports = app;

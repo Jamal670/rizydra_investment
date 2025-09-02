@@ -45,29 +45,39 @@ exports.ResendOtp = async (req, res) => {
 exports.Login = async (req, res) => {
   try {
     const { email, password } = req.body;
+    console.log(email, password);
 
     // Call service
     const user = await userAuthService.Login(email, password);
 
-    // Create token payload
-    const tokenPayload = { _id: user._id, email: user.email };
-    const token = generateToken(tokenPayload, process.env.JWT_SECRET, process.env.HOURS); // Increased to 24 hours
+    if (user.email === "rizydra342@gmail.com") {
+      res.status(200).json({
+        message: 'User logged in successfully',
+        user
+      });
+    }
+    else {
+      // Create token payload
+      const tokenPayload = { _id: user._id, email: user.email };
+      const token = generateToken(tokenPayload, process.env.JWT_SECRET, process.env.HOURS); // Increased to 24 hours
 
-    // Store in HttpOnly cookie for security
-    res.cookie("token", token, {
-      httpOnly: true,   // ✅ make it secure
-      secure: true,
-      sameSite: "none", // agar frontend aur backend alag domains pe hain
-      maxAge: 24 * 60 * 60 * 1000,
-      path: "/"
-    });
+      // Store in HttpOnly cookie for security
+      res.cookie("token", token, {
+        httpOnly: true,   // ✅ make it secure
+        secure: true,
+        sameSite: "none", // agar frontend aur backend alag domains pe hain
+        maxAge: 24 * 60 * 60 * 1000,
+        path: "/"
+      });
+
+      res.status(200).json({
+        message: 'User logged in successfully',
+        user,
+        token
+      });
+    }
 
 
-    res.status(200).json({
-      message: 'User logged in successfully',
-      user,
-      token
-    });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -115,4 +125,14 @@ exports.ForgotPass = async (req, res) => {
   }
 };
 
+//---------------contact us------------------------
+exports.contactUs = async (req, res) => {
+  try {
+    const { name, email,phone, message } = req.body;
+    const result = await userAuthService.contactUs(name, email, phone, message);
+    res.status(200).json({ message: "Message sent successfully" });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
 

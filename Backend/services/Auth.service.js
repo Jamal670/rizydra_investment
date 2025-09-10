@@ -46,8 +46,8 @@ exports.RegUser = async (name, email, password, referralCode) => {
     throw new Error('Invalid referral code');
   }
 
-  if (referrer.investedAmount < 100) {
-    throw new Error('Your referrer must have a minimum investment of 100 USDT.');
+  if (referrer.investedAmount < 20) {
+    throw new Error('Your referrer must have a minimum investment of 20 USDT.');
   }
 
   referredBy = referrer._id;

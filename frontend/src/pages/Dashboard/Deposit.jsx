@@ -24,6 +24,10 @@ function Deposit() {
     const [isRedeposit, setIsRedeposit] = useState(false);
     const [reDepId, setReDepId] = useState(null);
     const [showDeclineDetailModal, setShowDeclineDetailModal] = useState(false);
+    
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const rowsPerPage = 8;
 
     const [showWithdrawModal, setShowWithdrawModal] = useState(false);
     const [withdrawExchange, setWithdrawExchange] = useState('Select');
@@ -1028,65 +1032,155 @@ function Deposit() {
 
     const totalBalance = Number(userData?.totalBalance) || 0;
 
+    // Pagination logic
+    const tableData = userData?.confirmedInvestments || [];
+    const totalRows = tableData.length;
+    const totalPages = Math.ceil(totalRows / rowsPerPage);
+    const paginatedData = tableData.slice(
+        (currentPage - 1) * rowsPerPage,
+        currentPage * rowsPerPage
+    );
+
     // --- Add this TableLayout component at the top of your file (after imports) ---
-    function TableLayout({ columns, data, renderRow, emptyText }) {
+    function TableLayout({ columns, data, renderRow, emptyText, showPagination = false }) {
         return (
-            <div
-                style={{
-                    width: '100%',
-                    overflowX: 'auto',
-                    WebkitOverflowScrolling: 'touch',
-                    background: '#fff',
-                    borderRadius: 8,
-                    boxShadow: '0 2px 12px rgba(0,0,0,0.04)',
-                    marginBottom: '1.5rem',
-                    border: '1px solid #eee'
-                }}
-            >
-                <table
+            <div>
+                <div
                     style={{
                         width: '100%',
-                        borderCollapse: 'collapse',
-                        minWidth: 400,
-                        fontSize: '15px',
-                        background: '#fff'
+                        overflowX: 'auto',
+                        WebkitOverflowScrolling: 'touch',
+                        background: '#fff',
+                        borderRadius: 8,
+                        boxShadow: '0 2px 12px rgba(0,0,0,0.04)',
+                        marginBottom: '1.5rem',
+                        border: '1px solid #eee'
                     }}
                 >
-                    <thead>
-                        <tr>
-                            {columns.map(header => (
-                                <th
-                                    key={header}
-                                    style={{
-                                        background: '#f8f9fa',
-                                        fontWeight: 600,
-                                        color: '#222',
-                                        padding: '12px 10px',
-                                        borderBottom: '1px solid #eee',
-                                        position: 'sticky',
-                                        top: 0,
-                                        zIndex: 2,
-                                        textAlign: 'left',
-                                        whiteSpace: 'normal'
-                                    }}
-                                >
-                                    {header}
-                                </th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {data && data.length > 0 ? (
-                            data.map(renderRow)
-                        ) : (
+                    <table
+                        style={{
+                            width: '100%',
+                            borderCollapse: 'collapse',
+                            minWidth: 400,
+                            fontSize: '15px',
+                            background: '#fff'
+                        }}
+                    >
+                        <thead>
                             <tr>
-                                <td colSpan={columns.length} style={{ textAlign: 'center', padding: '12px 10px' }}>
-                                    {emptyText || 'No data found.'}
-                                </td>
+                                {columns.map(header => (
+                                    <th
+                                        key={header}
+                                        style={{
+                                            background: '#f8f9fa',
+                                            fontWeight: 600,
+                                            color: '#222',
+                                            padding: '12px 10px',
+                                            borderBottom: '1px solid #eee',
+                                            position: 'sticky',
+                                            top: 0,
+                                            zIndex: 2,
+                                            textAlign: 'left',
+                                            whiteSpace: 'normal'
+                                        }}
+                                    >
+                                        {header}
+                                    </th>
+                                ))}
                             </tr>
-                        )}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {data && data.length > 0 ? (
+                                data.map(renderRow)
+                            ) : (
+                                <tr>
+                                    <td colSpan={columns.length} style={{ textAlign: 'center', padding: '12px 10px' }}>
+                                        {emptyText || 'No data found.'}
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+                
+                {/* Pagination Controls */}
+                {showPagination && totalPages > 1 && (
+                    <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        padding: '1rem 0',
+                        background: '#fff',
+                        borderRadius: '8px',
+                        marginBottom: '1.5rem'
+                    }}>
+                        <div style={{ fontSize: '14px', color: '#666' }}>
+                            Showing {((currentPage - 1) * rowsPerPage) + 1} to {Math.min(currentPage * rowsPerPage, totalRows)} of {totalRows} results
+                        </div>
+                        <nav aria-label="Table pagination">
+                            <ul style={{
+                                display: 'flex',
+                                listStyle: 'none',
+                                margin: 0,
+                                padding: 0,
+                                gap: '4px'
+                            }}>
+                                <li>
+                                    <button
+                                        style={{
+                                            padding: '8px 12px',
+                                            border: '1px solid #dee2e6',
+                                            background: currentPage === 1 ? '#e9ecef' : '#fff',
+                                            color: currentPage === 1 ? '#6c757d' : '#007bff',
+                                            cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                                            borderRadius: '4px',
+                                            fontSize: '14px'
+                                        }}
+                                        onClick={() => setCurrentPage(currentPage - 1)}
+                                        disabled={currentPage === 1}
+                                    >
+                                        Previous
+                                    </button>
+                                </li>
+                                {[...Array(totalPages)].map((_, idx) => (
+                                    <li key={idx + 1}>
+                                        <button
+                                            style={{
+                                                padding: '8px 12px',
+                                                border: '1px solid #dee2e6',
+                                                background: currentPage === idx + 1 ? '#007bff' : '#fff',
+                                                color: currentPage === idx + 1 ? '#fff' : '#007bff',
+                                                cursor: 'pointer',
+                                                borderRadius: '4px',
+                                                fontSize: '14px'
+                                            }}
+                                            onClick={() => setCurrentPage(idx + 1)}
+                                        >
+                                            {idx + 1}
+                                        </button>
+                                    </li>
+                                ))}
+                                <li>
+                                    <button
+                                        style={{
+                                            padding: '8px 12px',
+                                            border: '1px solid #dee2e6',
+                                            background: currentPage === totalPages ? '#e9ecef' : '#fff',
+                                            color: currentPage === totalPages ? '#6c757d' : '#007bff',
+                                            cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                                            borderRadius: '4px',
+                                            fontSize: '14px'
+                                        }}
+                                        onClick={() => setCurrentPage(currentPage + 1)}
+                                        disabled={currentPage === totalPages}
+                                    >
+                                        Next
+                                    </button>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                )}
             </div>
         );
     }
@@ -1359,8 +1453,9 @@ function Deposit() {
 
                             <TableLayout
                                 columns={['Amount', 'Type', 'Status', 'Action', 'Date']}
-                                data={userData?.confirmedInvestments || []}
+                                data={paginatedData}
                                 emptyText="No deposit history found."
+                                showPagination={true}
                                 renderRow={txn => (
                                     <tr key={txn._id}>
                                         <td style={{

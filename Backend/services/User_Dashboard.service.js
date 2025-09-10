@@ -10,87 +10,93 @@ const { sendWithdrawEmail, sendDepositEmail } = require('./sendMailer'); // Impo
 // Service function
 exports.showDashboard = async function showDashboard(userId) {
   try {
-    // Get user basic info first
     const user = await UserModel.findById(userId);
     if (!user) {
       throw new Error("User not found");
     }
 
-    // 1) Line Chart → Daily earnings/profit trends (from RefUserEarning)
-    const lineChart = await RedUserEarning.aggregate([
+    // 1) Line Chart → Daily earnings trend (DailyEarn table)
+    const lineChart = await DailyEarn.aggregate([
       { $match: { userId: new mongoose.Types.ObjectId(userId) } },
       {
         $group: {
           _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
-          totalEarnings: { $sum: "$amount" }
+          totalDailyEarnings: { $sum: "$dailyProfit" }
         }
       },
       { $sort: { _id: 1 } }
     ]);
 
-    // 2) Pie Chart → Deposit vs Invested Balance
-    const deposits = await DailyEarn.aggregate([
-      { $match: { userId: new mongoose.Types.ObjectId(userId) } },
-      { $group: { _id: null, totalDeposit: { $sum: "$baseAmount" } } }
-    ]);
+    // 2) Pie Chart → Deposit vs Invested (Investment table with Pending + Confirmed only)
     const investments = await InvestmentModel.aggregate([
-      { $match: { userId: new mongoose.Types.ObjectId(userId) } },
-      { $group: { _id: null, totalInvested: { $sum: "$amount" } } }
+      {
+        $match: {
+          userId: new mongoose.Types.ObjectId(userId),
+          status: { $in: ["Pending", "Confirmed"] }
+        }
+      },
+      {
+        $group: {
+          _id: "$type",
+          totalAmount: { $sum: "$amount" }
+        }
+      }
     ]);
+
     const pieChart = {
-      deposit: deposits[0]?.totalDeposit || 0,
-      invested: investments[0]?.totalInvested || 0
+      deposit: investments.find(i => i._id === "Deposit")?.totalAmount || 0,
+      invested: investments.find(i => i._id === "Withdraw")?.totalAmount || 0
     };
 
-    // 3) Bar Chart → Referral earnings comparison between users
-    const barChart = await RedUserEarning.aggregate([
-      {
-        $group: {
-          _id: "$userId",
-          totalReferralEarnings: { $sum: "$earningRef" },
-          name: { $first: "$name" }
-        }
-      },
-      { $sort: { totalReferralEarnings: -1 } }
-    ]);
 
-    // 4) Stacked Area Chart → Combined growth (daily + referral earnings)
-    const stackedAreaChart = await RedUserEarning.aggregate([
+    // // 3) Bar Chart → Referral earnings (RefUserEarning table)
+    // const barChart = await RedUserEarning.aggregate([
+    //   { $match: { userId: new mongoose.Types.ObjectId(userId) } },
+    //   {
+    //     $group: {
+    //       _id: "$userId",
+    //       totalReferralEarnings: { $sum: "$earningRef" },
+    //       name: { $first: "$name" }
+    //     }
+    //   },
+    //   { $sort: { totalReferralEarnings: -1 } }
+    // ]);
+
+    // 4) Stacked Area Chart → Daily vs Ref earnings (DailyEarn table)
+    const stackedAreaChart = await DailyEarn.aggregate([
       { $match: { userId: new mongoose.Types.ObjectId(userId) } },
       {
         $group: {
           _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
-          dailyEarnings: { $sum: "$amount" },
-          referralEarnings: { $sum: "$earningRef" }
+          dailyEarnings: { $sum: "$dailyProfit" },
+          referralEarnings: { $sum: "$refEarn" }
         }
       },
       { $sort: { _id: 1 } }
     ]);
 
-    // 5) Card Data → User balance information
-    const depositAmount = user.depositAmount || 0;
-    const investedAmount = user.investedAmount || 0;
-    const totalEarn = user.totalEarn || 0;
-    const refEarn = user.refEarn || 0;
-    const totalBalance = user.totalBalance || 0;
-
+    // 5) Card Data → From User table directly
     const cardData = {
-      totalBalance: totalBalance.toFixed(2),
-      totalEarn: totalEarn.toFixed(2),
-      refEarn: refEarn.toFixed(2),
-      depositAmount: depositAmount.toFixed(2),
-      investedAmount: investedAmount.toFixed(2)
+      totalBalance: (user.totalBalance || 0).toFixed(2),
+      totalEarn: (user.totalEarn || 0).toFixed(2),
+      refEarn: (user.refEarn || 0).toFixed(2),
+      depositAmount: (user.depositAmount || 0).toFixed(2),
+      investedAmount: (user.investedAmount || 0).toFixed(2)
     };
 
     return {
       name: user.name,
       email: user.email,
       image: user.image || '',
-      referralCode: user.referralCode, // 👈 referralCode added here
-      lineChart: lineChart.map(item => item.totalEarnings),
+      referralCode: user.referralCode,
+      lineChart: lineChart.map(item => ({
+        date: item._id,
+        value: item.totalDailyEarnings
+      })),
       pieChart,
-      barChart,
+      // barChart,
       stackedAreaChart: stackedAreaChart.map(item => ({
+        date: item._id,
         daily: item.dailyEarnings,
         referral: item.referralEarnings
       })),
@@ -577,7 +583,7 @@ exports.redeposit = async function ({
       image,
       type,
       status: "Pending",
-      reDepId: reDepId  
+      reDepId: reDepId
     });
 
     await investment.save();

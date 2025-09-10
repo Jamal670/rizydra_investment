@@ -12,6 +12,10 @@ function ReferalUsers() {
         refEarnings: [],
         referralSummary: { level1: 0, level2: 0, level3: 0 }
     });
+    
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const rowsPerPage = 8;
 
     useEffect(() => {
         // Only load assets once per session
@@ -85,6 +89,15 @@ function ReferalUsers() {
         }, 1000);
         return () => clearTimeout(timer);
     }, []);
+
+    // Pagination logic
+    const tableData = referralData.refEarnings || [];
+    const totalRows = tableData.length;
+    const totalPages = Math.ceil(totalRows / rowsPerPage);
+    const paginatedData = tableData.slice(
+        (currentPage - 1) * rowsPerPage,
+        currentPage * rowsPerPage
+    );
 
     const handleAddReferralUser = async () => {
         if (referralData.investedAmount >= 20) {
@@ -356,8 +369,8 @@ function ReferalUsers() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {referralData.refEarnings && referralData.refEarnings.length > 0 ? (
-                                            referralData.refEarnings.map((item, idx) => (
+                                        {paginatedData && paginatedData.length > 0 ? (
+                                            paginatedData.map((item, idx) => (
                                                 <tr key={idx}>
                                                     <td style={{
                                                         padding: '12px 10px',
@@ -409,6 +422,85 @@ function ReferalUsers() {
                                     </tbody>
                                 </table>
                             </div>
+                            
+                            {/* Pagination Controls */}
+                            {totalPages > 1 && (
+                                <div style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    padding: '1rem 0',
+                                    background: '#fff',
+                                    borderRadius: '8px',
+                                    marginBottom: '1.5rem'
+                                }}>
+                                    <div style={{ fontSize: '14px', color: '#666' }}>
+                                        Showing {((currentPage - 1) * rowsPerPage) + 1} to {Math.min(currentPage * rowsPerPage, totalRows)} of {totalRows} results
+                                    </div>
+                                    <nav aria-label="Table pagination">
+                                        <ul style={{
+                                            display: 'flex',
+                                            listStyle: 'none',
+                                            margin: 0,
+                                            padding: 0,
+                                            gap: '4px'
+                                        }}>
+                                            <li>
+                                                <button
+                                                    style={{
+                                                        padding: '8px 12px',
+                                                        border: '1px solid #dee2e6',
+                                                        background: currentPage === 1 ? '#e9ecef' : '#fff',
+                                                        color: currentPage === 1 ? '#6c757d' : '#007bff',
+                                                        cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                                                        borderRadius: '4px',
+                                                        fontSize: '14px'
+                                                    }}
+                                                    onClick={() => setCurrentPage(currentPage - 1)}
+                                                    disabled={currentPage === 1}
+                                                >
+                                                    Previous
+                                                </button>
+                                            </li>
+                                            {[...Array(totalPages)].map((_, idx) => (
+                                                <li key={idx + 1}>
+                                                    <button
+                                                        style={{
+                                                            padding: '8px 12px',
+                                                            border: '1px solid #dee2e6',
+                                                            background: currentPage === idx + 1 ? '#007bff' : '#fff',
+                                                            color: currentPage === idx + 1 ? '#fff' : '#007bff',
+                                                            cursor: 'pointer',
+                                                            borderRadius: '4px',
+                                                            fontSize: '14px'
+                                                        }}
+                                                        onClick={() => setCurrentPage(idx + 1)}
+                                                    >
+                                                        {idx + 1}
+                                                    </button>
+                                                </li>
+                                            ))}
+                                            <li>
+                                                <button
+                                                    style={{
+                                                        padding: '8px 12px',
+                                                        border: '1px solid #dee2e6',
+                                                        background: currentPage === totalPages ? '#e9ecef' : '#fff',
+                                                        color: currentPage === totalPages ? '#6c757d' : '#007bff',
+                                                        cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                                                        borderRadius: '4px',
+                                                        fontSize: '14px'
+                                                    }}
+                                                    onClick={() => setCurrentPage(currentPage + 1)}
+                                                    disabled={currentPage === totalPages}
+                                                >
+                                                    Next
+                                                </button>
+                                            </li>
+                                        </ul>
+                                    </nav>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

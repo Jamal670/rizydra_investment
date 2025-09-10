@@ -147,7 +147,16 @@ function Home() {
                       Get Started
                     </a>
                   )}
-                  <a href="https://www.youtube.com/@rizydra" target='_blank' className="video-button"><i className="las la-play"></i></a>
+                  {/* <a href="https://www.youtube.com/@rizydra" target='_blank' className="video-button"><i className="las la-play"></i></a> */}
+                  <a
+                    href="https://www.youtube.com/@rizydra"
+                    target="_blank"
+                    className="video-button"
+                    onClick={(e) => e.preventDefault()}
+                  >
+                    <i className="las la-play"></i>
+                  </a>
+
                 </div>
               </div>
             </div>

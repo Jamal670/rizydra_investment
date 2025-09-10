@@ -137,12 +137,14 @@ function UserDashboard() {
     // Chart configurations with better data handling
     const lineChartData = {
         labels: chartData.lineChart.length > 0
-            ? chartData.lineChart.map((_, index) => `Day ${index + 1}`)
+            ? chartData.lineChart.map(item => item.date) // Use actual dates
             : ['No Data'],
         datasets: [
             {
                 label: 'Daily Earnings',
-                data: chartData.lineChart.length > 0 ? chartData.lineChart : [0],
+                data: chartData.lineChart.length > 0 
+                    ? chartData.lineChart.map(item => item.value) // Map the value property
+                    : [0],
                 borderColor: 'rgb(75, 192, 192)',
                 backgroundColor: 'rgba(75, 192, 192, 0.2)',
                 tension: 0.1,
@@ -187,7 +189,7 @@ function UserDashboard() {
 
     const stackedAreaChartData = {
         labels: chartData.stackedAreaChart.length > 0
-            ? chartData.stackedAreaChart.map((_, index) => `Day ${index + 1}`)
+            ? chartData.stackedAreaChart.map(item => item.date) // Use actual dates
             : ['No Data'],
         datasets: [
             {
@@ -564,29 +566,6 @@ function UserDashboard() {
                                                 <h5 className="mb-3" style={{ fontSize: '16px', fontWeight: '600' }}>Balance Distribution</h5>
                                                 <div style={{ height: '250px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                                     <Pie data={pieChartData} options={{
-                                                        ...chartOptions,
-                                                        maintainAspectRatio: false,
-                                                        plugins: {
-                                                            ...chartOptions.plugins,
-                                                            title: { display: false }
-                                                        }
-                                                    }} />
-                                                </div>
-                                            </div>
-
-                                            {/* Referral Earnings Comparison */}
-                                            <div className="chart-item" style={{
-                                                minWidth: '400px',
-                                                maxWidth: '400px',
-                                                background: '#fff',
-                                                padding: '20px',
-                                                borderRadius: '10px',
-                                                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                                                border: '1px solid #e9ecef'
-                                            }}>
-                                                <h5 className="mb-3" style={{ fontSize: '16px', fontWeight: '600' }}>Referral Earnings</h5>
-                                                <div style={{ height: '250px' }}>
-                                                    <Bar data={barChartData} options={{
                                                         ...chartOptions,
                                                         maintainAspectRatio: false,
                                                         plugins: {

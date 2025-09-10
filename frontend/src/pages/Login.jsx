@@ -6,6 +6,7 @@ function Login() {
     const [isLoading, setIsLoading] = useState(true);
     const [form, setForm] = useState({ email: '', password: '' });
     const [loginLoading, setLoginLoading] = useState(false); // Add loading state for button
+    const [showPassword, setShowPassword] = useState(false); // Add password visibility state
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -61,6 +62,10 @@ function Login() {
 
     const handleChange = e => {
         setForm({ ...form, [e.target.name]: e.target.value });
+    };
+
+    const togglePasswordVisibility = () => {
+        setShowPassword(!showPassword);
     };
 
     const handleSubmit = async e => {
@@ -187,17 +192,43 @@ function Login() {
                                             required
                                         />
                                     </div>
-                                    <div className="form--group">
+                                    <div className="form--group" style={{ position: 'relative' }}>
                                         <i className="las la-lock"></i>
                                         <input
-                                            type="password"
+                                            type={showPassword ? "text" : "password"}
                                             className="form--control"
                                             placeholder="Password"
                                             name="password"
                                             value={form.password}
                                             onChange={handleChange}
                                             required
+                                            style={{ paddingRight: '45px' }}
                                         />
+                                        <button
+                                            type="button"
+                                            onClick={togglePasswordVisibility}
+                                            style={{
+                                                position: 'absolute',
+                                                right: '15px',
+                                                top: '50%',
+                                                transform: 'translateY(-50%)',
+                                                background: 'none',
+                                                border: 'none',
+                                                cursor: 'pointer',
+                                                color: '#666',
+                                                fontSize: '18px',
+                                                padding: '0',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                width: '20px',
+                                                height: '20px',
+                                                zIndex: 10
+                                            }}
+                                            aria-label={showPassword ? "Hide password" : "Show password"}
+                                        >
+                                            <i className={showPassword ? "las la-eye-slash" : "las la-eye"}></i>
+                                        </button>
                                     </div>
                                     <div className="d-flex justify-content-between">
                                         <div className="form--group custom--checkbox ">

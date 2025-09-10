@@ -14,6 +14,8 @@ import {
 } from 'chart.js';
 import { Line, Bar, Pie, Doughnut } from 'react-chartjs-2';
 import api from '../../Api'; // Adjust path if needed
+import { Button, DatePicker, Space } from 'antd'; // Import Ant Design components
+import moment from 'moment'; // For date handling
 
 // Register ChartJS components
 ChartJS.register(
@@ -33,7 +35,9 @@ const AdminDashboard = () => {
   const [dashboard, setDashboard] = useState(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [currentPage, setCurrentPage] = useState(1); // <-- Add page state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [filterType, setFilterType] = useState("all"); // New state for filter buttons
+  const [selectedDate, setSelectedDate] = useState(null); // New state for date picker
 
   const rowsPerPage = 10;
 
@@ -153,11 +157,38 @@ const AdminDashboard = () => {
     avatar: `https://i.pravatar.cc/40?img=${idx + 1}`,
   })) : [];
 
-  // Filter table data by search
-  const filteredTableData = tableData.filter(row =>
-    row.name.toLowerCase().includes(search.toLowerCase()) ||
-    row.email.toLowerCase().includes(search.toLowerCase())
-  );
+  // Apply filters and search
+  const applyFiltersAndSearch = () => {
+    let currentFilteredData = tableData;
+
+    // Apply button filters
+    if (filterType === "invested") {
+      currentFilteredData = currentFilteredData.filter(user => user.invest > 0);
+    } else if (filterType === "deposit") {
+      currentFilteredData = currentFilteredData.filter(user => user.deposit > 0);
+    } else if (filterType === "balance") {
+      currentFilteredData = currentFilteredData.filter(user => user.balance > 0);
+    }
+
+    // Apply date filter
+    if (selectedDate) {
+      currentFilteredData = currentFilteredData.filter(user => {
+        const userDate = moment(user.date).startOf('day');
+        const filterDate = moment(selectedDate).startOf('day');
+        return userDate.isSame(filterDate);
+      });
+    }
+
+    // Apply search filter
+    currentFilteredData = currentFilteredData.filter(row =>
+      row.name.toLowerCase().includes(search.toLowerCase()) ||
+      row.email.toLowerCase().includes(search.toLowerCase())
+    );
+
+    return currentFilteredData;
+  };
+
+  const filteredTableData = applyFiltersAndSearch();
 
   // Pagination logic
   const totalRows = filteredTableData.length;
@@ -167,12 +198,11 @@ const AdminDashboard = () => {
     currentPage * rowsPerPage
   );
 
-  const otherTableRows = filteredTableData.slice(currentPage * rowsPerPage);
-
-  // Reset to page 1 if search changes and current page is out of range
+  // Reset to page 1 if search or filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [search]);
+  }, [search, filterType, selectedDate]);
+
 
   const chartOptions = {
     responsive: true,
@@ -436,12 +466,20 @@ const AdminDashboard = () => {
             {/* Table Section */}
             <div className="card border-0 shadow-sm">
               <div className="card-header bg-white border-0 py-3">
-                <div className="d-flex justify-content-between align-items-center">
+                <div className="d-flex justify-content-between align-items-center flex-wrap"> {/* Added flex-wrap for responsiveness */}
                   <div>
                     <h5 className="mb-0 fw-bold text-dark">User Management</h5>
                     <p className="text-muted mb-0">Manage all users from this panel</p>
                   </div>
-
+                  <Space className="mt-3 mt-md-0"> {/* Margin top for smaller screens */}
+                    <Button.Group>
+                      <Button type={filterType === "all" ? "primary" : "default"} onClick={() => { setFilterType("all"); setSelectedDate(null); }}>All</Button>
+                      <Button type={filterType === "invested" ? "primary" : "default"} onClick={() => { setFilterType("invested"); setSelectedDate(null); }}>Invested</Button>
+                      <Button type={filterType === "deposit" ? "primary" : "default"} onClick={() => { setFilterType("deposit"); setSelectedDate(null); }}>Deposit</Button>
+                      <Button type={filterType === "balance" ? "primary" : "default"} onClick={() => { setFilterType("balance"); setSelectedDate(null); }}>Balance</Button>
+                    </Button.Group>
+                    <DatePicker onChange={(date) => { setSelectedDate(date); setFilterType("all"); }} value={selectedDate} /> {/* Clear button filters when date is selected */}
+                  </Space>
                 </div>
               </div>
               <div className="card-body p-0">

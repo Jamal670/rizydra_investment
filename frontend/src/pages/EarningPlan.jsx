@@ -99,17 +99,17 @@ function EarningPlan() {
 
       <div className="overlay"></div>
 
-      
+
 
       {/* Banner Section */}
       <section className="inner-banner bg_img" style={{ background: 'url(./assets/images/privacy-policy/bg.png) no-repeat center bottom' }}>
         <div className="container">
           <div className="inner-banner-wrapper">
             <div className="inner-banner-content">
-              <h2 className="inner-banner-title">Earning plan</h2>
+              <h2 className="inner-banner-title">investment plan</h2>
               <ul className="breadcums">
                 <li><a href="index.html">Home</a></li>
-                <li><span>Earning plan</span></li>
+                <li><span>investment plan</span></li>
               </ul>
             </div>
             <div className="inner-banner-thumb d-none d-md-block">
@@ -122,18 +122,50 @@ function EarningPlan() {
         </div>
       </section>
 
-      {/* Plan Section Two */}
       <section className="plan-section padding-top padding-bottom overflow-hidden">
+        <div className="container">
+          <div className="row justify-content-center">
+            <div className="col-lg-8">
+              <div className="section-header text-center">
+                <span className="subtitle fadeInUp">How to Earn with Our Platform</span>
+                <h2 className="title">Step-By-Step Guide</h2>
+              </div>
+
+              <ul
+                className="steps text-start mx-auto"
+                style={{
+                  maxWidth: "680px",
+                  lineHeight: "1.8",
+                  marginTop: "1rem",
+                  listStyleType: "disc", // bullet style
+                  paddingLeft: "20px"
+                }}
+              >
+                <li><b>Register</b> to your account first.<a href="/sign-up" style={{color: '#4100f6ff'}}>Click here</a></li>
+                <li><b>Deposit</b> money to your account. The deposited amount will appear in your <b>Total Balance</b>.<a href="/deposit" style={{color: '#4100f6ff'}}>Click here</a></li>
+                <li><b>Choose</b> the amount you want to invest and transfer it from your <b>Total Balance</b> to your <b>Invested Amount</b>.<a href="/deposit" style={{color: '#4100f6ff'}}>Click here</a></li>
+                <li><b>Once</b> funds are in <b>Invested Amount</b>, you will automatically receive <b>1% profit daily</b>, adding up to <b>30% profit monthly</b>.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+
+
+      {/* Plan Section Two */}
+      <section className="plan-section  padding-bottom overflow-hidden">
         <div className="container">
           <div className="row justify-content-center">
             <div className="col-lg-7">
               <div className="section-header text-center">
-                <span className="subtitle  fadeInUp">With Easy Two Steps</span>
                 <h2 className="title">EARN EXTRA</h2>
+                <span className="subtitle  fadeInUp">With Easy Two Steps</span>
                 <p>
-                  Step 1: Register & verify account, deposit to activate your profile.
-                  <br /> Step 2: Join our Telegram bot to receive real-time trading signals.
-                  <br /> Just follow only provided signals and start earning with ease!
+                  <b>Step 1:</b> Register & verify account, deposit to activate your profile.
+                  <br /> <b>Step 2:</b> Join our Telegram bot to receive real-time trading signals.
+                  <br />Just follow only provided signals and start earning with ease!
                 </p>
               </div>
             </div>
@@ -176,10 +208,10 @@ function EarningPlan() {
                 </div>
                 <div className="plan-hover">
                   <div className="left-content">
-                    <h5 className="subtitle">ACCESS BEST FOR FREE NOW</h5>
+                    <h5 className="subtitle">Access Bot for Free Now</h5>
                   </div>
                   <div className="right-content">
-                    <a href="https://t.me/rizydra_bot" className="invest-button">Telegram Link</a>
+                    <a href="https://t.me/rizydra_bot" className="invest-button">Telegram Bot</a>
                   </div>
                 </div>
               </div>
@@ -187,6 +219,7 @@ function EarningPlan() {
           </div>
         </div>
       </section>
+
 
 
       <a href="#0" className="scrollToTop active"><i className="las la-chevron-up"></i></a>

@@ -2,7 +2,12 @@ const User = require('../models/user.model');
 const DailyEarn = require('../models/dailyEarn.model');
 const RedUserEarning = require('../models/refUserEarn.model');
 
-// Helper to get start and end of yesterday in UTC
+// ✅ Helper to round values up to 3 decimal places
+const roundTo3 = (num) => {
+  return parseFloat(num.toFixed(3));
+};
+
+// ✅ Helper to get start and end of yesterday in UTC
 const getUTCYesterdayRange = () => {
   const now = new Date();
   const start = new Date(Date.UTC(
@@ -27,7 +32,7 @@ exports.calculateDailyEarnings = async () => {
   const allUsers = await User.find({});
 
   for (const user of allUsers) {
-    const baseAmount = user.investedAmount || 0;
+    const baseAmount = roundTo3(user.investedAmount || 0);
 
     // 🚨 ensure at least 20 USDT
     if (baseAmount < 20) {
@@ -45,11 +50,11 @@ exports.calculateDailyEarnings = async () => {
       console.log(`No yesterday record for ${user.name}, using investedAmount...`);
       yesterdayRecord = {
         baseAmount: baseAmount,
-        dailyProfit: (baseAmount * 1) / 100
+        dailyProfit: roundTo3((baseAmount * 1) / 100)
       };
     }
 
-    const dailyProfit = (yesterdayRecord.baseAmount * 1) / 100;
+    const dailyProfit = roundTo3((yesterdayRecord.baseAmount * 1) / 100);
     let totalRefEarnings = 0;
 
     // Referral earnings
@@ -66,8 +71,8 @@ exports.calculateDailyEarnings = async () => {
         refDailyProfit = refYesterdayRecord.dailyProfit;
       } else {
         const refUserDetails = await User.findById(refUser.userId);
-        if (refUserDetails && refUserDetails.investedAmount >= 100) {
-          refDailyProfit = (refUserDetails.investedAmount * 1) / 100;
+        if (refUserDetails && refUserDetails.investedAmount >= 20) {
+          refDailyProfit = roundTo3((refUserDetails.investedAmount * 1) / 100);
         }
       }
 
@@ -78,15 +83,15 @@ exports.calculateDailyEarnings = async () => {
       else if (refUser.refLevel === 2) percentage = 2;
       else if (refUser.refLevel === 3) percentage = 1;
 
-      const refEarnAmount = (refDailyProfit * percentage) / 100;
+      const refEarnAmount = roundTo3((refDailyProfit * percentage) / 100);
       totalRefEarnings += refEarnAmount;
 
       const refUserDetails = await User.findById(refUser.userId);
       if (refUserDetails) {
         await RedUserEarning.create({
-          userId: user._id, 
+          userId: user._id,
           name: refUserDetails.name,
-          amount: refUserDetails.investedAmount || 0,
+          amount: roundTo3(refUserDetails.investedAmount || 0),
           refLevel: refUser.refLevel,
           earningRef: refEarnAmount
         });
@@ -106,16 +111,16 @@ exports.calculateDailyEarnings = async () => {
 
     await DailyEarn.create({
       userId: user._id,
-      baseAmount,
-      dailyProfit,
-      refEarn: totalRefEarnings,
+      baseAmount: baseAmount,
+      dailyProfit: dailyProfit,
+      refEarn: roundTo3(totalRefEarnings),
       createdAt: nowUTC
     });
 
     // ✅ Update User table totals
-    user.totalBalance += (dailyProfit + totalRefEarnings);
-    user.refEarn += totalRefEarnings;
-    user.totalEarn += dailyProfit; // Optional: agar sirf apni earning track krni hai
+    user.totalBalance = roundTo3(user.totalBalance + dailyProfit + totalRefEarnings);
+    user.refEarn = roundTo3(user.refEarn + totalRefEarnings);
+    user.totalEarn = roundTo3(user.totalEarn + dailyProfit); // Optional: sirf apni earning track krni ho to
     await user.save();
 
     console.log(`Daily earnings updated for ${user.name}: Profit=${dailyProfit}, Ref=${totalRefEarnings}`);

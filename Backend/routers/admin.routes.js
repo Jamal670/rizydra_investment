@@ -13,6 +13,7 @@ router.post('/adminHandleWithdrawConfirmed', AdminDash.AdminHandleWithdrawConfir
 router.post('/adminHandleWithdrawDeclined', AdminDash.AdminHandleWithdrawDeclineds);
 router.get('/adminGetSpecificUser/:id', AdminDash.adminGetSpecificUsers);
 router.get('/admincontactus', AdminDash.admincontactUs);
+router.post('/adminDeleteUser', AdminDash.adminDeleteUser);
 
 
 module.exports = router;

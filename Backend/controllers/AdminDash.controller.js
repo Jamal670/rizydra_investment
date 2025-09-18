@@ -106,3 +106,15 @@ exports.admincontactUs = async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 };
+
+//------------delete user----------------
+exports.adminDeleteUser = async (req, res) => {
+  try {
+    const {_id} = req.body;
+    console.log(`Deleting user with ID: ${_id}`);
+    const users = await AdminDashService.adminDeleteUser(_id);
+    res.status(200).json({ message: "User deleted successfully" });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};

@@ -628,6 +628,27 @@ exports.admincontactUs = async () => {
     }
 };
 
+//======================Admin DELETE User Data================================
+exports.adminDeleteUser = async (_id) => {
+    try {
+      // Step 1: Delete user
+      const deletedUser = await User.findByIdAndDelete(_id);
+      if (!deletedUser) {
+        return { message: "User not found" };
+      }
+  
+      // Step 2: Delete related records
+      await Investment.deleteMany({ userId: _id });
+      await DailyEarn.deleteMany({ userId: _id });
+      await RefUserEarning.deleteMany({ userId: _id });
+  
+      return { message: "User and related data deleted successfully" };
+    } catch (err) {
+      console.error("Error in adminDeleteUser:", err);
+      throw new Error("Error deleting user: " + err.message);
+    }
+  };
+
 
 
 

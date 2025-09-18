@@ -124,6 +124,22 @@ const AdminUsers = () => {
         navigate(`/admin-specific-user/${userId}`);
     };
 
+    // Handle Delete button click
+    const handleDeleteUser = async (userId) => {
+        const confirmDelete = window.confirm('Are you sure you want to delete this user?');
+        if (!confirmDelete) return;
+
+        try {
+            await api.post('/admin/adminDeleteUser', { _id: userId });
+            // Optimistically update UI by removing the user from lists
+            setUsersData(prev => prev.filter(u => u._id !== userId));
+            setFilteredUsers(prev => prev.filter(u => u._id !== userId));
+            alert('User deleted successfully');
+        } catch (err) {
+            alert('Failed to delete user');
+        }
+    };
+
     // Map API data to table rows - Add _id field
     const tableData = filteredUsers.map((user, idx) => ({
         id: idx + 1,
@@ -575,6 +591,7 @@ const AdminUsers = () => {
                                                 <th scope="col">Action</th>
                                                 <th scope="col">Status</th>
                                                 <th scope="col" className="pe-4">Date</th>
+                                                <th scope="col" className="pe-4">Delete User</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -618,6 +635,14 @@ const AdminUsers = () => {
                                                         </span>
                                                     </td>
                                                     <td className="pe-4">{row.date}</td>
+                                                    <td className="pe-4">
+                                                        <button
+                                                            className="btn btn-sm btn-outline-danger"
+                                                            onClick={() => handleDeleteUser(row._id)}
+                                                        >
+                                                            <i className="bi bi-trash me-1"></i> Delete
+                                                        </button>
+                                                    </td>
                                                 </tr>
                                             ))}
                                         </tbody>

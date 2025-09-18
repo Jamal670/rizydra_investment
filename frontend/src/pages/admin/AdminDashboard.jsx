@@ -219,6 +219,22 @@ const AdminDashboard = () => {
     navigate(`/admin-specific-user/${userId}`);
   };
 
+  // Handle Delete button click
+  const handleDeleteUser = async (userId) => {
+    const confirmDelete = window.confirm('Are you sure you want to delete this user?');
+    if (!confirmDelete) return;
+
+    try {
+      await api.post('/admin/adminDeleteUser', { _id: userId });
+      // Refresh dashboard data after delete
+      const res = await api.get('/admin/adminGetAllUsers');
+      setDashboard(res.data);
+      alert('User deleted successfully');
+    } catch (err) {
+      alert('Failed to delete user');
+    }
+  };
+
   if (loading) return <div className="text-center py-5">Loading...</div>;
 
   return (
@@ -499,6 +515,7 @@ const AdminDashboard = () => {
                         <th scope="col">Action</th>
                         <th scope="col">Status</th>
                         <th scope="col" className="pe-4">Date</th>
+                        <th scope="col" className="pe-4">Delete User</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -541,6 +558,14 @@ const AdminDashboard = () => {
                             </span>
                           </td>
                           <td className="pe-4">{row.date}</td>
+                          <td className="pe-4">
+                            <button
+                              className="btn btn-sm btn-outline-danger"
+                              onClick={() => handleDeleteUser(row._id)}
+                            >
+                              <i className="bi bi-trash me-1"></i> Delete
+                            </button>
+                          </td>
                         </tr>
                       ))}
                     </tbody>

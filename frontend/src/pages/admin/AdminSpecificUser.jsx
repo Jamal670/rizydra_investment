@@ -301,6 +301,20 @@ const AdminSpecificUser = () => {
         }
     };
 
+    // Delete user handler
+    const handleDeleteUser = async () => {
+        const confirmDelete = window.confirm('Are you sure you want to delete this user?');
+        if (!confirmDelete) return;
+
+        try {
+            await api.post('/admin/adminDeleteUser', { _id: user._id });
+            alert('User deleted successfully');
+            navigate('/admin-dashboard');
+        } catch (err) {
+            alert('Failed to delete user');
+        }
+    };
+
     // Handle investment modal
     const openInvestmentModal = (investment) => {
         setSelectedInvestment(investment);
@@ -845,12 +859,20 @@ const AdminSpecificUser = () => {
                                 <h5 className="mb-0 fw-bold text-dark">User Management</h5>
                                 <p className="text-muted mb-0">Manage user activities and transactions</p>
                             </div>
-                            <button
-                                className="btn btn-outline-primary"
-                                onClick={() => setShowFilterModal(true)}
-                            >
-                                <i className="bi bi-filter me-1"></i>Filter
-                            </button>
+                            <div className="d-flex gap-2">
+                                <button
+                                    className="btn btn-outline-danger"
+                                    onClick={handleDeleteUser}
+                                >
+                                    <i className="bi bi-trash me-1"></i> Delete
+                                </button>
+                                <button
+                                    className="btn btn-outline-primary"
+                                    onClick={() => setShowFilterModal(true)}
+                                >
+                                    <i className="bi bi-filter me-1"></i>Filter
+                                </button>
+                            </div>
                         </div>
                     </div>
                     <div className="card-body p-0">

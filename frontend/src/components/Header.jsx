@@ -32,7 +32,13 @@ function Header() {
                 <li><a href="/about">About</a></li>
                 <li><a href="/earning-plan">Earning Plan</a></li>
                 <li><a href="/affiliate">Affiliate</a></li>
-                <li><a href="/contact">Contact</a></li>
+                <li>
+                  {isLoggedIn ? (
+                    <a href="/contact">Contact</a>
+                  ) : (
+                    <a href="/login">Login</a>
+                  )}
+                </li>
                 <li>
                   {isLoggedIn ? (
                     <a href="/user-dashboard" className="cmn--btn">Dashboard</a>

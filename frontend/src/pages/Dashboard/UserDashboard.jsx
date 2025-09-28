@@ -43,7 +43,6 @@ function UserDashboard() {
         depositAmount: '0.00',
         investedAmount: '0.00'
     });
-    const [sidebarOpen, setSidebarOpen] = useState(true);
 
     useEffect(() => {
         const checkAuthAndLoadData = async () => {
@@ -245,15 +244,6 @@ function UserDashboard() {
         },
     };
 
-    // Optional: Close sidebar when switching to desktop view
-    useEffect(() => {
-        const handleResize = () => {
-            if (window.innerWidth >= 992) setSidebarOpen(false);
-        };
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
-
     return (
         <>
             {isLoading && (
@@ -321,28 +311,9 @@ function UserDashboard() {
                 <div className="container">
                     <div className="row gy-5">
                         <div className="col-lg-3">
-                            <div
-                                className={`dashboard-sidebar${sidebarOpen ? ' open' : ''}`}
-                                style={{
-                                    display: sidebarOpen || window.innerWidth >= 992 ? 'block' : 'none',
-                                    position: window.innerWidth < 992 ? 'fixed' : 'static',
-                                    top: 0,
-                                    left: 0,
-                                    zIndex: 1050,
-                                    background: '#fff',
-                                    height: '100vh',
-                                    width: '80vw',
-                                    maxWidth: 340,
-                                    boxShadow: sidebarOpen ? '0 2px 16px rgba(0,0,0,0.18)' : undefined,
-                                    transition: 'all 0.3s'
-                                }}
-                            >
-                                <div className="close-dashboard d-lg-none" style={{ textAlign: 'right', padding: 8 }}>
-                                    <i
-                                        className="las la-times"
-                                        style={{ fontSize: 28, cursor: 'pointer' }}
-                                        onClick={() => setSidebarOpen(false)}
-                                    ></i>
+                            <div className="dashboard-sidebar">
+                                <div className="close-dashboard d-lg-none">
+                                    <i className="las la-times"></i>
                                 </div>
                                 <div className="dashboard-user">
                                     <div className="user-thumb">
@@ -397,10 +368,11 @@ function UserDashboard() {
                                 </ul>
                             </div>
                         </div>
+
                         <div className="col-lg-9">
                             <div className="user-toggler-wrapper d-flex d-lg-none">
                                 <h4 className="title">User Dashboard</h4>
-                                <div className="user-toggler" style={{ cursor: 'pointer', marginLeft: 'auto' }} onClick={() => setSidebarOpen(true)}>
+                                <div className="user-toggler">
                                     <i className="las la-sliders-h"></i>
                                 </div>
                             </div>

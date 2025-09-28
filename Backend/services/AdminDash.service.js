@@ -250,68 +250,85 @@ exports.AdminGetAllUsersdata = async () => {
   }
 };
 
-//======================== GEt all deposit user========================
+//======================== Get all deposit users ========================
 exports.AdminGetAllDepositUsers = async () => {
-    try {
-        const depositUsers = await Investment.aggregate([
-            { $match: { type: "Deposit" } }, // Only Deposit type
+  try {
+    const depositUsers = await Investment.aggregate([
+      { $match: { type: "Deposit" } }, // Only Deposit type
+      {
+        $facet: {
+          // Part 1: Individual Deposit Records
+          deposits: [
             {
-                $facet: {
-                    // Part 1: Individual Deposit Records
-                    deposits: [
-                        {
-                            $lookup: {
-                                from: "users",
-                                localField: "userId",
-                                foreignField: "_id",
-                                as: "userData",
-                            },
-                        },
-                        { $unwind: "$userData" },
-                        {
-                            $project: {
-                                _id: 1,
-                                exchangeType: 1,
-                                amount: 1,
-                                userExchange: 1,
-                                image: 1,
-                                status: 1,
-                                type: 1,
-                                formattedDate: {
-                                    $dateToString: {
-                                        format: "%d %b, %Y",
-                                        date: "$createdAt",
-                                        timezone: "Asia/Karachi",
-                                    },
-                                },
-                                "userData._id": 1,
-                                "userData.name": 1,
-                                "userData.email": 1,
-                                "userData.totalBalance": 1,
-                                "userData.investedAmount": 1,
-                            },
-                        },
-                    ],
-
-                    // Part 2: Status Breakdown with count & totalAmount
-                    statusBreakdown: [
-                        {
-                            $group: {
-                                _id: "$status",
-                                count: { $sum: 1 },
-                                totalAmount: { $sum: "$amount" }, // Sum per status
-                            },
-                        },
-                    ],
-                },
+              $lookup: {
+                from: "users",
+                localField: "userId",
+                foreignField: "_id",
+                as: "userData",
+              },
             },
-        ]);
+            { $unwind: "$userData" },
+            {
+              $addFields: {
+                createdAtFormatted: {
+                  $dateToString: {
+                    format: "%H:%M %d %b, %Y",
+                    date: "$createdAt",
+                  },
+                },
+                updatedAtFormatted: {
+                  $cond: [
+                    { $eq: ["$status", "Pending"] },
+                    null, // Pending -> don't show updatedAt
+                    {
+                      $dateToString: {
+                        format: "%H:%M %d %b, %Y",
+                        date: "$updatedAt",
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+            {
+              $project: {
+                _id: 1,
+                exchangeType: 1,
+                amount: 1,
+                userExchange: 1,
+                image: 1,
+                status: 1,
+                type: 1,
+                createdAtFormatted: 1,
+                updatedAtFormatted: 1,
+                "userData._id": 1,
+                "userData.name": 1,
+                "userData.email": 1,
+                "userData.totalBalance": 1,
+                "userData.investedAmount": 1,
+              },
+            },
+          ],
 
-        return depositUsers[0];
-    } catch (err) {
-        console.error("Error in AdminGetAllDepositUsers:", err);
-        throw new Error("Error fetching admin deposit users: " + err.message);
-    }
+          // Part 2: Status Breakdown with count & totalAmount
+          statusBreakdown: [
+            {
+              $group: {
+                _id: "$status",
+                count: { $sum: 1 },
+                totalAmount: { $sum: "$amount" },
+              },
+            },
+          ],
+        },
+      },
+    ]);
+
+    return depositUsers[0];
+  } catch (err) {
+    console.error("Error in AdminGetAllDepositUsers:", err);
+    throw new Error("Error fetching admin deposit users: " + err.message);
+  }
 };
 
 
@@ -382,69 +399,87 @@ exports.AdminHandleDepositDeclined = async (_id, comment) => {
     }
 };
 
-//======================== GEt all withdraw user========================
+//======================== Get all withdraw users ========================
 exports.AdminGetAllWithdrawUsers = async () => {
-    try {
-        const withdrawUsers = await Investment.aggregate([
-            { $match: { type: "Withdraw" } }, // Only Withdraw type
+  try {
+    const withdrawUsers = await Investment.aggregate([
+      { $match: { type: "Withdraw" } }, // Only Withdraw type
+      {
+        $facet: {
+          // Part 1: Individual Withdraw Records
+          withdrawals: [
             {
-                $facet: {
-                    // Part 1: Individual Withdraw Records
-                    withdrawals: [
-                        {
-                            $lookup: {
-                                from: "users",
-                                localField: "userId",
-                                foreignField: "_id",
-                                as: "userData",
-                            },
-                        },
-                        { $unwind: "$userData" },
-                        {
-                            $project: {
-                                _id: 1,
-                                exchangeType: 1,
-                                amount: 1,
-                                userExchange: 1,
-                                image: 1,
-                                status: 1,
-                                type: 1,
-                                formattedDate: {
-                                    $dateToString: {
-                                        format: "%d %b, %Y",
-                                        date: "$createdAt",
-                                        timezone: "Asia/Karachi",
-                                    },
-                                },
-                                "userData._id": 1,
-                                "userData.name": 1,
-                                "userData.email": 1,
-                                "userData.totalBalance": 1,
-                                "userData.investedAmount": 1,
-                            },
-                        },
-                    ],
-
-                    // Part 2: Status Breakdown with count & totalAmount
-                    statusBreakdown: [
-                        {
-                            $group: {
-                                _id: "$status",
-                                count: { $sum: 1 },
-                                totalAmount: { $sum: "$amount" }, // Sum per status
-                            },
-                        },
-                    ],
-                },
+              $lookup: {
+                from: "users",
+                localField: "userId",
+                foreignField: "_id",
+                as: "userData",
+              },
             },
-        ]);
+            { $unwind: "$userData" },
+            {
+              $addFields: {
+                createdAtFormatted: {
+                  $dateToString: {
+                    format: "%H:%M %d %b, %Y",
+                    date: "$createdAt",
+                  },
+                },
+                updatedAtFormatted: {
+                  $cond: [
+                    { $eq: ["$status", "Pending"] },
+                    null, // Agar Pending hai -> updatedAt show na karo
+                    {
+                      $dateToString: {
+                        format: "%H:%M %d %b, %Y",
+                        date: "$updatedAt",
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+            {
+              $project: {
+                _id: 1,
+                exchangeType: 1,
+                amount: 1,
+                userExchange: 1,
+                image: 1,
+                status: 1,
+                type: 1,
+                createdAtFormatted: 1,
+                updatedAtFormatted: 1,
+                "userData._id": 1,
+                "userData.name": 1,
+                "userData.email": 1,
+                "userData.totalBalance": 1,
+                "userData.investedAmount": 1,
+              },
+            },
+          ],
 
-        return withdrawUsers[0];
-    } catch (err) {
-        console.error("Error in AdminGetAllWithdrawUsers:", err);
-        throw new Error("Error fetching admin withdraw users: " + err.message);
-    }
+          // Part 2: Status Breakdown with count & totalAmount
+          statusBreakdown: [
+            {
+              $group: {
+                _id: "$status",
+                count: { $sum: 1 },
+                totalAmount: { $sum: "$amount" },
+              },
+            },
+          ],
+        },
+      },
+    ]);
+
+    return withdrawUsers[0];
+  } catch (err) {
+    console.error("Error in AdminGetAllWithdrawUsers:", err);
+    throw new Error("Error fetching admin withdraw users: " + err.message);
+  }
 };
+
 
 //======================Handle Withdraw Confirmed===================================
 exports.AdminHandleWithdrawConfirmed = async (_id) => {

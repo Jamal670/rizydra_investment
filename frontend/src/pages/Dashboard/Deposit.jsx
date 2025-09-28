@@ -36,6 +36,7 @@ function Deposit() {
     const [withdrawLoading, setWithdrawLoading] = useState(false);
     const [focusedWithdrawAmount, setFocusedWithdrawAmount] = useState(false); // New state for withdraw amount focus
     const [focusedWithdrawAddress, setFocusedWithdrawAddress] = useState(false); // New state for withdraw address focus
+    const [showWithdrawConfirmation, setShowWithdrawConfirmation] = useState(false); // New state for withdrawal confirmation popup
 
     const [showInvestModal, setShowInvestModal] = useState(false);
     const [investFrom, setInvestFrom] = useState('Deposit');
@@ -125,7 +126,39 @@ function Deposit() {
     };
 
     useEffect(() => {
-        if (!window.__rizydraAssetsLoaded) {
+        const checkAuthAndLoadData = async () => {
+            try {
+                // Step 1: Check authentication first
+                await api.get("/user/verify", { withCredentials: true });
+                
+                // Step 2: If auth successful, load deposit data
+                const res = await api.get('/user/showdeposit', { withCredentials: true });
+                if (res.data.success) setUserData(res.data.data);
+    
+                // Load assets only once per session
+                if (!window.__rizydraAssetsLoaded) {
+                    loadAssets();
+                    window.__rizydraAssetsLoaded = true;
+                }
+    
+            } catch (err) {
+                console.error('Authentication or data loading failed:', err);
+                
+                // Clear localStorage flags
+                localStorage.removeItem("authenticated");
+                localStorage.removeItem("isAdmin");
+    
+                // Show alert and redirect - ONLY ONCE
+                alert("Your session has expired, Please login again.");
+                window.location.href = '/login';
+                return; // Stop execution here
+            } finally {
+                setIsLoading(false);
+            }
+        };
+    
+        const loadAssets = () => {
+            // Dynamically load CSS files
             const cssFiles = [
                 '/assets/css/bootstrap.min.css',
                 '/assets/css/all.min.css',
@@ -145,7 +178,8 @@ function Deposit() {
                     document.head.appendChild(link);
                 }
             });
-
+    
+            // Dynamically load JS files
             const jsFiles = [
                 '/assets/js/jquery-3.3.1.min.js',
                 '/assets/js/bootstrap.min.js',
@@ -166,24 +200,15 @@ function Deposit() {
                     document.body.appendChild(script);
                 }
             });
-            window.__rizydraAssetsLoaded = true;
-        }
+        };
+    
+        checkAuthAndLoadData();
+    
+        // Hide loader after 1 second (optional fallback)
         const timer = setTimeout(() => {
             setIsLoading(false);
         }, 1000);
         return () => clearTimeout(timer);
-    }, []);
-
-    useEffect(() => {
-        async function fetchData() {
-            try {
-                const res = await api.get('/user/showdeposit', { withCredentials: true });
-                if (res.data.success) setUserData(res.data.data);
-            } catch (err) {
-                // handle error
-            }
-        }
-        fetchData();
     }, []);
 
     const handleCopy = async () => {
@@ -640,6 +665,110 @@ function Deposit() {
         </div>
     );
 
+    // Withdrawal Confirmation Popup Component
+    const WithdrawConfirmationPopup = () => (
+        <div
+            style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                width: '100vw',
+                height: '100vh',
+                background: 'rgba(0,0,0,0.5)',
+                zIndex: 2000,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                animation: 'fadeIn .25s'
+            }}
+            onClick={() => setShowWithdrawConfirmation(false)}
+        >
+            <div
+                style={{
+                    background: '#fff',
+                    borderRadius: 16,
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+                    padding: '2rem 2rem 1.5rem 2rem',
+                    maxWidth: 400,
+                    width: '90%',
+                    animation: 'slideDown .3s',
+                    position: 'relative'
+                }}
+                onClick={e => e.stopPropagation()}
+            >
+                <h4 style={{ fontWeight: 700, marginBottom: 18, color: '#222', textAlign: 'center' }}>
+                    Confirm Withdrawal
+                </h4>
+                <div style={{ fontSize: 16, color: '#333', lineHeight: 1.7, textAlign: 'center', marginBottom: 24 }}>
+                    Are you sure to withdraw?
+                </div>
+                <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+                    <button
+                        className="btn btn-secondary"
+                        onClick={() => setShowWithdrawConfirmation(false)}
+                        style={{
+                            padding: '10px 24px',
+                            borderRadius: 8,
+                            fontWeight: 600,
+                            minWidth: 100
+                        }}
+                    >
+                        No
+                    </button>
+                    <button
+                        className="btn btn-primary"
+                        onClick={async () => {
+                            setShowWithdrawConfirmation(false);
+                            setWithdrawLoading(true);
+                            try {
+                                const payload = {
+                                    exchangeType: withdrawExchange,
+                                    ourExchange: walletAddresses[withdrawExchange],
+                                    amount: withdrawAmount,
+                                    userExchange: withdrawUserExchange,
+                                    type: "Withdraw"
+                                };
+
+                                const res = await api.post('/user/withdraw', payload, { withCredentials: true });
+
+                                alert(res.data.message || 'Withdraw request submitted!');
+                                setShowWithdrawModal(false);
+                                setWithdrawExchange('Select');
+                                setWithdrawAmount('');
+                                setWithdrawUserExchange('');
+                                window.location.reload();
+                            } catch (err) {
+                                const errorMessage = err.response?.data?.message || 'Withdraw failed!';
+                                alert(errorMessage);
+                            }
+                            setWithdrawLoading(false);
+                        }}
+                        style={{
+                            padding: '10px 24px',
+                            borderRadius: 8,
+                            fontWeight: 600,
+                            minWidth: 100
+                        }}
+                    >
+                        Yes
+                    </button>
+                </div>
+            </div>
+            <style>
+                {`
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                @keyframes slideDown {
+                    from { transform: translateY(-30px); opacity: 0; }
+                    to { transform: translateY(0); opacity: 1; }
+                }
+                `}
+            </style>
+        </div>
+    );
+
     // Withdraw Modal Component
     const WithdrawModal = () => (
         <div
@@ -726,7 +855,7 @@ function Deposit() {
                             </div>
                         </div>
                         <form
-                            onSubmit={async (e) => {
+                            onSubmit={(e) => {
                                 e.preventDefault();
                                 if (
                                     withdrawExchange === 'Select' ||
@@ -734,30 +863,8 @@ function Deposit() {
                                     !withdrawUserExchange
                                 ) return;
 
-                                setWithdrawLoading(true);
-                                try {
-                                    const payload = {
-                                        exchangeType: withdrawExchange,
-                                        ourExchange: walletAddresses[withdrawExchange],
-                                        amount: withdrawAmount,
-                                        userExchange: withdrawUserExchange,
-                                        type: "Withdraw"
-                                    };
-
-                                    const res = await api.post('/user/withdraw', payload, { withCredentials: true });
-
-                                    alert(res.data.message || 'Withdraw request submitted!');
-                                    setShowWithdrawModal(false);
-                                    setWithdrawExchange('Select');
-                                    setWithdrawAmount('');
-                                    setWithdrawUserExchange('');
-                                    window.location.reload();
-                                } catch (err) {
-                                    // ✅ Show backend message if available
-                                    const errorMessage = err.response?.data?.message || 'Withdraw failed!';
-                                    alert(errorMessage);
-                                }
-                                setWithdrawLoading(false);
+                                // Show confirmation popup instead of directly calling API
+                                setShowWithdrawConfirmation(true);
                             }}
 
                             style={{ marginTop: 10 }}
@@ -1539,6 +1646,9 @@ function Deposit() {
 
             {/* Withdraw Modal */}
             {showWithdrawModal && <WithdrawModal />}
+
+            {/* Withdrawal Confirmation Popup */}
+            {showWithdrawConfirmation && <WithdrawConfirmationPopup />}
 
             {/* Invest Modal */}
             {showInvestModal && <InvestModal />}

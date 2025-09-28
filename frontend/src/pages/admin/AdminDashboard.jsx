@@ -131,12 +131,13 @@ const AdminDashboard = () => {
   // Stats cards
   const stats = dashboard ? [
     { label: "Users", value: dashboard.totalUsers, icon: "bi-people", color: "linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)" },
+    { label: "Balance + Invest", value: `$${dashboard.totals.totalBalance + dashboard.totals.totalInvest}`, icon: "bi-plus-circle", color: "linear-gradient(135deg, #11998e 0%, #38ef7d 100%)" },
     { label: "Balance", value: `$${dashboard.totals.totalBalance}`, icon: "bi-currency-dollar", color: "linear-gradient(135deg, #FF512F 0%, #DD2476 100%)" },
-    { label: "Deposit", value: `$${dashboard.totals.totalDeposit}`, icon: "bi-graph-up", color: "linear-gradient(135deg, #f46b45 0%, #eea849 100%)" },
-    { label: "Withdraw", value: `$${dashboard.totals.totalWithdraw}`, icon: "bi-bag", color: "linear-gradient(135deg, #0ba360 0%, #3cba92 100%)" },
     { label: "Invest", value: `$${dashboard.totals.totalInvest}`, icon: "bi-bar-chart", color: "linear-gradient(135deg, #C471F5 0%, #FA71CD 100%)" },
     { label: "Referral Earn", value: dashboard.totals.totalRefEarn, icon: "bi-arrow-repeat", color: "linear-gradient(135deg, #36D1DC 0%, #5B86E5 100%)" },
     { label: "Earnings", value: dashboard.totals.totalEarn, icon: "bi-speedometer2", color: "linear-gradient(135deg, #FF5F6D 0%, #FFC371 100%)" },
+    { label: "Deposit", value: `$${dashboard.totals.totalDeposit}`, icon: "bi-graph-up", color: "linear-gradient(135deg, #f46b45 0%, #eea849 100%)" },
+    { label: "Withdraw", value: `$${dashboard.totals.totalWithdraw}`, icon: "bi-bag", color: "linear-gradient(135deg, #0ba360 0%, #3cba92 100%)" },
   ] : [];
 
   // Table data - Add _id field

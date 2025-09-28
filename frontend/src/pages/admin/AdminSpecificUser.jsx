@@ -89,6 +89,11 @@ const AdminSpecificUser = () => {
 
     const { user, investments, dailyEarns, referralEarnings } = userData;
 
+    // Calculate total confirmed withdrawal amount
+    const totalWithdrawAmount = investments
+        .filter(inv => inv.type === "Withdraw" && inv.status === "Confirmed")
+        .reduce((sum, inv) => sum + inv.amount, 0);
+
     // Calculate total referral users
     const totalReferralUsers = Object.values(user.referralLevelCounts).reduce((sum, count) => sum + count, 0);
 
@@ -96,18 +101,20 @@ const AdminSpecificUser = () => {
     const prepareChartData = () => {
         // 1. User Overview (Doughnut Chart)
         const userOverviewData = {
-            labels: ['Total Balance', 'Deposit Amount', 'Invested Amount'],
+            labels: ['Total Balance', 'Deposit Amount', 'Invested Amount', 'Withdraw Amount'],
             datasets: [{
-                data: [user.totalBalance, user.depositAmount, user.investedAmount],
+                data: [user.totalBalance, user.depositAmount, user.investedAmount, totalWithdrawAmount],
                 backgroundColor: [
                     'rgba(54, 162, 235, 0.8)',
                     'rgba(75, 192, 192, 0.8)',
-                    'rgba(255, 99, 132, 0.8)'
+                    'rgba(255, 99, 132, 0.8)',
+                    'rgba(255, 159, 64, 0.8)'
                 ],
                 borderColor: [
                     'rgba(54, 162, 235, 1)',
                     'rgba(75, 192, 192, 1)',
-                    'rgba(255, 99, 132, 1)'
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(255, 159, 64, 1)'
                 ],
                 borderWidth: 2
             }]
@@ -713,6 +720,15 @@ const AdminSpecificUser = () => {
                             <div className="card-body text-white text-center p-3">
                                 <div className="fw-bold fs-4 mb-1">${user.investedAmount}</div>
                                 <div className="opacity-75">Invested Amount</div>
+                            </div>
+                        </div>
+                        <div className="card border-0 shadow-sm flex-shrink-0" style={{
+                            width: "200px",
+                            background: "linear-gradient(135deg, #FF416C 0%, #FF4B2B 100%)"
+                        }}>
+                            <div className="card-body text-white text-center p-3">
+                                <div className="fw-bold fs-4 mb-1">${totalWithdrawAmount}</div>
+                                <div className="opacity-75">Withdraw Amount</div>
                             </div>
                         </div>
                     </div>

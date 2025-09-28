@@ -20,8 +20,50 @@ function EarningHistory() {
     const rowsPerPage = 8;
 
     useEffect(() => {
-        // Only load assets once per session
-        if (!window.__rizydraAssetsLoaded) {
+        const checkAuthAndLoadData = async () => {
+            try {
+                // Step 1: Check authentication first
+                await api.get("/user/verify", { withCredentials: true });
+                
+                // Step 2: If auth successful, load earning history data
+                const res = await api.get('/user/earnhistory', { withCredentials: true });
+                
+                // If response is an array, use the first item
+                const user = Array.isArray(res.data) ? res.data[0] : res.data;
+                setUserData({
+                    name: user.name || '',
+                    email: user.email || '',
+                    image: user.image || '',
+                    referralCode: user.referralCode || '',
+                    depositAmount: user.depositAmount || 0,
+                    investedAmount: user.investedAmount || 0,
+                    earnings: user.earnings || [],
+                    lastEarningDate: user.earnings && user.earnings.length > 0 ? user.earnings[user.earnings.length - 1].date : ''
+                });
+    
+                // Load assets only once per session
+                if (!window.__rizydraAssetsLoaded) {
+                    loadAssets();
+                    window.__rizydraAssetsLoaded = true;
+                }
+    
+            } catch (err) {
+                console.error('Authentication or data loading failed:', err);
+                
+                // Clear localStorage flags
+                localStorage.removeItem("authenticated");
+                localStorage.removeItem("isAdmin");
+    
+                // Show alert and redirect - ONLY ONCE
+                alert("Your session has expired, Please login again.");
+                window.location.href = '/login';
+                return; // Stop execution here
+            } finally {
+                setIsLoading(false);
+            }
+        };
+    
+        const loadAssets = () => {
             // Dynamically load CSS files
             const cssFiles = [
                 '/assets/css/bootstrap.min.css',
@@ -42,7 +84,7 @@ function EarningHistory() {
                     document.head.appendChild(link);
                 }
             });
-
+    
             // Dynamically load JS files
             const jsFiles = [
                 '/assets/js/jquery-3.3.1.min.js',
@@ -64,46 +106,10 @@ function EarningHistory() {
                     document.body.appendChild(script);
                 }
             });
-            window.__rizydraAssetsLoaded = true;
-        }
-
-        // Fetch earning history data
-        api.get('/user/earnhistory', { withCredentials: true })
-            .then(res => {
-                // If response is an array, use the first item
-                const user = Array.isArray(res.data) ? res.data[0] : res.data;
-                setUserData({
-                    name: user.name || '',
-                    email: user.email || '',
-                    image: user.image || '',
-                    referralCode: user.referralCode || '',
-                    depositAmount: user.depositAmount || 0,
-                    investedAmount: user.investedAmount || 0,
-                    earnings: user.earnings || [],
-                    lastEarningDate: user.earnings && user.earnings.length > 0 ? user.earnings[user.earnings.length - 1].date : ''
-                });
-            })
-            .catch((error) => {
-                // If API call fails due to authentication, redirect to login
-                if (error.response?.status === 401) {
-                    alert('Your session has expired. Please login again');
-                    navigate('/login');
-                    return;
-                }
-                setUserData({
-                    name: '',
-                    email: '',
-                    image: '',
-                    referralCode: '',
-                    depositAmount: 0,
-                    investedAmount: 0,
-                    earnings: []
-                });
-            })
-            .finally(() => {
-                setIsLoading(false);
-            });
-
+        };
+    
+        checkAuthAndLoadData();
+    
         // Hide loader after 1 second (optional fallback)
         const timer = setTimeout(() => {
             setIsLoading(false);

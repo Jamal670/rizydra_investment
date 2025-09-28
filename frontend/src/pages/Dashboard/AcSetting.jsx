@@ -10,8 +10,38 @@ function AcSetting() {
     const [updateFields, setUpdateFields] = useState({});
 
     useEffect(() => {
-        // Only load assets once per session
-        if (!window.__rizydraAssetsLoaded) {
+        const checkAuthAndLoadData = async () => {
+            try {
+                // Step 1: Check authentication first
+                await api.get("/user/verify", { withCredentials: true });
+                
+                // Step 2: If auth successful, load deposit data
+                const res = await api.get('/user/showdeposit', { withCredentials: true });
+                if (res.data.success) setUserData(res.data.data);
+    
+                // Load assets only once per session
+                if (!window.__rizydraAssetsLoaded) {
+                    loadAssets();
+                    window.__rizydraAssetsLoaded = true;
+                }
+    
+            } catch (err) {
+                console.error('Authentication or data loading failed:', err);
+                
+                // Clear localStorage flags
+                localStorage.removeItem("authenticated");
+                localStorage.removeItem("isAdmin");
+    
+                // Show alert and redirect - ONLY ONCE
+                alert("Your session has expired, Please login again.");
+                window.location.href = '/login';
+                return; // Stop execution here
+            } finally {
+                setIsLoading(false);
+            }
+        };
+    
+        const loadAssets = () => {
             // Dynamically load CSS files
             const cssFiles = [
                 '/assets/css/bootstrap.min.css',
@@ -32,7 +62,7 @@ function AcSetting() {
                     document.head.appendChild(link);
                 }
             });
-
+    
             // Dynamically load JS files
             const jsFiles = [
                 '/assets/js/jquery-3.3.1.min.js',
@@ -54,27 +84,10 @@ function AcSetting() {
                     document.body.appendChild(script);
                 }
             });
-            window.__rizydraAssetsLoaded = true;
-        }
-
-        // Fetch user dashboard data when route is loaded
-        api.get('/user/profile', { withCredentials: true })
-            .then(res => {
-                setUserData({
-                    name: res.data.name || '',
-                    email: res.data.email || '',
-                    image: res.data.image || '',
-                    referralCode: res.data.referralCode || '',
-                    referralLevel: res.data.referralLevel || 0
-                });
-            })
-            .catch(() => {
-                setUserData({ name: '', email: '', image: '' });
-            })
-            .finally(() => {
-                setIsLoading(false);
-            });
-
+        };
+    
+        checkAuthAndLoadData();
+    
         // Hide loader after 1 second (optional fallback)
         const timer = setTimeout(() => {
             setIsLoading(false);

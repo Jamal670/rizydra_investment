@@ -40,46 +40,50 @@ exports.RegUser = async (name, email, password, referralCode) => {
   let referralLevel = 0;
 
   if (referralCode) {
-  const referrer = await UserModel.findOne({ referralCode });
+    const referrer = await UserModel.findOne({ referralCode });
 
-  if (!referrer) {
-    throw new Error('Invalid referral code');
+    if (!referrer) {
+      throw new Error('Invalid referral code');
+    }
+
+    if (referrer.investedAmount < 20) {
+      throw new Error('Your referrer must have a minimum investment of 20 USDT.');
+    }
+
+    referredBy = referrer._id;
+    referralLevel = referrer.referralLevel === 3 ? 3 : referrer.referralLevel + 1;
   }
-
-  if (referrer.investedAmount < 20) {
-    throw new Error('Your referrer must have a minimum investment of 20 USDT.');
-  }
-
-  referredBy = referrer._id;
-  referralLevel = referrer.referralLevel === 3 ? 3 : referrer.referralLevel + 1;
-}
-
 
   const generatedReferralCode = generateReferralCode();
   const otp = generateOTP();
 
-    // Hash password before saving
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new UserModel({
-      name,
-      email,
-      password: hashedPassword,
-      referralCode: generatedReferralCode,
-      referredBy,
-      referralLevel,
-      otp,
-      status: 'Pending'
-    });
+  // Hash password before saving
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const newUser = new UserModel({
+    name,
+    email,
+    password: hashedPassword,
+    referralCode: generatedReferralCode,
+    referredBy,
+    referralLevel,
+    otp,
+    status: 'Pending'
+  });
 
   const savedUser = await newUser.save();
 
-  // Send OTP email asynchronously
-  (async () => {
-    await sendEmail(email, otp);
-  })();
+  // Send OTP email completely in background (non-blocking)
+  setImmediate(async () => {
+    try {
+      await sendEmail(email, otp);
+    } catch (err) {
+      console.error("Failed to send OTP email:", err);
+    }
+  });
 
+  // Immediate response without waiting for email
   return {
-    message: 'User registered successfully. OTP sent to your email.',
+    message: 'User registered successfully. OTP will be sent to your email shortly.',
     user: {
       _id: savedUser._id,
       name: savedUser.name,
@@ -90,6 +94,7 @@ exports.RegUser = async (name, email, password, referralCode) => {
     }
   };
 };
+
 
 
 //------------Verify OTP----------------

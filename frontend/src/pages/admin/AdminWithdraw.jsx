@@ -389,7 +389,8 @@ const AdminWithdraw = () => {
                                                 <th>Type</th>
                                                 <th>Status</th>
                                                 <th>Action</th>
-                                                <th>Date</th>
+                                                <th>Received Date</th>
+                                                <th>Updated Date</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -420,7 +421,8 @@ const AdminWithdraw = () => {
                                                             <i className="bi bi-eye me-1"></i> View
                                                         </button>
                                                     </td>
-                                                    <td>{row.formattedDate}</td>
+                                                    <td>{row.createdAtFormatted}</td>
+                                                    <td>{row.updatedAtFormatted}</td>
                                                 </tr>
                                             ))}
                                         </tbody>

@@ -46,8 +46,60 @@ function UserDashboard() {
     const [sidebarOpen, setSidebarOpen] = useState(true);
 
     useEffect(() => {
-        // Only load assets once per session
-        if (!window.__rizydraAssetsLoaded) {
+        const checkAuthAndLoadData = async () => {
+            try {
+                // Step 1: Check authentication first
+                await api.get("/user/verify", { withCredentials: true });
+                
+                // Step 2: If auth successful, load dashboard data
+                const res = await api.get('/user/showUserDash', { withCredentials: true });
+                
+                console.log('Dashboard response:', res.data);
+                setUserData({
+                    name: res.data.name || '',
+                    email: res.data.email || '',
+                    image: res.data.image || '',
+                    referralCode: res.data.referralCode || ''
+                });
+                
+                setChartData({
+                    lineChart: res.data.lineChart || [],
+                    pieChart: res.data.pieChart || { deposit: 0, invested: 0 },
+                    barChart: res.data.barChart || [],
+                    stackedAreaChart: res.data.stackedAreaChart || []
+                });
+                
+                setCardData(res.data.cardData || {
+                    totalBalance: '0.00',
+                    totalEarn: '0.00',
+                    refEarn: '0.00',
+                    depositAmount: '0.00',
+                    investedAmount: '0.00'
+                });
+
+                // Load assets only once per session
+                if (!window.__rizydraAssetsLoaded) {
+                    loadAssets();
+                    window.__rizydraAssetsLoaded = true;
+                }
+
+            } catch (err) {
+                console.error('Authentication or data loading failed:', err);
+                
+                // Clear localStorage flags
+                localStorage.removeItem("authenticated");
+                localStorage.removeItem("isAdmin");
+
+                // Show alert and redirect - ONLY ONCE
+                alert("Your session has expired, Please login again.");
+                window.location.href = '/login';
+                return; // Stop execution here
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        const loadAssets = () => {
             // Dynamically load CSS files
             const cssFiles = [
                 '/assets/css/bootstrap.min.css',
@@ -90,42 +142,9 @@ function UserDashboard() {
                     document.body.appendChild(script);
                 }
             });
-            window.__rizydraAssetsLoaded = true;
-        }
+        };
 
-        // Fetch user dashboard data when route is loaded
-        api.get('/user/showUserDash', { withCredentials: true })
-            .then(res => {
-                console.log('Dashboard response:', res.data); // Debug log
-                setUserData({
-                    name: res.data.name || '',
-                    email: res.data.email || '',
-                    image: res.data.image || '',
-                    referralCode: res.data.referralCode || ''
-                });
-                // Set chart data from the same response
-                setChartData({
-                    lineChart: res.data.lineChart || [],
-                    pieChart: res.data.pieChart || { deposit: 0, invested: 0 },
-                    barChart: res.data.barChart || [],
-                    stackedAreaChart: res.data.stackedAreaChart || []
-                });
-                // Set card data
-                setCardData(res.data.cardData || {
-                    totalBalance: '0.00',
-                    totalEarn: '0.00',
-                    refEarn: '0.00',
-                    depositAmount: '0.00',
-                    investedAmount: '0.00'
-                });
-            })
-            .catch((error) => {
-                console.error('Dashboard error:', error); // Debug log
-                setUserData({ name: '', email: '' });
-            })
-            .finally(() => {
-                setIsLoading(false);
-            });
+        checkAuthAndLoadData();
 
         // Hide loader after 1 second (optional fallback)
         const timer = setTimeout(() => {
@@ -137,13 +156,13 @@ function UserDashboard() {
     // Chart configurations with better data handling
     const lineChartData = {
         labels: chartData.lineChart.length > 0
-            ? chartData.lineChart.map(item => item.date) // Use actual dates
+            ? chartData.lineChart.map(item => item.date)
             : ['No Data'],
         datasets: [
             {
                 label: 'Daily Earnings',
                 data: chartData.lineChart.length > 0 
-                    ? chartData.lineChart.map(item => item.value) // Map the value property
+                    ? chartData.lineChart.map(item => item.value)
                     : [0],
                 borderColor: 'rgb(75, 192, 192)',
                 backgroundColor: 'rgba(75, 192, 192, 0.2)',
@@ -189,7 +208,7 @@ function UserDashboard() {
 
     const stackedAreaChartData = {
         labels: chartData.stackedAreaChart.length > 0
-            ? chartData.stackedAreaChart.map(item => item.date) // Use actual dates
+            ? chartData.stackedAreaChart.map(item => item.date)
             : ['No Data'],
         datasets: [
             {
@@ -266,17 +285,15 @@ function UserDashboard() {
                     </div>
                     <style>
                         {`
-        @keyframes blink {
-          0% { opacity: 1; }
-          50% { opacity: 0.3; }
-          100% { opacity: 1; }
-        }
-      `}
+                        @keyframes blink {
+                        0% { opacity: 1; }
+                        50% { opacity: 0.3; }
+                        100% { opacity: 1; }
+                        }
+                    `}
                     </style>
                 </>
             )}
-
-
 
             {/* Banner Section */}
             <section className="inner-banner bg_img padding-bottom" style={{ background: "url(/assets/images/about/bg.png) no-repeat right bottom" }}>
@@ -371,14 +388,12 @@ function UserDashboard() {
                                                     window.location.href = '/';
                                                 } catch (err) {
                                                     console.error("Logout failed:", err);
-                                                    // Optionally show an error message
                                                 }
                                             }}
                                         >
                                             Sign Out
                                         </a>
                                     </li>
-
                                 </ul>
                             </div>
                         </div>
@@ -389,7 +404,6 @@ function UserDashboard() {
                                     <i className="las la-sliders-h"></i>
                                 </div>
                             </div>
-
 
                             {/* Dashboard Boxes Section */}
                             <div className="dashboard-boxes">
@@ -612,13 +626,10 @@ function UserDashboard() {
                                     </div>
                                 </div>
                             </section>
-
                         </div>
                     </div>
                 </div>
             </section>
-
-            {/* Remove the profit calculation section completely */}
 
             <a href="#0" className="scrollToTop active"><i className="las la-chevron-up"></i></a>
         </>

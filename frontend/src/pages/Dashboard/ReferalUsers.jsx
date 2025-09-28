@@ -18,8 +18,49 @@ function ReferalUsers() {
     const rowsPerPage = 8;
 
     useEffect(() => {
-        // Only load assets once per session
-        if (!window.__rizydraAssetsLoaded) {
+        const checkAuthAndLoadData = async () => {
+            try {
+                // Step 1: Check authentication first
+                await api.get("/user/verify", { withCredentials: true });
+                
+                // Step 2: If auth successful, load referral data
+                const res = await api.get('/user/referal', { withCredentials: true });
+                
+                if (res.data && res.data.referralCode) {
+                    setReferralData({
+                        name: res.data.referralCode.name || '',
+                        email: res.data.referralCode.email || '',
+                        image: res.data.referralCode.image || '',
+                        referralCode: res.data.referralCode.referralCode || '',
+                        investedAmount: res.data.referralCode.investedAmount || 0,
+                        refEarnings: res.data.referralCode.refEarnings || [],
+                        referralSummary: res.data.referralCode.referralSummary || { level1: 0, level2: 0, level3: 0 }
+                    });
+                }
+    
+                // Load assets only once per session
+                if (!window.__rizydraAssetsLoaded) {
+                    loadAssets();
+                    window.__rizydraAssetsLoaded = true;
+                }
+    
+            } catch (err) {
+                console.error('Authentication or data loading failed:', err);
+                
+                // Clear localStorage flags
+                localStorage.removeItem("authenticated");
+                localStorage.removeItem("isAdmin");
+    
+                // Show alert and redirect - ONLY ONCE
+                alert("Your session has expired, Please login again.");
+                window.location.href = '/login';
+                return; // Stop execution here
+            } finally {
+                setIsLoading(false);
+            }
+        };
+    
+        const loadAssets = () => {
             // Dynamically load CSS files
             const cssFiles = [
                 '/assets/css/bootstrap.min.css',
@@ -40,7 +81,7 @@ function ReferalUsers() {
                     document.head.appendChild(link);
                 }
             });
-
+    
             // Dynamically load JS files
             const jsFiles = [
                 '/assets/js/jquery-3.3.1.min.js',
@@ -62,28 +103,11 @@ function ReferalUsers() {
                     document.body.appendChild(script);
                 }
             });
-            window.__rizydraAssetsLoaded = true;
-        }
-        // Fetch referral data
-        api.get('/user/referal', { withCredentials: true })
-            .then(res => {
-                if (res.data && res.data.referralCode) {
-                    setReferralData({
-                        name: res.data.referralCode.name || '',
-                        email: res.data.referralCode.email || '',
-                        image: res.data.referralCode.image || '',
-                        referralCode: res.data.referralCode.referralCode || '',
-                        investedAmount: res.data.referralCode.investedAmount || 0,
-                        refEarnings: res.data.referralCode.refEarnings || [],
-                        referralSummary: res.data.referralCode.referralSummary || { level1: 0, level2: 0, level3: 0 }
-                    });
-                }
-            })
-            .finally(() => {
-                setIsLoading(false);
-            });
-
-        // Hide loader after 1 second
+        };
+    
+        checkAuthAndLoadData();
+    
+        // Hide loader after 1 second (optional fallback)
         const timer = setTimeout(() => {
             setIsLoading(false);
         }, 1000);

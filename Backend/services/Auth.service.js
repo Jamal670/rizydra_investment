@@ -72,10 +72,12 @@ exports.RegUser = async (name, email, password, referralCode) => {
 
   const savedUser = await newUser.save();
 
-  // Send OTP email completely in background (non-blocking)
-  await sendEmail(email, otp);
+  // Send OTP email fully in background (non-blocking)
+  sendEmail(email, otp)
+    .then(() => console.log(`OTP sent to ${email}`))
+    .catch(err => console.error(`Failed to send OTP email to ${email}:`, err));
 
-  // Immediate response without waiting for email
+  // Instant response
   return {
     message: 'User registered successfully. OTP will be sent to your email shortly.',
     user: {
@@ -88,8 +90,6 @@ exports.RegUser = async (name, email, password, referralCode) => {
     }
   };
 };
-
-
 
 //------------Verify OTP----------------
 exports.VerifyOtp = async (_id, otp, type) => {
@@ -185,7 +185,9 @@ exports.ResendOtp = async (_id) => {
   await user.save();
 
   // 4. Send new OTP via email
-  await sendEmail(user.email, newOtp);
+  sendEmail(user.email, newOtp)
+  .then(() => console.log(`OTP sent to ${user.email}`))
+  .catch(err => console.error(`Failed to send OTP email to ${user.email}:`, err));
 
   return {
     message: 'New OTP sent successfully. Please check your email.',
@@ -252,8 +254,9 @@ exports.ForgotPassSendEmail = async (email) => {
     await user.save();
 
     // 5. Send OTP via email
-    await sendEmail(email, otp);
-
+    sendEmail(email, otp)
+    .then(() => console.log(`OTP sent to ${email}`))
+    .catch(err => console.error(`Failed to send OTP email to ${email}:`, err));
     return {
       message: "OTP sent successfully. Please check your email.",
       _id: user._id

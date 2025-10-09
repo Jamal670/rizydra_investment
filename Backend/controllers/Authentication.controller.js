@@ -5,7 +5,7 @@ const { generateToken } = require('../services/sendMailer');
 exports.RegUser = async (req, res) => {
   try {
     const { name, email, password, referralCode } = req.body;
-    console.log(req.body);
+    // console.log(req.body);
 
     const result = await userAuthService.RegUser(name, email, password, referralCode);
     res.status(201).json(result);

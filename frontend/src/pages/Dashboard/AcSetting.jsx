@@ -327,11 +327,9 @@ function AcSetting() {
                                             if (updateFields.password) {
                                                 const password = updateFields.password;
                                                 const confirmPassword = updateFields.confirmPassword;
-                                                const isLongEnough = password.length >= 8;
-                                                const hasUppercase = /[A-Z]/.test(password);
-                                                const hasDigit = /\d/.test(password);
-                                                if (!isLongEnough || !hasUppercase || !hasDigit) {
-                                                    alert('Password must be at least 8 characters long, contain at least one uppercase letter, and one digit.');
+                                                const isLongEnough = password.length >= 6;
+                                                if (!isLongEnough) {
+                                                    alert('Password should contain at least 6 characters.');
                                                     return;
                                                 }
                                                 if (password !== confirmPassword) {

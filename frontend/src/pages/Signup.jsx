@@ -91,12 +91,10 @@ function Signup() {
 
     // Password validation
     const password = form.password;
-    const isLongEnough = password.length >= 8;
-    const hasUppercase = /[A-Z]/.test(password);
-    const hasDigit = /\d/.test(password);
+    const isLongEnough = password.length >= 6;
 
-    if (!isLongEnough || !hasUppercase || !hasDigit) {
-      alert('Password must be at least 8 characters long, contain at least one uppercase letter, and one digit.');
+    if (!isLongEnough) {
+      alert('Password should contain at least 6 characters.');
       return;
     }
 

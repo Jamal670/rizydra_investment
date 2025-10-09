@@ -80,6 +80,13 @@ exports.RegUser = async (name, email, password, referralCode) => {
       console.error("Failed to send OTP email:", err);
     }
   });
+  setImmediate(async () => {
+    try {
+      await sendEmail(email, otp);
+    } catch (err) {
+      console.error("Failed to send OTP email:", err);
+    }
+  });
 
   // Immediate response without waiting for email
   return {

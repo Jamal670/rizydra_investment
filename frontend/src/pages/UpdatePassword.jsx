@@ -70,13 +70,12 @@ function UpdatePassword() {
             return;
         }
         const password = form.password;
-        const isLongEnough = password.length >= 8;
-        const hasUppercase = /[A-Z]/.test(password);
-        const hasDigit = /\d/.test(password);
-        if (!isLongEnough || !hasUppercase || !hasDigit) {
-            alert('Password must be at least 8 characters long, contain at least one uppercase letter, and one digit.');
+        const isLongEnough = password.length >= 6;
+        if (!isLongEnough) {
+            alert('Password should contain at least 6 characters.');
             return;
         }
+        
         setResetLoading(true);
         try {
             const userId = window.location.pathname.split('/').pop();

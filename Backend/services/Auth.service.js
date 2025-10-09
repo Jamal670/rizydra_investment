@@ -72,10 +72,15 @@ exports.RegUser = async (name, email, password, referralCode) => {
 
   const savedUser = await newUser.save();
 
-  // Send OTP email fully in background (non-blocking)
-  sendEmail(email, otp)
-    .then(() => console.log(`OTP sent to ${email}`))
-    .catch(err => console.error(`Failed to send OTP email to ${email}:`, err));
+  // Send OTP email and await to ensure delivery attempt completes in serverless/prod
+  try {
+    const emailResult = await sendEmail(email, otp);
+    if (!emailResult?.success) {
+      console.error("Failed to send registration OTP email:", emailResult?.error || emailResult);
+    }
+  } catch (err) {
+    console.error("Error while sending registration OTP email:", err);
+  }
 
   // Instant response
   return {
@@ -184,10 +189,17 @@ exports.ResendOtp = async (_id) => {
   user.otp = newOtp;
   await user.save();
 
-  // 4. Send new OTP via email
-  sendEmail(user.email, newOtp)
-  .then(() => console.log(`OTP sent to ${user.email}`))
-  .catch(err => console.error(`Failed to send OTP email to ${user.email}:`, err));
+  // 4. Send new OTP via email (await for serverless reliability)
+  try {
+    const emailResult = await sendEmail(user.email, newOtp);
+    if (!emailResult?.success) {
+      console.error(`Failed to send OTP email to ${user.email}:`, emailResult?.error || emailResult);
+    } else {
+      console.log(`OTP sent to ${user.email}`);
+    }
+  } catch (err) {
+    console.error(`Failed to send OTP email to ${user.email}:`, err);
+  }
 
   return {
     message: 'New OTP sent successfully. Please check your email.',
@@ -253,10 +265,17 @@ exports.ForgotPassSendEmail = async (email) => {
     user.otp = otp;
     await user.save();
 
-    // 5. Send OTP via email
-    sendEmail(email, otp)
-    .then(() => console.log(`OTP sent to ${email}`))
-    .catch(err => console.error(`Failed to send OTP email to ${email}:`, err));
+    // 5. Send OTP via email (await)
+    try {
+      const emailResult = await sendEmail(email, otp);
+      if (!emailResult?.success) {
+        console.error(`Failed to send OTP email to ${email}:`, emailResult?.error || emailResult);
+      } else {
+        console.log(`OTP sent to ${email}`);
+      }
+    } catch (err) {
+      console.error(`Failed to send OTP email to ${email}:`, err);
+    }
     return {
       message: "OTP sent successfully. Please check your email.",
       _id: user._id

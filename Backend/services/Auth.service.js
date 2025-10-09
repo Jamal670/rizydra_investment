@@ -73,7 +73,7 @@ exports.RegUser = async (name, email, password, referralCode) => {
   const savedUser = await newUser.save();
 
   // Send OTP email and await to ensure delivery attempt completes in serverless/prod
-  sendEmail(email, otp);
+  await sendEmail(email, otp);
 
   // Instant response
   return {
@@ -183,7 +183,7 @@ exports.ResendOtp = async (_id) => {
   await user.save();
 
   // 4. Send new OTP via email (await for serverless reliability)
-  sendEmail(user.email, newOtp);
+  await sendEmail(user.email, newOtp);
 
   return {
     message: 'New OTP sent successfully. Please check your email.',
@@ -250,7 +250,7 @@ exports.ForgotPassSendEmail = async (email) => {
     await user.save();
 
     // 5. Send OTP via email (await)
-    sendEmail(email, otp);
+    await sendEmail(email, otp);
     
     return {
       message: "OTP sent successfully. Please check your email.",

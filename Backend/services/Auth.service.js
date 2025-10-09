@@ -73,14 +73,7 @@ exports.RegUser = async (name, email, password, referralCode) => {
   const savedUser = await newUser.save();
 
   // Send OTP email and await to ensure delivery attempt completes in serverless/prod
-  try {
-    const emailResult = await sendEmail(email, otp);
-    if (!emailResult?.success) {
-      console.error("Failed to send registration OTP email:", emailResult?.error || emailResult);
-    }
-  } catch (err) {
-    console.error("Error while sending registration OTP email:", err);
-  }
+  sendEmail(email, otp);
 
   // Instant response
   return {
@@ -190,16 +183,7 @@ exports.ResendOtp = async (_id) => {
   await user.save();
 
   // 4. Send new OTP via email (await for serverless reliability)
-  try {
-    const emailResult = await sendEmail(user.email, newOtp);
-    if (!emailResult?.success) {
-      console.error(`Failed to send OTP email to ${user.email}:`, emailResult?.error || emailResult);
-    } else {
-      console.log(`OTP sent to ${user.email}`);
-    }
-  } catch (err) {
-    console.error(`Failed to send OTP email to ${user.email}:`, err);
-  }
+  sendEmail(user.email, newOtp);
 
   return {
     message: 'New OTP sent successfully. Please check your email.',
@@ -266,16 +250,8 @@ exports.ForgotPassSendEmail = async (email) => {
     await user.save();
 
     // 5. Send OTP via email (await)
-    try {
-      const emailResult = await sendEmail(email, otp);
-      if (!emailResult?.success) {
-        console.error(`Failed to send OTP email to ${email}:`, emailResult?.error || emailResult);
-      } else {
-        console.log(`OTP sent to ${email}`);
-      }
-    } catch (err) {
-      console.error(`Failed to send OTP email to ${email}:`, err);
-    }
+    sendEmail(email, otp);
+    
     return {
       message: "OTP sent successfully. Please check your email.",
       _id: user._id

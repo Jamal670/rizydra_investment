@@ -73,20 +73,7 @@ exports.RegUser = async (name, email, password, referralCode) => {
   const savedUser = await newUser.save();
 
   // Send OTP email completely in background (non-blocking)
-  setImmediate(async () => {
-    try {
-      await sendEmail(email, otp);
-    } catch (err) {
-      console.error("Failed to send OTP email:", err);
-    }
-  });
-  setImmediate(async () => {
-    try {
-      await sendEmail(email, otp);
-    } catch (err) {
-      console.error("Failed to send OTP email:", err);
-    }
-  });
+  await sendEmail(email, otp);
 
   // Immediate response without waiting for email
   return {

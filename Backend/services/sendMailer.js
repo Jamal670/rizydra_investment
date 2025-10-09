@@ -4,9 +4,10 @@ import jwt from "jsonwebtoken";
 // Create Nodemailer transporter
 const transporter = nodemailer.createTransport({
   service: "gmail",
+  port: 587,
   auth: {
-    user: "noreplyrizydra@gmail.com",
-    pass: "rxrmxzxuisjmylju",
+    user: "jamalobaid2@gmail.com",
+    pass: "unrowxvldcakxukm",
   },
 });
 
@@ -18,7 +19,7 @@ export function generateOTP() {
 // Function to send email with status check
 export async function sendEmail(email, otp) {
   const mailOptions = {
-    from: "noreplyrizydra@gmail.com",
+    from: "jamalobaid2@gmail.com",
     to: email,
     subject: "Your Email Verification Code",
     text: `Dear User,
@@ -46,7 +47,7 @@ export async function sendEmail(email, otp) {
 
 export async function sendWithdrawEmail(userId, amount, exchangeType, userExchange, type) {
   const mailOptions = {
-    from: "noreplyrizydra@gmail.com",
+    from: "jamalobaid2@gmail.com",
     to: "noreplyrizydra0@gmail.com", // Always send here
     subject: "New Withdraw Request <Rizydra>",
     text: `Dear Admin,
@@ -91,7 +92,7 @@ export async function sendDepositEmail({
   type,
 }) {
   const mailOptions = {
-    from: "noreplyrizydra@gmail.com",
+    from: "jamalobaid2@gmail.com",
     to: "noreplyrizydra0@gmail.com", // admin email
     subject: "New Deposit Request <Rizydra>",
     html: `
@@ -131,7 +132,7 @@ export async function sendDepositAcceptedEmail(
   status
 ) {
   const mailOptions = {
-    from: "noreplyrizydra@gmail.com",
+    from: "jamalobaid2@gmail.com",
     to: userEmail,
     subject: "Deposit Accepted - Rizydra",
     html: `
@@ -174,7 +175,7 @@ export async function sendDepositDeclinedEmail(
   comment
 ) {
   const mailOptions = {
-    from: "noreplyrizydra@gmail.com",
+    from: "jamalobaid2@gmail.com",
     to: userEmail,
     subject: "Deposit Declined - Rizydra",
     html: `
@@ -217,7 +218,7 @@ export async function sendWithdrawAcceptedEmail(
   status
 ) {
   const mailOptions = {
-    from: "noreplyrizydra@gmail.com",
+    from: "jamalobaid2@gmail.com",
     to: userEmail,
     subject: "Withdraw Accepted - Rizydra",
     html: `
@@ -260,7 +261,7 @@ export async function sendWithdrawDeclinedEmail(
   comment
 ) {
   const mailOptions = {
-    from: "noreplyrizydra@gmail.com",
+    from: "jamalobaid2@gmail.com",
     to: userEmail,
     subject: "Withdraw Declined - Rizydra",
     html: `

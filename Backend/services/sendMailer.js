@@ -2,17 +2,12 @@ import nodemailer from "nodemailer";
 import jwt from "jsonwebtoken";
 
 // Create Nodemailer transporter
-// Prefer explicit SMTP settings for production reliability
-// Reads credentials from environment (fallbacks keep local dev working)
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || "smtp.gmail.com",
-  port: process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : 465,
-  secure: process.env.SMTP_SECURE ? process.env.SMTP_SECURE === "true" : true, // true for 465, false for 587
+  service: "gmail",
   auth: {
-    user: process.env.SMTP_USER || "noreplyrizydra@gmail.com",
-    pass: process.env.SMTP_PASS || "rxrmxzxuisjmylju", // App Password recommended
+    user: "noreplyrizydra@gmail.com",
+    pass: "rxrmxzxuisjmylju",
   },
-  pool: true,
 });
 
 // Function to generate a 6-digit OTP

@@ -30,7 +30,7 @@ function Signup() {
       setIsReferralLocked(true);
     }
 
-    // Dynamically load CSS files
+    // Dynamically load CSS and JS; hide loader when all are loaded
     const cssFiles = [
       '/assets/css/bootstrap.min.css',
       '/assets/css/all.min.css',
@@ -42,16 +42,7 @@ function Signup() {
       '/assets/css/slick.css',
       '/assets/css/main.css'
     ];
-    cssFiles.forEach(href => {
-      if (!document.querySelector(`link[href="${href}"]`)) {
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = href;
-        document.head.appendChild(link);
-      }
-    });
 
-    // Dynamically load JS files
     const jsFiles = [
       '/assets/js/jquery-3.3.1.min.js',
       '/assets/js/bootstrap.min.js',
@@ -64,20 +55,43 @@ function Signup() {
       '/assets/js/nice-select.js',
       '/assets/js/main.js'
     ];
+
+    let loaded = 0;
+    const total = cssFiles.length + jsFiles.length;
+    const markLoaded = () => {
+      loaded += 1;
+      if (loaded >= total) setIsLoading(false);
+    };
+
+    cssFiles.forEach(href => {
+      const existing = document.querySelector(`link[href="${href}"]`);
+      if (existing) {
+        markLoaded();
+      } else {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = href;
+        link.onload = markLoaded;
+        link.onerror = markLoaded;
+        document.head.appendChild(link);
+      }
+    });
+
     jsFiles.forEach(src => {
-      if (!document.querySelector(`script[src="${src}"]`)) {
+      const existing = document.querySelector(`script[src="${src}"]`);
+      if (existing) {
+        markLoaded();
+      } else {
         const script = document.createElement('script');
         script.src = src;
         script.async = false;
+        script.onload = markLoaded;
+        script.onerror = markLoaded;
         document.body.appendChild(script);
       }
     });
 
-    // Hide loader after 1 second
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
-    return () => clearTimeout(timer);
+    return () => { /* no-op */ };
   }, [location.search]);
 
   // Handle input changes

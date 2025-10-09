@@ -45,61 +45,11 @@ function UserDashboard() {
     });
 
     useEffect(() => {
-        const checkAuthAndLoadData = async () => {
-            try {
-                // Step 1: Check authentication first
-                await api.get("/user/verify", { withCredentials: true });
-                
-                // Step 2: If auth successful, load dashboard data
-                const res = await api.get('/user/showUserDash', { withCredentials: true });
-                
-                console.log('Dashboard response:', res.data);
-                setUserData({
-                    name: res.data.name || '',
-                    email: res.data.email || '',
-                    image: res.data.image || '',
-                    referralCode: res.data.referralCode || ''
-                });
-                
-                setChartData({
-                    lineChart: res.data.lineChart || [],
-                    pieChart: res.data.pieChart || { deposit: 0, invested: 0 },
-                    barChart: res.data.barChart || [],
-                    stackedAreaChart: res.data.stackedAreaChart || []
-                });
-                
-                setCardData(res.data.cardData || {
-                    totalBalance: '0.00',
-                    totalEarn: '0.00',
-                    refEarn: '0.00',
-                    depositAmount: '0.00',
-                    investedAmount: '0.00'
-                });
-
-                // Load assets only once per session
-                if (!window.__rizydraAssetsLoaded) {
-                    loadAssets();
-                    window.__rizydraAssetsLoaded = true;
-                }
-
-            } catch (err) {
-                console.error('Authentication or data loading failed:', err);
-                
-                // Clear localStorage flags
-                localStorage.removeItem("authenticated");
-                localStorage.removeItem("isAdmin");
-
-                // Show alert and redirect - ONLY ONCE
-                alert("Your session has expired, Please login again.");
-                window.location.href = '/login';
-                return; // Stop execution here
-            } finally {
-                setIsLoading(false);
+        const loadAssets = () => new Promise(resolve => {
+            if (window.__rizydraAssetsLoaded) {
+                resolve(true);
+                return;
             }
-        };
-
-        const loadAssets = () => {
-            // Dynamically load CSS files
             const cssFiles = [
                 '/assets/css/bootstrap.min.css',
                 '/assets/css/all.min.css',
@@ -111,16 +61,6 @@ function UserDashboard() {
                 '/assets/css/slick.css',
                 '/assets/css/main.css'
             ];
-            cssFiles.forEach(href => {
-                if (!document.querySelector(`link[href="${href}"]`)) {
-                    const link = document.createElement('link');
-                    link.rel = 'stylesheet';
-                    link.href = href;
-                    document.head.appendChild(link);
-                }
-            });
-
-            // Dynamically load JS files
             const jsFiles = [
                 '/assets/js/jquery-3.3.1.min.js',
                 '/assets/js/bootstrap.min.js',
@@ -133,23 +73,86 @@ function UserDashboard() {
                 '/assets/js/nice-select.js',
                 '/assets/js/main.js'
             ];
+
+            let loaded = 0;
+            const total = cssFiles.length + jsFiles.length;
+            const markLoaded = () => {
+                loaded += 1;
+                if (loaded >= total) {
+                    window.__rizydraAssetsLoaded = true;
+                    resolve(true);
+                }
+            };
+
+            cssFiles.forEach(href => {
+                const existing = document.querySelector(`link[href="${href}"]`);
+                if (existing) {
+                    markLoaded();
+                } else {
+                    const link = document.createElement('link');
+                    link.rel = 'stylesheet';
+                    link.href = href;
+                    link.onload = markLoaded;
+                    link.onerror = markLoaded;
+                    document.head.appendChild(link);
+                }
+            });
+
             jsFiles.forEach(src => {
-                if (!document.querySelector(`script[src="${src}"]`)) {
+                const existing = document.querySelector(`script[src="${src}"]`);
+                if (existing) {
+                    markLoaded();
+                } else {
                     const script = document.createElement('script');
                     script.src = src;
                     script.async = false;
+                    script.onload = markLoaded;
+                    script.onerror = markLoaded;
                     document.body.appendChild(script);
                 }
             });
+        });
+
+        const init = async () => {
+            try {
+                await api.get("/user/verify", { withCredentials: true });
+                const res = await api.get('/user/showUserDash', { withCredentials: true });
+
+                setUserData({
+                    name: res.data.name || '',
+                    email: res.data.email || '',
+                    image: res.data.image || '',
+                    referralCode: res.data.referralCode || ''
+                });
+
+                setChartData({
+                    lineChart: res.data.lineChart || [],
+                    pieChart: res.data.pieChart || { deposit: 0, invested: 0 },
+                    barChart: res.data.barChart || [],
+                    stackedAreaChart: res.data.stackedAreaChart || []
+                });
+
+                setCardData(res.data.cardData || {
+                    totalBalance: '0.00',
+                    totalEarn: '0.00',
+                    refEarn: '0.00',
+                    depositAmount: '0.00',
+                    investedAmount: '0.00'
+                });
+            } catch (err) {
+                console.error('Authentication or data loading failed:', err);
+                localStorage.removeItem("authenticated");
+                localStorage.removeItem("isAdmin");
+                alert("Your session has expired, Please login again.");
+                window.location.href = '/login';
+                return;
+            }
+
+            await loadAssets();
+            setIsLoading(false);
         };
 
-        checkAuthAndLoadData();
-
-        // Hide loader after 1 second (optional fallback)
-        const timer = setTimeout(() => {
-            setIsLoading(false);
-        }, 1000);
-        return () => clearTimeout(timer);
+        init();
     }, []);
 
     // Chart configurations with better data handling

@@ -54,7 +54,17 @@ exports.calculateDailyEarnings = async () => {
       };
     }
 
-    const dailyProfit = roundTo3((yesterdayRecord.baseAmount * 1) / 100);
+    // 🆕 Compare investedAmount and DailyEarn amount before calculating profit
+    let compareAmount = yesterdayRecord.baseAmount;
+    if (user.investedAmount < yesterdayRecord.baseAmount) {
+      compareAmount = user.investedAmount; // use investedAmount if smaller
+    } else {
+      compareAmount = yesterdayRecord.baseAmount; // otherwise use DailyEarn’s baseAmount
+    }
+
+    // 🆕 Final daily profit calculation based on the smaller value
+    const dailyProfit = roundTo3((compareAmount * 1) / 100);
+
     let totalRefEarnings = 0;
 
     // Referral earnings

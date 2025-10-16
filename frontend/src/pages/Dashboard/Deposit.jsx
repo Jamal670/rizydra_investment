@@ -24,7 +24,7 @@ function Deposit() {
     const [isRedeposit, setIsRedeposit] = useState(false);
     const [reDepId, setReDepId] = useState(null);
     const [showDeclineDetailModal, setShowDeclineDetailModal] = useState(false);
-    
+
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
     const rowsPerPage = 8;
@@ -1120,7 +1120,7 @@ function Deposit() {
                                             if (/^\d*\.?\d*$/.test(value)) setInvestAmount(value);
                                         }}
                                         required
-                                        placeholder="Minimum Invest Amount 20"
+                                        placeholder={totalBalance.toLocaleString() >= 100 ? "Minimum Invest Amount 100" : "Minimum Invest Amount 20"}
                                         style={{ fontSize: 16 }}
                                         autoComplete="off"
                                     />
@@ -1213,7 +1213,7 @@ function Deposit() {
                         </tbody>
                     </table>
                 </div>
-                
+
                 {/* Pagination Controls */}
                 {showPagination && totalPages > 1 && (
                     <div style={{
@@ -1534,6 +1534,61 @@ function Deposit() {
                                             </div>
                                         </div>
                                     </div>
+                                    {/* Pending Amount Box */}
+                                    <div className="col-12 col-sm-6 col-md-4">
+                                        <div className="dashboard-item position-relative">
+                                            {/* Top-right info icon */}
+                                            <div
+                                                className="position-absolute top-0 end-0 me-2 mt-2"
+                                                style={{ cursor: "pointer" }}
+                                                title="The money you have invested will generate profit after 24 hours."
+                                            >
+                                                <span
+                                                    style={{
+                                                        display: "inline-block",
+                                                        backgroundColor: "#ff3b30",
+                                                        color: "#fff",
+                                                        borderRadius: "50%",
+                                                        width: "20px",
+                                                        height: "20px",
+                                                        textAlign: "center",
+                                                        lineHeight: "20px",
+                                                        fontWeight: "bold",
+                                                        fontSize: "14px",
+                                                    }}
+                                                >
+                                                    ?
+                                                </span>
+                                            </div>
+
+                                            <div className="row align-items-center">
+                                                <div className="col-4 text-center">
+                                                    <img
+                                                        src="/assets/images/dashboard/queue.png"
+                                                        alt="dashboard"
+                                                        style={{ width: 48, height: 48 }}
+                                                    />
+                                                </div>
+                                                <div className="col-8">
+                                                    <h6 className="title mb-0" style={{ fontWeight: 600 }}>
+                                                        Pending Amount
+                                                    </h6>
+                                                </div>
+                                            </div>
+
+                                            <div className="row mt-2">
+                                                <div className="col-12 text-center">
+                                                    <h3
+                                                        className="ammount theme-four"
+                                                        style={{ fontWeight: 700, fontSize: 22 }}
+                                                    >
+                                                        ${(userData?.pendingLotsSum || 0).toLocaleString()}
+                                                    </h3>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                 </div>
                             </div>
                             <div className="col-lg-12">
@@ -1704,17 +1759,17 @@ function Deposit() {
                                 <div style={{ marginBottom: '12px' }}><b>Date:</b> {selectedTransaction.date}</div>
                                 {selectedTransaction.status === 'Declined' && selectedTransaction.type === 'Deposit' && (
                                     <div className="text-start mt-2">
-                                    <button
-                                      className="btn btn-primary btn-sm"
-                                      onClick={() => {
-                                        setShowTxnModal(false);
-                                        setShowDeclineDetailModal(true);
-                                      }}
-                                    >
-                                      View Detail
-                                    </button>
-                                  </div>
-                                  
+                                        <button
+                                            className="btn btn-primary btn-sm"
+                                            onClick={() => {
+                                                setShowTxnModal(false);
+                                                setShowDeclineDetailModal(true);
+                                            }}
+                                        >
+                                            View Detail
+                                        </button>
+                                    </div>
+
                                 )}
                                 {selectedTransaction.image && selectedTransaction.image.length > 30 && (
                                     <div style={{ marginTop: 12 }}>

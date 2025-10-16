@@ -31,19 +31,31 @@ exports.AdminGetAllDepositUsers = async (req, res) => {
 };
 
 //------------Handle Deposit Confirmed----------------
+// Controller
 exports.AdminHandleDepositConfirmed = async (req, res) => {
   try {
-    const {_id} = req.body;
-    console.log(
-        `Handling deposit confirmation for user ID: ${_id}`
-    );
-    
-    const users = await AdminDashService.AdminHandleDepositConfirmed(_id);
-    res.status(200).json(users);
+    const { _id } = req.body;
+    console.log(`Handling deposit confirmation for deposit ID: ${_id}`);
+
+    // Call service (fast response)
+    const result = await AdminDashService.AdminHandleDepositConfirmed(_id);
+
+    // Send success response immediately
+    res.status(200).json({
+      success: true,
+      message: "Deposit confirmed successfully",
+      data: result,
+    });
+
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    console.error("Error confirming deposit:", err);
+    res.status(400).json({
+      success: false,
+      message: err.message || "Error confirming deposit",
+    });
   }
 };
+
 //------------Handle Deposit Declined----------------
 exports.AdminHandleDepositDeclined = async (req, res) => {
   try {

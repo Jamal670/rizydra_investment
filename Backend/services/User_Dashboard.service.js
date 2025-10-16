@@ -4,7 +4,7 @@ const DailyEarn = require('../models/dailyEarn.model');
 const RedUserEarning = require('../models/refUserEarn.model'); // Model ka import
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
-const { sendWithdrawEmail, sendDepositEmail } = require('./sendMailer'); // Import the mailer function
+const { sendWithdrawEmail} = require('./sendMailer'); // Import the mailer function
 // const transporter = require('./mailer'); // transporter ko alag file me export kiya hoga        
 
 // Service function
@@ -178,53 +178,28 @@ exports.deposit = async function ({
   ourExchange,
   amount,
   userExchange,
-  image, // Base64 image
+  image,
   type,
 }) {
-  try {
-    // ✅ User fetch
-    const user = await UserModel.findById(userId);
-    if (!user) {
-      throw new Error("User not found");
-    }
+  const user = await UserModel.findById(userId);
+  if (!user) throw new Error("User not found");
 
-    // ✅ New investment record
-    const investment = new InvestmentModel({
-      userId,
-      exchangeType,
-      ourExchange,
-      amount,
-      userExchange,
-      image,
-      type,
-      status: "Pending",
-    });
+  const investment = new InvestmentModel({
+    userId,
+    exchangeType,
+    ourExchange,
+    amount,
+    userExchange,
+    image,
+    type,
+    status: "Pending",
+  });
 
-    await investment.save();
-
-    // ✅ Send Email (Separate Function)
-    await sendDepositEmail({
-      user,
-      exchangeType,
-      ourExchange,
-      amount,
-      userExchange,
-      image,
-      type,
-    });
-
-    return {
-      success: true,
-      message: "Deposit saved & email sent successfully",
-      investment,
-    };
-
-  } catch (error) {
-    throw new Error(error.message || "Error processing deposit");
-  }
+  await investment.save();
+  return investment;
 };
 
-// Show deposit function
+// for aggregation reference
 exports.showDeposit = async (userId) => {
   try {
     const result = await UserModel.aggregate([
@@ -234,7 +209,7 @@ exports.showDeposit = async (userId) => {
           from: 'investments', // collection name in MongoDB
           let: { userId: '$_id' },
           pipeline: [
-            { $match: { $expr: { $and: [{ $eq: ['$userId', '$$userId'] }] } } },
+            { $match: { $expr: { $eq: ['$userId', '$$userId'] } } },
             {
               $lookup: {
                 from: 'investments',
@@ -254,8 +229,15 @@ exports.showDeposit = async (userId) => {
             {
               $project: {
                 _id: 1,
-                exchangeType: 1, ourExchange: 1, amount: 1, userExchange: 1, image: 1,
-                status: 1, type: 1, reDepId: 1, comment: 1,
+                exchangeType: 1,
+                ourExchange: 1,
+                amount: 1,
+                userExchange: 1,
+                image: 1,
+                status: 1,
+                type: 1,
+                reDepId: 1,
+                comment: 1,
                 alreadyRedeposit: 1,
                 date: { $dateToString: { format: "%d %b %Y", date: "$createdAt" } }
               }
@@ -264,7 +246,42 @@ exports.showDeposit = async (userId) => {
           as: 'confirmedInvestments'
         }
       },
-      { $project: { _id: 1, name: 1, email: 1, depositAmount: 1, investedAmount: 1, refEarn: 1, totalEarn: 1, confirmedInvestments: 1, totalBalance: 1, image: 1, referralCode: 1 } }
+      {
+        // ✅ Calculate total pending investedLots amount
+        $addFields: {
+          pendingLotsSum: {
+            $sum: {
+              $map: {
+                input: {
+                  $filter: {
+                    input: '$investedLots',
+                    as: 'lot',
+                    cond: { $eq: ['$$lot.status', 'Pending'] }
+                  }
+                },
+                as: 'pendingLot',
+                in: '$$pendingLot.amount'
+              }
+            }
+          }
+        }
+      },
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          email: 1,
+          depositAmount: 1,
+          investedAmount: 1,
+          refEarn: 1,
+          totalEarn: 1,
+          totalBalance: 1,
+          image: 1,
+          referralCode: 1,
+          confirmedInvestments: 1,
+          pendingLotsSum: 1 // ✅ Include pending total in response
+        }
+      }
     ]);
 
     if (!result || result.length === 0) throw new Error("User not found");
@@ -274,6 +291,7 @@ exports.showDeposit = async (userId) => {
     throw new Error(error.message || "Error fetching user investments");
   }
 };
+
 
 
 // referral user function
@@ -431,9 +449,6 @@ exports.withdraw = async ({ userId, exchangeType, ourExchange, amount, userExcha
   }
 };
 
-
-
-
 // invest function
 exports.invest = async (userId, from, to, amount) => {
   try {
@@ -451,32 +466,42 @@ exports.invest = async (userId, from, to, amount) => {
       throw new Error("From and To cannot be the same");
     }
 
+    // ✅ CASE 1: Deposit ➜ Invest
     if (from === "Deposit" && to === "Invest") {
       if (amt <= 0) {
         throw new Error("Amount must be greater than 0");
       }
-    
+
       if (user.totalBalance < amt) {
         throw new Error("Insufficient Balance");
       }
-    
+
+      // 🧩 Minimum investment checks
       if (user.investedAmount < 100) {
-        // Case 1: User has less than 100 invested
         if (user.totalBalance >= 100 && amt < 100) {
           throw new Error("Minimum investment amount is 100");
         } else if (user.totalBalance < 100 && amt < 20) {
           throw new Error("Minimum investment amount is 20");
         }
       } else {
-        // Case 2: User already has 100 or more invested
         if (amt < 100) {
           throw new Error("Minimum investment amount is 100");
         }
       }
-    
-      user.investedAmount += amt;
+
+      // 🧩 Deduct and record investment
+      // user.investedAmount += amt;
       user.totalBalance -= amt;
+
+      // ✅ Push into investedLots with type = 'Pending'
+      user.investedLots.push({
+        amount: amt,
+        status: "Pending",
+        createdAt: new Date(),
+      });
     }
+
+    // ✅ CASE 2: Invest ➜ Deposit (withdraw)
     else if (from === "Invest" && to === "Deposit") {
       if (user.investedAmount < 20) {
         throw new Error("Insufficient Invest Balance (minimum 20 required)");
@@ -490,10 +515,11 @@ exports.invest = async (userId, from, to, amount) => {
         throw new Error("Insufficient Invest Balance");
       }
 
-      // withdraw logic
+      // 🧩 Withdraw logic
       user.investedAmount -= amt;
       user.totalBalance += amt;
     }
+
     else {
       throw new Error("Invalid transfer type");
     }
@@ -502,14 +528,13 @@ exports.invest = async (userId, from, to, amount) => {
 
     return {
       success: true,
-      message: "Investment transaction successful",
+      message: "Your investment will be added after 24 hours.",
       user,
     };
   } catch (error) {
     throw new Error(error.message || "Error processing investment transaction");
   }
 };
-
 
 // profile function
 exports.profile = async function profile(userId) {

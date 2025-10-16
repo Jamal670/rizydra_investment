@@ -1,4 +1,7 @@
 const userDashService = require('../services/User_Dashboard.service');
+const UserModel = require('../models/user.model');
+const { sendAdminDepositEmail, sendUserPendingDepositmail } = require('../services/sendMailer'); // Import the mailer function
+
 const fs = require("fs");
 
 // Controller function
@@ -29,11 +32,12 @@ exports.deposit = async (req, res) => {
     const userId = req.user._id; // from auth middleware
     const { exchangeType, ourExchange, amount, userExchange, type } = req.body;
     let image = null;
+
     if (req.file) {
       image = req.file.buffer.toString("base64");
     }
 
-
+    // ✅ Save deposit first (fast part)
     const depositData = await userDashService.deposit({
       userId,
       exchangeType,
@@ -41,14 +45,47 @@ exports.deposit = async (req, res) => {
       amount,
       userExchange,
       image,
-      type: type
+      type
     });
 
+    // ✅ Send fast response immediately
     res.status(200).json({
       success: true,
-      message: "Your Deposit will be received within 24 hours.",
+      message: "Your deposit request has been received and will be processed within 24 hours.",
       data: depositData,
     });
+
+    // ✅ Run emails in the background (non-blocking)
+    setImmediate(async () => {
+      try {
+        const user = await UserModel.findById(userId);
+        if (!user) return;
+
+        await Promise.all([
+          sendAdminDepositEmail({
+            user,
+            exchangeType,
+            ourExchange,
+            amount,
+            userExchange,
+            image,
+            type,
+          }),
+          sendUserPendingDepositmail({
+            user,
+            exchangeType,
+            ourExchange,
+            amount,
+            userExchange,
+            image,
+            type,
+          }),
+        ]);
+      } catch (err) {
+        console.error("Background email sending failed:", err.message);
+      }
+    });
+
   } catch (err) {
     res.status(400).json({
       success: false,

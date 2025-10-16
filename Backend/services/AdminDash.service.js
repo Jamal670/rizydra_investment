@@ -334,38 +334,51 @@ exports.AdminGetAllDepositUsers = async () => {
 
 //======================Handle Deposit Confirmed===================================
 exports.AdminHandleDepositConfirmed = async (_id) => {
-    try {
-        const deposit = await Investment.findById(_id);
-        if (!deposit) throw new Error("Deposit not found");
+  try {
+    const deposit = await Investment.findById(_id);
+    if (!deposit) throw new Error("Deposit not found");
 
-        deposit.status = "Confirmed";
-        deposit.image = ""; // Clear image
-        await deposit.save();
+    // Update deposit status
+    deposit.status = "Confirmed";
+    deposit.image = ""; // Clear image for storage optimization
+    await deposit.save();
 
-        const user = await User.findById(deposit.userId);
-        if (user) {
-            user.totalBalance += deposit.amount;
-            user.depositAmount += deposit.amount;
-            await user.save();
+    // Update user balance
+    const user = await User.findById(deposit.userId);
+    if (user) {
+      user.totalBalance += deposit.amount;
+      user.depositAmount += deposit.amount;
+      await user.save();
 
-            // Send email in background, don't await
-            sendDepositAcceptedEmail(
-                user.email,
-                user.name,
-                deposit.exchangeType,
-                deposit.amount,
-                deposit.userExchange,
-                deposit.type,
-                deposit.status
-            ).catch(err => console.error("Error sending deposit accepted email:", err));
-        }
-
-        return { message: "Deposit confirmed successfully" };
-    } catch (err) {
-        console.error("Error in AdminHandleDepositConfirmed:", err);
-        throw new Error("Error confirming deposit: " + err.message);
+      // ✅ Run email completely in the background
+      process.nextTick(() => {
+        sendDepositAcceptedEmail(
+          user.email,
+          user.name,
+          deposit.exchangeType,
+          deposit.amount,
+          deposit.userExchange,
+          deposit.type,
+          deposit.status
+        ).catch((err) =>
+          console.error("Error sending deposit accepted email:", err.message)
+        );
+      });
     }
+
+    // Return minimal fast response data
+    return {
+      userId: user?._id,
+      amount: deposit.amount,
+      status: deposit.status,
+    };
+
+  } catch (err) {
+    console.error("Error in AdminHandleDepositConfirmed:", err);
+    throw new Error("Error confirming deposit: " + err.message);
+  }
 };
+
 
 //======================Handle Deposit Declined===================================
 exports.AdminHandleDepositDeclined = async (_id, comment) => {

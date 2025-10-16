@@ -61,6 +61,14 @@ const userSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  // Per-investment lot tracking for 24h eligibility windows
+  investedLots: [
+    {
+      amount: { type: Number },
+      status: { type: String, enum: ['Pending', 'Confirmed'] },
+      createdAt: { type: Date }
+    }
+  ],
   otp: {
     type: String,
     default: null

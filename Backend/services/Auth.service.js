@@ -9,6 +9,7 @@ function generateReferralCode() {
 }
 
 // -----------------Register a new user---------------------  
+// services/userAuthService.js
 exports.RegUser = async (name, email, password, referralCode) => {
   // Check if there is a pending user with OTP for same credentials
   const pendingUser = await UserModel.findOne({
@@ -21,7 +22,6 @@ exports.RegUser = async (name, email, password, referralCode) => {
     console.log(`Deleting pending user with id: ${pendingUser._id}`);
     await UserModel.deleteOne({ _id: pendingUser._id });
   } else {
-    // Regular check for existing verified user
     const existingUser = await UserModel.findOne({
       $or: [{ email }, { name }]
     });
@@ -41,10 +41,7 @@ exports.RegUser = async (name, email, password, referralCode) => {
 
   if (referralCode) {
     const referrer = await UserModel.findOne({ referralCode });
-
-    if (!referrer) {
-      throw new Error('Invalid referral code');
-    }
+    if (!referrer) throw new Error('Invalid referral code');
 
     if (referrer.investedAmount < 20) {
       throw new Error('Your referrer must have a minimum investment of 20 USDT.');
@@ -57,8 +54,8 @@ exports.RegUser = async (name, email, password, referralCode) => {
   const generatedReferralCode = generateReferralCode();
   const otp = generateOTP();
 
-  // Hash password before saving
   const hashedPassword = await bcrypt.hash(password, 10);
+
   const newUser = new UserModel({
     name,
     email,
@@ -72,12 +69,19 @@ exports.RegUser = async (name, email, password, referralCode) => {
 
   const savedUser = await newUser.save();
 
-  // Send OTP email and await to ensure delivery attempt completes in serverless/prod
-  await sendEmail(email, otp);
+  // ⚡ Send email asynchronously (doesn't block user response)
+  (async () => {
+    try {
+      await sendEmail(email, otp);
+      console.log(`📧 OTP sent to ${email}`);
+    } catch (err) {
+      console.error(`❌ Failed to send OTP to ${email}:`, err.message);
+    }
+  })();
 
-  // Instant response
+  // ✅ Immediate response to user (no delay)
   return {
-    message: 'User registered successfully. OTP will be sent to your email shortly.',
+    message: 'User registered successfully. OTP is being sent to your email.',
     user: {
       _id: savedUser._id,
       name: savedUser.name,

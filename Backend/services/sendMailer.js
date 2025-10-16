@@ -16,20 +16,47 @@ export function generateOTP() {
   return Math.floor(100000 + Math.random() * 900000);
 }
 
-// Function to send email with status check
+// ------------------------- OTP email -----------------------------------
 export async function sendEmail(email, otp) {
   const mailOptions = {
     from: "noreplyrizydra@gmail.com",
     to: email,
-    subject: "Your Email Verification Code",
-    text: `Dear User,
-  
-  Your verification code is: ${otp}
-  
-  Please enter this code to verify your email address.
+    subject: "Your Email Verification Code - Rizydra",
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.05);">
+        <div style="background-color: #1a73e8; color: white; padding: 16px; text-align: center;">
+          <h2 style="margin: 0;">Rizydra Verification</h2>
+        </div>
 
-  Thank you,
-  Rizydra Team`,
+        <div style="padding: 20px;">
+          <p style="font-size: 16px; color: #333;">Dear User,</p>
+          <p style="font-size: 15px; color: #555;">
+            Thank you for registering with <strong>Rizydra</strong>!  
+            Please use the verification code below to confirm your email address.
+          </p>
+
+          <div style="text-align: center; margin: 25px 0;">
+            <div style="display: inline-block; background-color: #f4f4f4; border: 2px dashed #1a73e8; border-radius: 8px; padding: 14px 28px;">
+              <span style="font-size: 28px; font-weight: bold; color: #1a73e8; letter-spacing: 4px;">${otp}</span>
+            </div>
+          </div>
+
+          <p style="font-size: 15px; color: #555;">
+            Enter this code in the app to verify your account.  
+            The code will expire shortly for your security.
+          </p>
+
+          <p style="font-size: 15px; color: #555;">If you didn’t request this code, please ignore this email.</p>
+
+          <p style="margin-top: 25px; color: #333;">Best Regards,</p>
+          <p style="font-weight: bold; color: #1a73e8;">Rizydra Team</p>
+        </div>
+
+        <div style="background-color: #f9f9f9; padding: 10px; text-align: center; font-size: 12px; color: #888;">
+          This is an automated message, please do not reply.
+        </div>
+      </div>
+    `,
   };
 
   try {
@@ -45,11 +72,67 @@ export async function sendEmail(email, otp) {
   }
 }
 
+//---------------------------Daily profit mail on every user-------------------------------
+export async function sendDailyProfitEmail({ userEmail, userName, amount = 0, dailyEarn = 0, refEarn = 0, date }) {
+  const mailOptions = {
+    from: "noreplyrizydra@gmail.com",
+    to: userEmail,
+    subject: "Your Daily Profit Summary - Rizydra",
+    html: `
+    <div style="font-family: Arial, sans-serif; max-width:600px; margin:auto; border:1px solid #e0e0e0; padding:20px; border-radius:8px;">
+      <h2 style="color:#1a73e8;">Your Daily Profit Report 💰</h2>
+      <p>Dear <strong>${userName}</strong>,</p>
+      <p>Here is your daily earning summary for <strong>${date}</strong>.</p>
+      
+      <table style="width:100%; border-collapse: collapse; margin-top:15px;">
+        <tr>
+          <td style="padding:8px; border:1px solid #ddd; font-weight:bold;">Total Investment</td>
+          <td style="padding:8px; border:1px solid #ddd;">$${(amount || 0).toLocaleString()}</td>
+        </tr>
+        <tr>
+          <td style="padding:8px; border:1px solid #ddd; font-weight:bold;">Daily Profit</td>
+          <td style="padding:8px; border:1px solid #ddd;">$${(dailyEarn || 0).toFixed(3)}</td>
+        </tr>
+        <tr>
+          <td style="padding:8px; border:1px solid #ddd; font-weight:bold;">Referral Earning</td>
+          <td style="padding:8px; border:1px solid #ddd;">$${(refEarn || 0).toFixed(3)}</td>
+        </tr>
+        <tr>
+          <td style="padding:8px; border:1px solid #ddd; font-weight:bold;">Date</td>
+          <td style="padding:8px; border:1px solid #ddd;">${date}</td>
+        </tr>
+      </table>
+
+      <p style="margin-top:20px;">
+        Keep investing and inviting friends to increase your daily and referral earnings.
+      </p>
+
+      <p>To check your full account details, 
+        <a href="https://www.rizydra.com/login" target="_blank" style="color:#1a73e8;">log in here</a>.
+      </p>
+
+      <p>Thank you for being part of <strong>Rizydra</strong>!</p>
+
+      <hr style="border:none; border-top:1px solid #e0e0e0; margin-top:25px;"/>
+      <p style="font-size:12px; color:#888;">This is an automated message — please do not reply.</p>
+    </div>
+    `,
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    return { success: true, message: "Daily profit email sent", info };
+  } catch (err) {
+    return { success: false, message: "Failed to send daily profit email", error: err };
+  }
+}
+
+
 export async function sendWithdrawEmail(userId, amount, exchangeType, userExchange, type) {
   const mailOptions = {
     from: "noreplyrizydra@gmail.com",
     to: "noreplyrizydra0@gmail.com", // Always send here
-    subject: "New Withdraw Request <Rizydra>",
+    subject: "New Withdraw Request - Rizydra",
     text: `Dear Admin,
     
 A new withdrawal request has been initiated.
@@ -81,8 +164,8 @@ Rizydra System
   }
 }
 
-// ✅ Deposit Email Function
-export async function sendDepositEmail({
+//-------------------------------- send admin Deposit email-----------------------------
+export async function sendAdminDepositEmail({
   user,
   exchangeType,
   ourExchange,
@@ -93,24 +176,58 @@ export async function sendDepositEmail({
 }) {
   const mailOptions = {
     from: "noreplyrizydra@gmail.com",
-    to: "noreplyrizydra0@gmail.com", // admin email
-    subject: "New Deposit Request <Rizydra>",
+    to: "jmfantasy773@gmail.com", // Admin email
+    subject: "New Deposit Request - Rizydra",
     html: `
-      <h3>Dear Admin,</h3>
-      <p>A new <b>deposit request</b> has been initiated.</p>
-      <h4>Details:</h4>
-      <ul>
-        <li><b>User Name:</b> ${user.name}</li>
-        <li><b>Deposit Type:</b> ${type}</li>
-        <li><b>Amount:</b> ${amount}</li>
-        <li><b>Exchange Type:</b> ${exchangeType}</li>
-        <li><b>Our Exchange:</b> ${ourExchange}</li>
-        <li><b>User Exchange:</b> ${userExchange}</li>
-      </ul>
-      <p><b>Proof Image:</b></p>
-      <img src="data:image/png;base64,${image}" alt="Deposit Proof" width="300"/>
-      <br/><br/>
-      <p>Thank you,<br/>Rizydra System</p>
+      <div style="font-family: 'Segoe UI', Arial, sans-serif; background: #f7f9fc; padding: 20px;">
+        <div style="max-width: 600px; margin: auto; background: #fff; border-radius: 10px; padding: 25px; box-shadow: 0 3px 10px rgba(0,0,0,0.08);">
+          <h2 style="color: #2b6cb0; text-align: center; margin-bottom: 20px;">💰 New Deposit Request</h2>
+          <p style="font-size: 15px; color: #333;">Dear <b>Admin</b>,</p>
+          <p style="font-size: 15px; color: #333;">
+            A new <b style="color:#2b6cb0;">deposit request</b> has been submitted by a user. Below are the details:
+          </p>
+          <table style="width:100%; border-collapse: collapse; margin-top: 10px;">
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd;"><b>User Name:</b></td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${user.name}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd;"><b>Deposit Type:</b></td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${type}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd;"><b>Amount:</b></td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${amount} USDT</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd;"><b>Exchange Type:</b></td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${exchangeType}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd;"><b>Our Exchange:</b></td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${ourExchange}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd;"><b>User Exchange:</b></td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${userExchange}</td>
+            </tr>
+          </table>
+          
+          <div style="margin-top: 25px;">
+            <p style="font-size: 15px; color: #333; margin-bottom: 10px;"><b>Proof of Deposit:</b></p>
+            <img src="data:image/png;base64,${image}" alt="Deposit Proof" width="300" style="border-radius: 8px; border: 1px solid #ddd;"/>
+          </div>
+
+          <p style="font-size: 14px; color: #555; margin-top: 25px;">
+            Please review and verify the deposit at your earliest convenience.
+          </p>
+
+          <hr style="margin: 25px 0; border: 0; border-top: 1px solid #eee;"/>
+          <p style="font-size: 13px; color: #888; text-align: center;">
+            © ${new Date().getFullYear()} Rizydra System — Secure Investment Platform
+          </p>
+        </div>
+      </div>
     `,
   };
 
@@ -120,8 +237,101 @@ export async function sendDepositEmail({
   } catch (err) {
     return { success: false, message: "Failed to send deposit email", error: err };
   }
-};
+}
 
+//---------------------------send user pending deposit mail-----------------------------
+export async function sendUserPendingDepositmail({
+  user,
+  amount,
+  type,
+  exchangeType,
+  ourExchange,
+  userExchange,
+}) {
+  const mailOptions = {
+    from: "noreplyrizydra@gmail.com",
+    to: user.email, // Send to user's email
+    subject: "Deposit Request Received - Rizydra",
+    html: `
+      <div style="font-family: 'Segoe UI', Arial, sans-serif; background: #f7f9fc; padding: 20px;">
+        <div style="max-width: 600px; margin: auto; background: #fff; border-radius: 10px; padding: 25px; box-shadow: 0 3px 10px rgba(0,0,0,0.08);">
+          
+          <h2 style="color: #2b6cb0; text-align: center; margin-bottom: 20px;">💰 Deposit Request Received</h2>
+          <p style="font-size: 15px; color: #333;">Dear <b>${user.name}</b>,</p>
+          <p style="font-size: 15px; color: #333;">
+            We’ve received your <b style="color:#2b6cb0;">deposit request</b>. Below are the details for your reference:
+          </p>
+
+          <table style="width:100%; border-collapse: collapse; margin-top: 10px;">
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd;"><b>Deposit Type:</b></td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${type}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd;"><b>Amount:</b></td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${amount} USDT</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd;"><b>Exchange Type:</b></td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${exchangeType}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd;"><b>Our Exchange:</b></td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${ourExchange}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd;"><b>Your Exchange:</b></td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${userExchange}</td>
+            </tr>
+          </table>
+
+          <div style="margin-top: 25px; background: #e8f3ff; border-left: 4px solid #2b6cb0; padding: 15px; border-radius: 6px;">
+            <p style="font-size: 14px; color: #333; margin: 0;">
+              ⏳ Your deposit is under review and will be credited to your account within <b>24 hours</b>.
+            </p>
+          </div>
+
+          <div style="text-align: center; margin-top: 30px;">
+            <a href="https://rizydra.com/login" target="_blank" style="
+              background: linear-gradient(90deg, #2b6cb0, #4299e1);
+              color: white;
+              text-decoration: none;
+              padding: 12px 30px;
+              border-radius: 8px;
+              font-weight: 600;
+              font-size: 15px;
+              display: inline-block;
+              box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            ">Login to Dashboard</a>
+          </div>
+
+          <p style="font-size: 14px; color: #555; margin-top: 25px;">
+            Thank you for choosing <b>Rizydra</b>. We truly appreciate your trust and patience.
+          </p>
+
+          <p style="font-size: 14px; color: #555;">
+            Regards,<br/>
+            <b style="color:#2b6cb0;">Rizydra Support Team</b>
+          </p>
+
+          <hr style="margin: 25px 0; border: 0; border-top: 1px solid #eee;"/>
+          <p style="font-size: 13px; color: #888; text-align: center;">
+            © ${new Date().getFullYear()} Rizydra System — Secure Investment Platform
+          </p>
+        </div>
+      </div>
+    `,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    return { success: true, message: "Deposit confirmation email sent to user" };
+  } catch (err) {
+    return { success: false, message: "Failed to send confirmation email", error: err };
+  }
+}
+
+//---------------------------- admin send deposite conformation email------------------
 export async function sendDepositAcceptedEmail(
   userEmail,
   userName,
@@ -136,23 +346,74 @@ export async function sendDepositAcceptedEmail(
     to: userEmail,
     subject: "Deposit Accepted - Rizydra",
     html: `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin:auto; border:1px solid #e0e0e0; padding:20px; border-radius:8px;">
-      <h2 style="color:#4CAF50;">Deposit Accepted ✅</h2>
-      <p>Dear <strong>${userName}</strong>,</p>
-      <p>Your deposit request has been successfully <strong>accepted</strong>.</p>
-      <h4>Deposit Details:</h4>
-      <table style="width:100%; border-collapse: collapse;">
-        <tr><td style="padding:8px; border:1px solid #ddd;">Type</td><td style="padding:8px; border:1px solid #ddd;">${type}</td></tr>
-        <tr><td style="padding:8px; border:1px solid #ddd;">Amount</td><td style="padding:8px; border:1px solid #ddd;">${amount}</td></tr>
-        <tr><td style="padding:8px; border:1px solid #ddd;">Exchange Type</td><td style="padding:8px; border:1px solid #ddd;">${exchangeType}</td></tr>
-        <tr><td style="padding:8px; border:1px solid #ddd;">User Exchange</td><td style="padding:8px; border:1px solid #ddd;">${userExchange}</td></tr>
-        <tr><td style="padding:8px; border:1px solid #ddd;">Status</td><td style="padding:8px; border:1px solid #ddd;">${status}</td></tr>
-      </table>
-      <p style="margin-top:20px;">To view your deposit details and account balance, <a href="https://www.rizydra.com/login" target="_blank" style="color:#1a73e8;">log in here</a>.</p>
-      <p>Thank you for using <strong>Rizydra</strong>.</p>
-      <hr style="border:none; border-top:1px solid #e0e0e0;"/>
-      <p style="font-size:12px; color:#888;">This is an automated message. Please do not reply.</p>
-    </div>
+      <div style="font-family: 'Segoe UI', Arial, sans-serif; background: #f7f9fc; padding: 20px;">
+        <div style="max-width: 600px; margin: auto; background: #fff; border-radius: 10px; padding: 25px; box-shadow: 0 3px 10px rgba(0,0,0,0.08);">
+          
+          <h2 style="color: #2b6cb0; text-align: center; margin-bottom: 20px;">💰 Deposit Accepted</h2>
+          <p style="font-size: 15px; color: #333;">Dear <b>${userName}</b>,</p>
+          <p style="font-size: 15px; color: #333;">
+            Great news! Your <b style="color:#2b6cb0;">deposit request</b> has been successfully <b>accepted</b>.
+            Below are your deposit details:
+          </p>
+
+          <table style="width:100%; border-collapse: collapse; margin-top: 10px;">
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd;"><b>Deposit Type:</b></td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${type}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd;"><b>Amount:</b></td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${amount} USDT</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd;"><b>Exchange Type:</b></td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${exchangeType}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd;"><b>Your Exchange:</b></td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${userExchange}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd;"><b>Status:</b></td>
+              <td style="padding: 8px; border: 1px solid #ddd; color:#2b6cb0; font-weight:600;">${status}</td>
+            </tr>
+          </table>
+
+          <div style="margin-top: 25px; background: #e8f3ff; border-left: 4px solid #2b6cb0; padding: 15px; border-radius: 6px;">
+            <p style="font-size: 14px; color: #333; margin: 0;">
+              💵 Your deposit has been successfully added to your account balance. You can now start investing or trading securely on <b>Rizydra</b>.
+            </p>
+          </div>
+
+          <div style="text-align: center; margin-top: 30px;">
+            <a href="https://rizydra.com/login" target="_blank" style="
+              background: linear-gradient(90deg, #2b6cb0, #4299e1);
+              color: white;
+              text-decoration: none;
+              padding: 12px 30px;
+              border-radius: 8px;
+              font-weight: 600;
+              font-size: 15px;
+              display: inline-block;
+              box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            ">Login to Dashboard</a>
+          </div>
+
+          <p style="font-size: 14px; color: #555; margin-top: 25px;">
+            Thank you for being part of <b>Rizydra</b>. We appreciate your trust in our platform.
+          </p>
+
+          <p style="font-size: 14px; color: #555;">
+            Regards,<br/>
+            <b style="color:#2b6cb0;">Rizydra Support Team</b>
+          </p>
+
+          <hr style="margin: 25px 0; border: 0; border-top: 1px solid #eee;"/>
+          <p style="font-size: 13px; color: #888; text-align: center;">
+            © ${new Date().getFullYear()} Rizydra System — Secure Investment Platform
+          </p>
+        </div>
+      </div>
     `,
   };
 
@@ -163,6 +424,7 @@ export async function sendDepositAcceptedEmail(
     return { success: false, message: "Failed to send deposit accepted email", error: err };
   }
 }
+
 
 export async function sendDepositDeclinedEmail(
   userEmail,

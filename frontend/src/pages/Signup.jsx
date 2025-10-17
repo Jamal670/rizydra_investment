@@ -20,6 +20,8 @@ function Signup() {
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [registerLoading, setRegisterLoading] = useState(false);
   const [isReferralLocked, setIsReferralLocked] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Get referral code from URL on mount
   useEffect(() => {
@@ -331,29 +333,81 @@ function Signup() {
                       required
                     />
                   </div>
-                  <div className="form--group">
+                  <div className="form--group" style={{ position: 'relative' }}>
                     <i className="las la-lock"></i>
                     <input
-                      type="password"
+                      type={showPassword ? 'text' : 'password'}
                       className="form--control"
                       placeholder="Password"
                       name="password"
                       value={form.password}
                       onChange={handleChange}
                       required
+                      style={{ paddingRight: '45px' }}
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(prev => !prev)}
+                      style={{
+                        position: 'absolute',
+                        right: '15px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        color: '#666',
+                        fontSize: '18px',
+                        padding: 0,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '20px',
+                        height: '20px',
+                        zIndex: 10
+                      }}
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    >
+                      <i className={showPassword ? 'las la-eye-slash' : 'las la-eye'}></i>
+                    </button>
                   </div>
-                  <div className="form--group">
+                  <div className="form--group" style={{ position: 'relative' }}>
                     <i className="las la-lock"></i>
                     <input
-                      type="password"
+                      type={showConfirmPassword ? 'text' : 'password'}
                       className="form--control"
                       placeholder="Re - Password"
                       name="repassword"
                       value={form.repassword}
                       onChange={handleChange}
                       required
+                      style={{ paddingRight: '45px' }}
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(prev => !prev)}
+                      style={{
+                        position: 'absolute',
+                        right: '15px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        color: '#666',
+                        fontSize: '18px',
+                        padding: 0,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '20px',
+                        height: '20px',
+                        zIndex: 10
+                      }}
+                      aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+                    >
+                      <i className={showConfirmPassword ? 'las la-eye-slash' : 'las la-eye'}></i>
+                    </button>
                   </div>
                   <div className="form--group">
                     <i className="las la-lock"></i>

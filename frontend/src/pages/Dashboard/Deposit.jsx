@@ -60,6 +60,9 @@ function Deposit() {
     // Add state for loading in Deposit and Invest modals
     const [depositProcessing, setDepositProcessing] = useState(false);
     const [investProcessing, setInvestProcessing] = useState(false);
+    const [showInvestConfirmation, setShowInvestConfirmation] = useState(false);
+    const [showPendingInfoModal, setShowPendingInfoModal] = useState(false);
+    const [showInvestBlocker, setShowInvestBlocker] = useState(false);
 
     // Add new state for transaction ID validation
     const [txnIdError, setTxnIdError] = useState('');
@@ -1059,7 +1062,13 @@ function Deposit() {
                             <form
                                 onSubmit={async e => {
                                     e.preventDefault();
-                                    setInvestProcessing(true); // Start loading
+                                    // Show confirmation only for From: Deposit -> To: Invest
+                                    if (investFrom === 'Deposit' && investTo === 'Invest') {
+                                        setShowInvestConfirmation(true);
+                                        return;
+                                    }
+
+                                    setInvestProcessing(true);
                                     try {
                                         const res = await api.post(
                                             '/user/investamount',
@@ -1074,7 +1083,7 @@ function Deposit() {
                                         window.location.reload();
                                     } catch (err) {
                                         alert(err.response?.data?.message || 'Invest failed!');
-                                        setInvestProcessing(false); // Stop loading on error
+                                        setInvestProcessing(false);
                                     }
                                     setInvestAmount('');
                                 }}
@@ -1120,7 +1129,7 @@ function Deposit() {
                                             if (/^\d*\.?\d*$/.test(value)) setInvestAmount(value);
                                         }}
                                         required
-                                        placeholder={totalBalance.toLocaleString() >= 100 ? "Minimum Invest Amount 100" : "Minimum Invest Amount 20"}
+                                        placeholder={totalBalance.toLocaleString() || userData?.investedAmount.toLocaleString() >= 100 ? "Minimum Invest Amount 100" : "Minimum Invest Amount 20"}
                                         style={{ fontSize: 16 }}
                                         autoComplete="off"
                                     />
@@ -1542,6 +1551,14 @@ function Deposit() {
                                                 className="position-absolute top-0 end-0 me-2 mt-2"
                                                 style={{ cursor: "pointer" }}
                                                 title="The money you have invested will generate profit after 24 hours."
+                                                onClick={() => {
+                                                    try {
+                                                        const isTouch = typeof window !== 'undefined' && (window.matchMedia && window.matchMedia('(hover: none)').matches);
+                                                        if (isTouch) setShowPendingInfoModal(true);
+                                                    } catch (_) {
+                                                        // no-op
+                                                    }
+                                                }}
                                             >
                                                 <span
                                                     style={{
@@ -1609,7 +1626,14 @@ function Deposit() {
                                         </button>
                                         <button
                                             className="btn btn-primary px-4 py-2 w-100 w-lg-auto"
-                                            onClick={() => setShowInvestModal(true)}
+                                            onClick={() => {
+                                                const remaining = userData?.BalToInvRemaining;
+                                                if (typeof remaining === 'number' && remaining !== 342) {
+                                                    setShowInvestBlocker(true);
+                                                } else {
+                                                    setShowInvestModal(true);
+                                                }
+                                            }}
                                         >
                                             Invest
                                         </button>
@@ -1711,6 +1735,230 @@ function Deposit() {
 
             {/* Invest Modal */}
             {showInvestModal && <InvestModal />}
+
+            {/* Invest Confirmation Popup */}
+            {showInvestConfirmation && (
+                <div
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        width: '100vw',
+                        height: '100vh',
+                        background: 'rgba(0,0,0,0.5)',
+                        zIndex: 2100,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        animation: 'fadeIn .25s'
+                    }}
+                    onClick={() => setShowInvestConfirmation(false)}
+                >
+                    <div
+                        style={{
+                            background: '#fff',
+                            borderRadius: 16,
+                            boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+                            padding: '2rem 2rem 1.5rem 2rem',
+                            maxWidth: 520,
+                            width: '92%',
+                            animation: 'slideDown .3s',
+                            position: 'relative'
+                        }}
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <h4 style={{ fontWeight: 700, marginBottom: 18, color: '#222', textAlign: 'center' }}>
+                            Confirm Investment
+                        </h4>
+                        <div style={{ fontSize: 16, color: '#333', lineHeight: 1.7, textAlign: 'center', marginBottom: 24 }}>
+                            Your profit will start in 24–48 hours. Next investment is allowed after 3 days. Do you want to invest this amount?
+                        </div>
+                        <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+                            <button
+                                className="btn btn-secondary"
+                                onClick={() => setShowInvestConfirmation(false)}
+                                style={{
+                                    padding: '10px 24px',
+                                    borderRadius: 8,
+                                    fontWeight: 600,
+                                    minWidth: 100
+                                }}
+                            >
+                                No
+                            </button>
+                            <button
+                                className="btn btn-primary"
+                                onClick={async () => {
+                                    setShowInvestConfirmation(false);
+                                    setInvestProcessing(true);
+                                    try {
+                                        const res = await api.post(
+                                            '/user/investamount',
+                                            {
+                                                from: investFrom,
+                                                to: investTo,
+                                                amount: investAmount
+                                            },
+                                            { withCredentials: true }
+                                        );
+                                        alert(res.data.message || 'Invest submitted!');
+                                        setShowInvestModal(false);
+                                        window.location.reload();
+                                    } catch (err) {
+                                        alert(err.response?.data?.message || 'Invest failed!');
+                                        setInvestProcessing(false);
+                                    }
+                                }}
+                                style={{
+                                    padding: '10px 24px',
+                                    borderRadius: 8,
+                                    fontWeight: 600,
+                                    minWidth: 100
+                                }}
+                                disabled={investProcessing}
+                            >
+                                Yes
+                            </button>
+                        </div>
+                    </div>
+                    <style>
+                        {`
+                        @keyframes fadeIn {
+                            from { opacity: 0; }
+                            to { opacity: 1; }
+                        }
+                        @keyframes slideDown {
+                            from { transform: translateY(-30px); opacity: 0; }
+                            to { transform: translateY(0); opacity: 1; }
+                        }
+                        `}
+                    </style>
+                </div>
+            )}
+
+            {/* Invest Blocker (remaining hours) */}
+            {showInvestBlocker && (
+                <div
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        width: '100vw',
+                        height: '100vh',
+                        background: 'rgba(0,0,0,0.5)',
+                        zIndex: 2100,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        animation: 'fadeIn .25s'
+                    }}
+                    onClick={() => setShowInvestBlocker(false)}
+                >
+                    <div
+                        style={{
+                            background: '#fff',
+                            borderRadius: 16,
+                            boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+                            padding: '1.5rem 1.5rem 1.25rem',
+                            maxWidth: 460,
+                            width: '90%',
+                            animation: 'slideDown .3s',
+                            position: 'relative'
+                        }}
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <h4 style={{ fontWeight: 700, marginBottom: 12, color: '#222', textAlign: 'center' }}>
+                            Investment Locked
+                        </h4>
+                        <div style={{ fontSize: 16, color: '#333', lineHeight: 1.7, textAlign: 'center', marginBottom: 16 }}>
+                            👉 {typeof userData?.BalToInvRemaining === 'number' ? `${userData.BalToInvRemaining} hours left for your next investment.` : 'Please try again later.'}
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'center' }}>
+                            <button
+                                className="btn btn-primary"
+                                onClick={() => setShowInvestBlocker(false)}
+                                style={{ padding: '8px 22px', borderRadius: 8, fontWeight: 600 }}
+                            >
+                                OK
+                            </button>
+                        </div>
+                    </div>
+                    <style>
+                        {`
+                        @keyframes fadeIn {
+                            from { opacity: 0; }
+                            to { opacity: 1; }
+                        }
+                        @keyframes slideDown {
+                            from { transform: translateY(-30px); opacity: 0; }
+                            to { transform: translateY(0); opacity: 1; }
+                        }
+                        `}
+                    </style>
+                </div>
+            )}
+
+            {/* Pending Amount Info (mobile) */}
+            {showPendingInfoModal && (
+                <div
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        width: '100vw',
+                        height: '100vh',
+                        background: 'rgba(0,0,0,0.5)',
+                        zIndex: 2100,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        animation: 'fadeIn .25s'
+                    }}
+                    onClick={() => setShowPendingInfoModal(false)}
+                >
+                    <div
+                        style={{
+                            background: '#fff',
+                            borderRadius: 16,
+                            boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+                            padding: '1.5rem 1.5rem 1.25rem',
+                            maxWidth: 420,
+                            width: '90%',
+                            animation: 'slideDown .3s',
+                            position: 'relative'
+                        }}
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <h4 style={{ fontWeight: 700, marginBottom: 12, color: '#222', textAlign: 'center', fontSize: 18 }}>
+                            Pending Amount Info
+                        </h4>
+                        <div style={{ fontSize: 15, color: '#333', lineHeight: 1.7, textAlign: 'center', marginBottom: 16 }}>
+                            The money you have invested will generate profit after 24 hours.
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'center' }}>
+                            <button
+                                className="btn btn-primary"
+                                onClick={() => setShowPendingInfoModal(false)}
+                                style={{ padding: '8px 22px', borderRadius: 8, fontWeight: 600 }}
+                            >
+                                OK
+                            </button>
+                        </div>
+                    </div>
+                    <style>
+                        {`
+                        @keyframes fadeIn {
+                            from { opacity: 0; }
+                            to { opacity: 1; }
+                        }
+                        @keyframes slideDown {
+                            from { transform: translateY(-30px); opacity: 0; }
+                            to { transform: translateY(0); opacity: 1; }
+                        }
+                        `}
+                    </style>
+                </div>
+            )}
 
             {/* Transaction Modal */}
             {showTxnModal && selectedTransaction && (

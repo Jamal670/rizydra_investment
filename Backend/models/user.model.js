@@ -73,6 +73,9 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: null
   },
+  BalToInvDate: {
+    createdAt: { type: Date }
+  },
   status: {
     type: String,
     enum: ['Pending', 'Verified'],

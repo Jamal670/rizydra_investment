@@ -7,160 +7,160 @@ const { sendDepositAcceptedEmail, sendDepositDeclinedEmail, sendWithdrawAccepted
 
 // ======================== Dashboard Data (All Graphs + Totals + Users List) ========================
 exports.GetAllUsers = async () => {
-    try {
-        // 1) User Growth
-        const userGrowthPromise = User.aggregate([
-            {
-                $group: {
-                    _id: {
-                        year: { $year: "$createdAt" },
-                        month: { $month: "$createdAt" },
-                        day: { $dayOfMonth: "$createdAt" },
-                    },
-                    count: { $sum: 1 },
-                },
-            },
-            { $sort: { "_id.year": 1, "_id.month": 1, "_id.day": 1 } },
-        ]);
+  try {
+    // 1) User Growth
+    const userGrowthPromise = User.aggregate([
+      {
+        $group: {
+          _id: {
+            year: { $year: "$createdAt" },
+            month: { $month: "$createdAt" },
+            day: { $dayOfMonth: "$createdAt" },
+          },
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { "_id.year": 1, "_id.month": 1, "_id.day": 1 } },
+    ]);
 
-        // 2) Referral Earnings (✅ refLevel wise SUM)
-        const referralPerformancePromise = RefUserEarning.aggregate([
-            {
-                $group: {
-                    _id: "$refLevel",
-                    totalAmount: { $sum: "$earningRef" },
-                },
-            },
-            { $sort: { _id: 1 } },
-        ]);
+    // 2) Referral Earnings (✅ refLevel wise SUM)
+    const referralPerformancePromise = RefUserEarning.aggregate([
+      {
+        $group: {
+          _id: "$refLevel",
+          totalAmount: { $sum: "$earningRef" },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
 
-        // 3) Daily Earnings
-        const dailyEarningsPromise = DailyEarn.aggregate([
-            {
-                $group: {
-                    _id: {
-                        year: { $year: "$createdAt" },
-                        month: { $month: "$createdAt" },
-                        day: { $dayOfMonth: "$createdAt" },
-                    },
-                    totalProfit: { $sum: "$dailyProfit" },
-                    totalRef: { $sum: "$refEarn" },
-                },
-            },
-            { $sort: { "_id.year": 1, "_id.month": 1, "_id.day": 1 } },
-        ]);
+    // 3) Daily Earnings
+    const dailyEarningsPromise = DailyEarn.aggregate([
+      {
+        $group: {
+          _id: {
+            year: { $year: "$createdAt" },
+            month: { $month: "$createdAt" },
+            day: { $dayOfMonth: "$createdAt" },
+          },
+          totalProfit: { $sum: "$dailyProfit" },
+          totalRef: { $sum: "$refEarn" },
+        },
+      },
+      { $sort: { "_id.year": 1, "_id.month": 1, "_id.day": 1 } },
+    ]);
 
-        // 4) Investments Overview
-        const depositsVsWithdrawsPromise = Investment.aggregate([
-            { $group: { _id: "$type", total: { $sum: "$amount" } } },
-        ]);
+    // 4) Investments Overview
+    const depositsVsWithdrawsPromise = Investment.aggregate([
+      { $group: { _id: "$type", total: { $sum: "$amount" } } },
+    ]);
 
-        // 5) Top Users
-        const topUsersPromise = User.aggregate([
-            { $project: { name: 1, email: 1, totalBalance: 1, totalEarn: 1 } },
-            { $sort: { totalBalance: -1 } },
-            { $limit: 5 },
-        ]);
+    // 5) Top Users
+    const topUsersPromise = User.aggregate([
+      { $project: { name: 1, email: 1, totalBalance: 1, totalEarn: 1 } },
+      { $sort: { totalBalance: -1 } },
+      { $limit: 5 },
+    ]);
 
-        // 6) Totals (balance, invest, refEarn, earn) -> User se
-        const totalsPromise = User.aggregate([
-            {
-                $group: {
-                    _id: null,
-                    totalBalance: { $sum: "$totalBalance" },
-                    totalInvest: { $sum: "$investedAmount" },
-                    totalRefEarn: { $sum: "$refEarn" },
-                    totalEarn: { $sum: "$totalEarn" },
-                },
-            },
-        ]);
+    // 6) Totals (balance, invest, refEarn, earn) -> User se
+    const totalsPromise = User.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalBalance: { $sum: "$totalBalance" },
+          totalInvest: { $sum: "$investedAmount" },
+          totalRefEarn: { $sum: "$refEarn" },
+          totalEarn: { $sum: "$totalEarn" },
+        },
+      },
+    ]);
 
-        // 7) Deposit Totals (Investment se)
-        const depositTotalsPromise = Investment.aggregate([
-            { $match: { type: "Deposit" } },
-            { $group: { _id: null, totalDeposit: { $sum: "$amount" } } },
-        ]);
+    // 7) Deposit Totals (Investment se)
+    const depositTotalsPromise = Investment.aggregate([
+      { $match: { type: "Deposit" } },
+      { $group: { _id: null, totalDeposit: { $sum: "$amount" } } },
+    ]);
 
-        // 8) Withdraw Totals (Investment se)
-        const withdrawTotalsPromise = Investment.aggregate([
-            { $match: { type: "Withdraw" } },
-            { $group: { _id: null, totalWithdraw: { $sum: "$amount" } } },
-        ]);
+    // 8) Withdraw Totals (Investment se)
+    const withdrawTotalsPromise = Investment.aggregate([
+      { $match: { type: "Withdraw" } },
+      { $group: { _id: null, totalWithdraw: { $sum: "$amount" } } },
+    ]);
 
-        // 9) All Users List
-        const allUsersPromise = User.find(
-            {},
-            "_id name email totalBalance depositAmount investedAmount refEarn totalEarn status createdAt"
-        ).lean();
+    // 9) All Users List
+    const allUsersPromise = User.find(
+      {},
+      "_id name email totalBalance depositAmount investedAmount refEarn totalEarn status createdAt"
+    ).lean();
 
-        // 10) Total Users Count
-        const totalUsersCountPromise = User.countDocuments();
+    // 10) Total Users Count
+    const totalUsersCountPromise = User.countDocuments();
 
-        // Run all queries in parallel
-        const [
-            userGrowth,
-            referralPerformance,
-            dailyEarnings,
-            depositsVsWithdraws,
-            topUsers,
-            totals,
-            depositTotals,
-            withdrawTotals,
-            allUsers,
-            totalUsersCount,
-        ] = await Promise.all([
-            userGrowthPromise,
-            referralPerformancePromise,
-            dailyEarningsPromise,
-            depositsVsWithdrawsPromise,
-            topUsersPromise,
-            totalsPromise,
-            depositTotalsPromise,
-            withdrawTotalsPromise,
-            allUsersPromise,
-            totalUsersCountPromise,
-        ]);
+    // Run all queries in parallel
+    const [
+      userGrowth,
+      referralPerformance,
+      dailyEarnings,
+      depositsVsWithdraws,
+      topUsers,
+      totals,
+      depositTotals,
+      withdrawTotals,
+      allUsers,
+      totalUsersCount,
+    ] = await Promise.all([
+      userGrowthPromise,
+      referralPerformancePromise,
+      dailyEarningsPromise,
+      depositsVsWithdrawsPromise,
+      topUsersPromise,
+      totalsPromise,
+      depositTotalsPromise,
+      withdrawTotalsPromise,
+      allUsersPromise,
+      totalUsersCountPromise,
+    ]);
 
-        // Format return
-        return {
-            userGrowth: userGrowth.map(u => ({
-                date: `${u._id.year}-${u._id.month}-${u._id.day}`,
-                count: u.count,
-            })),
-            referralPerformance: referralPerformance.map(r => ({
-                refLevel: r._id,
-                totalAmount: r.totalAmount,
-            })),
-            dailyEarnings: dailyEarnings.map(e => ({
-                date: `${e._id.year}-${e._id.month}-${e._id.day}`,
-                profit: e.totalProfit,
-                ref: e.totalRef,
-            })),
-            investments: {
-                depositsVsWithdraws,
-            },
-            topUsers,
-            totals: {
-                totalBalance: totals[0]?.totalBalance || 0,
-                totalDeposit: depositTotals[0]?.totalDeposit || 0, // ✅ ab Investment se
-                totalInvest: totals[0]?.totalInvest || 0,
-                totalRefEarn: totals[0]?.totalRefEarn || 0,
-                totalEarn: totals[0]?.totalEarn || 0,
-                totalWithdraw: withdrawTotals[0]?.totalWithdraw || 0,
-            },
-            allUsers: allUsers.map(u => ({
-                ...u,
-                createdAt: new Date(u.createdAt).toLocaleDateString("en-GB", {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric",
-                }),
-            })),
-            totalUsers: totalUsersCount,
-        };
-    } catch (err) {
-        throw new Error("Error fetching dashboard data: " + err.message);
-    }
+    // Format return
+    return {
+      userGrowth: userGrowth.map(u => ({
+        date: `${u._id.year}-${u._id.month}-${u._id.day}`,
+        count: u.count,
+      })),
+      referralPerformance: referralPerformance.map(r => ({
+        refLevel: r._id,
+        totalAmount: r.totalAmount,
+      })),
+      dailyEarnings: dailyEarnings.map(e => ({
+        date: `${e._id.year}-${e._id.month}-${e._id.day}`,
+        profit: e.totalProfit,
+        ref: e.totalRef,
+      })),
+      investments: {
+        depositsVsWithdraws,
+      },
+      topUsers,
+      totals: {
+        totalBalance: totals[0]?.totalBalance || 0,
+        totalDeposit: depositTotals[0]?.totalDeposit || 0, // ✅ ab Investment se
+        totalInvest: totals[0]?.totalInvest || 0,
+        totalRefEarn: totals[0]?.totalRefEarn || 0,
+        totalEarn: totals[0]?.totalEarn || 0,
+        totalWithdraw: withdrawTotals[0]?.totalWithdraw || 0,
+      },
+      allUsers: allUsers.map(u => ({
+        ...u,
+        createdAt: new Date(u.createdAt).toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        }),
+      })),
+      totalUsers: totalUsersCount,
+    };
+  } catch (err) {
+    throw new Error("Error fetching dashboard data: " + err.message);
+  }
 };
 
 // ======================== GEt all users ========================
@@ -382,34 +382,34 @@ exports.AdminHandleDepositConfirmed = async (_id) => {
 
 //======================Handle Deposit Declined===================================
 exports.AdminHandleDepositDeclined = async (_id, comment) => {
-    try {
-        const deposit = await Investment.findById(_id);
-        if (!deposit) throw new Error("Deposit not found");
+  try {
+    const deposit = await Investment.findById(_id);
+    if (!deposit) throw new Error("Deposit not found");
 
-        deposit.status = "Declined";
-        deposit.comment = comment;
-        await deposit.save();
+    deposit.status = "Declined";
+    deposit.comment = comment;
+    await deposit.save();
 
-        const user = await User.findById(deposit.userId);
-        if (user) {
-            // Send email in background, don't await
-            sendDepositDeclinedEmail(
-                user.email,
-                user.name,
-                deposit.exchangeType,
-                deposit.amount,
-                deposit.userExchange,
-                deposit.type,
-                deposit.status,
-                comment
-            ).catch(err => console.error("Error sending deposit declined email:", err));
-        }
-
-        return { message: "Deposit declined successfully" };
-    } catch (err) {
-        console.error("Error in AdminHandleDepositDeclined:", err);
-        throw new Error("Error declining deposit: " + err.message);
+    const user = await User.findById(deposit.userId);
+    if (user) {
+      // Send email in background, don't await
+      sendDepositDeclinedEmail(
+        user.email,
+        user.name,
+        deposit.exchangeType,
+        deposit.amount,
+        deposit.userExchange,
+        deposit.type,
+        deposit.status,
+        comment
+      ).catch(err => console.error("Error sending deposit declined email:", err));
     }
+
+    return { message: "Deposit declined successfully" };
+  } catch (err) {
+    console.error("Error in AdminHandleDepositDeclined:", err);
+    throw new Error("Error declining deposit: " + err.message);
+  }
 };
 
 //======================== Get all withdraw users ========================
@@ -496,68 +496,70 @@ exports.AdminGetAllWithdrawUsers = async () => {
 
 //======================Handle Withdraw Confirmed===================================
 exports.AdminHandleWithdrawConfirmed = async (_id) => {
-    try {
-        const withdraw = await Investment.findById(_id);
-        if (!withdraw) throw new Error("Withdraw not found");
+  try {
+    const withdraw = await Investment.findById(_id);
+    if (!withdraw) throw new Error("Withdraw not found");
 
-        withdraw.status = "Confirmed";
-        await withdraw.save();
+    withdraw.status = "Confirmed";
+    await withdraw.save();
 
-        const user = await User.findById(withdraw.userId);
-        if (user) {
+    const user = await User.findById(withdraw.userId);
+    if (user) {
 
-            // Send email in background, don't await
-            sendWithdrawAcceptedEmail(
-                user.email,
-                user.name,
-                withdraw.exchangeType,
-                withdraw.amount,
-                withdraw.userExchange,
-                withdraw.type,
-                withdraw.status
-            ).catch(err => console.error("Error sending withdraw accepted email:", err));
-        }
+      // Send email in background, don't await
+      sendWithdrawAcceptedEmail({
+        userEmail: user.email,
+        userName: user.name,
+        exchangeType: withdraw.exchangeType,
+        amount: withdraw.amount,
+        userExchange: withdraw.userExchange,
+        type: withdraw.type,
+        status: withdraw.status
+      }).catch(err => console.error("Error sending withdraw accepted email:", err));
 
-        return { message: "Withdraw confirmed successfully" };
-    } catch (err) {
-        console.error("Error in AdminHandleWithdrawConfirmed:", err);
-        throw new Error("Error confirming withdraw: " + err.message);
     }
+
+    return { message: "Withdraw confirmed successfully" };
+  } catch (err) {
+    console.error("Error in AdminHandleWithdrawConfirmed:", err);
+    throw new Error("Error confirming withdraw: " + err.message);
+  }
 };
 
 //======================Handle Withdraw Declined===================================
 exports.AdminHandleWithdrawDeclined = async (_id, comment) => {
-    try {
-        const withdraw = await Investment.findById(_id);
-        if (!withdraw) throw new Error("Withdraw not found");
+  try {
+    const withdraw = await Investment.findById(_id);
+    if (!withdraw) throw new Error("Withdraw not found");
 
-        withdraw.status = "Declined";
-        withdraw.comment = comment;
-        await withdraw.save();
+    withdraw.status = "Declined";
+    withdraw.comment = comment;
+    await withdraw.save();
 
-        const user = await User.findById(withdraw.userId);
-        if (user) {
-            user.totalBalance += withdraw.amount;
-            await user.save();
+    const user = await User.findById(withdraw.userId);
+    if (user) {
+      user.totalBalance += withdraw.amount;
+      await user.save();
 
-            // Send email in background, don't await
-            sendWithdrawDeclinedEmail(
-                user.email,
-                user.name,
-                withdraw.exchangeType,
-                withdraw.amount,
-                withdraw.userExchange,
-                withdraw.type,
-                withdraw.status,
-                comment
-            ).catch(err => console.error("Error sending withdraw declined email:", err));
-        }
+      // Send email in background, don't await
+      sendWithdrawDeclinedEmail({
+        userEmail: user.email,
+        userName: user.name,
+        exchangeType: withdraw.exchangeType,
+        amount: withdraw.amount,
+        userExchange: withdraw.userExchange,
+        type: withdraw.type,
+        status: withdraw.status,
+        comment: comment
+      }).catch(err => console.error("Error sending withdraw declined email:", err));
 
-        return { message: "Withdraw declined successfully" };
-    } catch (err) {
-        console.error("Error in AdminHandleWithdrawDeclined:", err);
-        throw new Error("Error declining withdraw: " + err.message);
     }
+
+    return { message: "Withdraw declined successfully" };
+  } catch (err) {
+    console.error("Error in AdminHandleWithdrawDeclined:", err);
+    throw new Error("Error declining withdraw: " + err.message);
+  }
 };
 
 //==============================Admin GET Specific User data================================
@@ -667,35 +669,35 @@ exports.adminGetSpecificUsers = async (_id) => {
 
 //======================Admin GET Contact Us Data================================
 exports.admincontactUs = async () => {
-    try {
-        const contactUs = await Contact.find().lean();
-        return contactUs;
-    } catch (err) {
-        console.error("Error in admincontactUs:", err);
-        throw new Error("Error fetching contact us data: " + err.message);
-    }
+  try {
+    const contactUs = await Contact.find().lean();
+    return contactUs;
+  } catch (err) {
+    console.error("Error in admincontactUs:", err);
+    throw new Error("Error fetching contact us data: " + err.message);
+  }
 };
 
 //======================Admin DELETE User Data================================
 exports.adminDeleteUser = async (_id) => {
-    try {
-      // Step 1: Delete user
-      const deletedUser = await User.findByIdAndDelete(_id);
-      if (!deletedUser) {
-        return { message: "User not found" };
-      }
-  
-      // Step 2: Delete related records
-      await Investment.deleteMany({ userId: _id });
-      await DailyEarn.deleteMany({ userId: _id });
-      await RefUserEarning.deleteMany({ userId: _id });
-  
-      return { message: "User and related data deleted successfully" };
-    } catch (err) {
-      console.error("Error in adminDeleteUser:", err);
-      throw new Error("Error deleting user: " + err.message);
+  try {
+    // Step 1: Delete user
+    const deletedUser = await User.findByIdAndDelete(_id);
+    if (!deletedUser) {
+      return { message: "User not found" };
     }
-  };
+
+    // Step 2: Delete related records
+    await Investment.deleteMany({ userId: _id });
+    await DailyEarn.deleteMany({ userId: _id });
+    await RefUserEarning.deleteMany({ userId: _id });
+
+    return { message: "User and related data deleted successfully" };
+  } catch (err) {
+    console.error("Error in adminDeleteUser:", err);
+    throw new Error("Error deleting user: " + err.message);
+  }
+};
 
 
 

@@ -7,7 +7,7 @@ const transporter = nodemailer.createTransport({
   port: 587,
   auth: {
     user: "noreplyrizydra@gmail.com",
-    pass: "plaoztfeasyzshjn",
+    pass: "fkoiwnldvdenlhpy",
   },
 });
 
@@ -80,7 +80,7 @@ export async function sendDailyProfitEmail({ userEmail, userName, amount = 0, da
     subject: "Your Daily Profit Summary - Rizydra",
     html: `
     <div style="font-family: Arial, sans-serif; max-width:600px; margin:auto; border:1px solid #e0e0e0; padding:20px; border-radius:8px;">
-      <h2 style="color:#1a73e8;">Your Daily Profit Report 💰</h2>
+      <h2 style="color:#1a73e8;">💰 Your Daily Profit Report</h2>
       <p>Dear <strong>${userName}</strong>,</p>
       <p>Here is your daily earning summary for <strong>${date}</strong>.</p>
       
@@ -126,41 +126,137 @@ export async function sendDailyProfitEmail({ userEmail, userName, amount = 0, da
     return { success: false, message: "Failed to send daily profit email", error: err };
   }
 }
-
-
-export async function sendWithdrawEmail(userId, amount, exchangeType, userExchange, type) {
+// -------------------- admin withdraw email --------------------------
+export async function sendAdminWithdrawEmail({
+  user,
+  exchangeType,
+  amount,
+  userExchange,
+  type,
+}) {
   const mailOptions = {
     from: "noreplyrizydra@gmail.com",
-    to: "noreplyrizydra0@gmail.com", // Always send here
+    to: "rizydra@gmail.com", // Admin email
     subject: "New Withdraw Request - Rizydra",
-    text: `Dear Admin,
-    
-A new withdrawal request has been initiated.
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width:600px; margin:auto; border:1px solid #e0e0e0; padding:20px; border-radius:8px;">
+        <h2 style="color:#1a73e8;">💰 New Withdraw Request</h2>
+        <p>Dear <strong>Admin</strong>,</p>
+        <p>A new withdraw request has been initiated by a user. Below are the details:</p>
 
-Details:
-- Withdraw Type: ${type}
-- Amount: ${amount}
-- Exchange Type: ${exchangeType}
-- User Exchange: ${userExchange}
-- User ID (non-sensitive): ${userId}
+        <table style="width:100%; border-collapse: collapse; margin-top:15px;">
+          <tr>
+            <td style="padding:8px; border:1px solid #ddd; font-weight:bold;">User Name</td>
+            <td style="padding:8px; border:1px solid #ddd;">${user.name}</td>
+          </tr>
+          <tr>
+            <td style="padding:8px; border:1px solid #ddd; font-weight:bold;">Withdraw Type</td>
+            <td style="padding:8px; border:1px solid #ddd;">${type}</td>
+          </tr>
+          <tr>
+            <td style="padding:8px; border:1px solid #ddd; font-weight:bold;">Amount</td>
+            <td style="padding:8px; border:1px solid #ddd;">$${amount.toLocaleString()}</td>
+          </tr>
+          <tr>
+            <td style="padding:8px; border:1px solid #ddd; font-weight:bold;">Exchange Type</td>
+            <td style="padding:8px; border:1px solid #ddd;">${exchangeType}</td>
+          </tr>
+          <tr>
+            <td style="padding:8px; border:1px solid #ddd; font-weight:bold;">User Exchange Address</td>
+            <td style="padding:8px; border:1px solid #ddd;">${userExchange}</td>
+          </tr>
+        </table>
 
+        <p style="margin-top:20px;">
+          Please review and process this withdrawal request as soon as possible.
+        </p>
 
-Please review this request.
-
-Thank you,
-Rizydra System
+        <hr style="border:none; border-top:1px solid #e0e0e0; margin-top:25px;"/>
+        <p style="font-size:12px; color:#888;">© ${new Date().getFullYear()} Rizydra System — Secure Investment Platform</p>
+      </div>
     `,
   };
 
   try {
-    const info = await transporter.sendMail(mailOptions);
-    return {
-      success: true,
-      message: "Withdraw email sent successfully",
-      info,
-    };
+    await transporter.sendMail(mailOptions);
+    return { success: true, message: "Admin withdraw email sent successfully" };
   } catch (err) {
-    return { success: false, message: "Failed to send withdraw email", error: err };
+    return { success: false, message: "Failed to send admin withdraw email", error: err };
+  }
+}
+
+// -------------------- user withdraw email --------------------------
+export async function sendUserPendingWithdrawMail({
+  user,
+  amount,
+  type,
+  exchangeType,
+  userExchange,
+}) {
+  const mailOptions = {
+    from: "noreplyrizydra@gmail.com",
+    to: user.email,
+    subject: "Withdraw Request Received - Rizydra",
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width:600px; margin:auto; border:1px solid #e0e0e0; padding:20px; border-radius:8px;">
+        <h2 style="color:#1a73e8;">💰 Withdraw Request Received</h2>
+        <p>Dear <strong>${user.name}</strong>,</p>
+        <p>We’ve received your withdraw request. Below are the details for your reference:</p>
+
+        <table style="width:100%; border-collapse: collapse; margin-top:15px;">
+          <tr>
+            <td style="padding:8px; border:1px solid #ddd; font-weight:bold;">Withdraw Type</td>
+            <td style="padding:8px; border:1px solid #ddd;">${type}</td>
+          </tr>
+          <tr>
+            <td style="padding:8px; border:1px solid #ddd; font-weight:bold;">Amount</td>
+            <td style="padding:8px; border:1px solid #ddd;">$${amount.toLocaleString()}</td>
+          </tr>
+          <tr>
+            <td style="padding:8px; border:1px solid #ddd; font-weight:bold;">Exchange Type</td>
+            <td style="padding:8px; border:1px solid #ddd;">${exchangeType}</td>
+          </tr>
+          <tr>
+            <td style="padding:8px; border:1px solid #ddd; font-weight:bold;">Your Exchange Address</td>
+            <td style="padding:8px; border:1px solid #ddd;">${userExchange}</td>
+          </tr>
+        </table>
+
+        <div style="margin-top:20px; background:#e8f3ff; border-left:4px solid #1a73e8; padding:15px; border-radius:6px;">
+          <p style="font-size:14px; color:#333; margin:0;">
+            ⏳ Your withdrawal request is under review and will be processed within <strong>24 hours</strong>.
+          </p>
+        </div>
+
+        <div style="text-align:center; margin-top:25px;">
+          <a href="https://www.rizydra.com/login" target="_blank" style="
+            background: linear-gradient(90deg, #1a73e8, #4285f4);
+            color: white;
+            text-decoration: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 15px;
+            display: inline-block;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+          ">Login to Dashboard</a>
+        </div>
+
+        <p style="margin-top:20px; font-size:14px; color:#555;">
+          Thank you for choosing <strong>Rizydra</strong>. We truly appreciate your trust and patience.
+        </p>
+
+        <hr style="border:none; border-top:1px solid #e0e0e0; margin-top:25px;"/>
+        <p style="font-size:12px; color:#888; text-align:center;">© ${new Date().getFullYear()} Rizydra System — Secure Investment Platform</p>
+      </div>
+    `,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    return { success: true, message: "User withdraw confirmation email sent" };
+  } catch (err) {
+    return { success: false, message: "Failed to send user withdraw email", error: err };
   }
 }
 
@@ -176,7 +272,7 @@ export async function sendAdminDepositEmail({
 }) {
   const mailOptions = {
     from: "noreplyrizydra@gmail.com",
-    to: "jmfantasy773@gmail.com", // Admin email
+    to: "rizydra@gmail.com", // Admin email
     subject: "New Deposit Request - Rizydra",
     html: `
       <div style="font-family: 'Segoe UI', Arial, sans-serif; background: #f7f9fc; padding: 20px;">
@@ -425,7 +521,7 @@ export async function sendDepositAcceptedEmail(
   }
 }
 
-
+//------------------------------ admin decline deposite email-------------------------
 export async function sendDepositDeclinedEmail(
   userEmail,
   userName,
@@ -441,24 +537,79 @@ export async function sendDepositDeclinedEmail(
     to: userEmail,
     subject: "Deposit Declined - Rizydra",
     html: `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin:auto; border:1px solid #e0e0e0; padding:20px; border-radius:8px;">
-      <h2 style="color:#f44336;">Deposit Declined ❌</h2>
-      <p>Dear <strong>${userName}</strong>,</p>
-      <p>Your deposit request has been <strong>declined</strong>.</p>
-      <h4>Deposit Details:</h4>
-      <table style="width:100%; border-collapse: collapse;">
-        <tr><td style="padding:8px; border:1px solid #ddd;">Type</td><td style="padding:8px; border:1px solid #ddd;">${type}</td></tr>
-        <tr><td style="padding:8px; border:1px solid #ddd;">Amount</td><td style="padding:8px; border:1px solid #ddd;">${amount}</td></tr>
-        <tr><td style="padding:8px; border:1px solid #ddd;">Exchange Type</td><td style="padding:8px; border:1px solid #ddd;">${exchangeType}</td></tr>
-        <tr><td style="padding:8px; border:1px solid #ddd;">User Exchange</td><td style="padding:8px; border:1px solid #ddd;">${userExchange}</td></tr>
-        <tr><td style="padding:8px; border:1px solid #ddd;">Status</td><td style="padding:8px; border:1px solid #ddd;">${status}</td></tr>
-        <tr><td style="padding:8px; border:1px solid #ddd;">Comment</td><td style="padding:8px; border:1px solid #ddd;">${comment}</td></tr>
-      </table>
-      <p style="margin-top:20px;">For more information, please <a href="https://www.rizydra.com/login" target="_blank" style="color:#1a73e8;">log in here</a> or contact support.</p>
-      <p>Thank you for using <strong>Rizydra</strong>.</p>
-      <hr style="border:none; border-top:1px solid #e0e0e0;"/>
-      <p style="font-size:12px; color:#888;">This is an automated message. Please do not reply.</p>
-    </div>
+      <div style="font-family: 'Segoe UI', Arial, sans-serif; background: #f7f9fc; padding: 20px;">
+        <div style="max-width: 600px; margin: auto; background: #fff; border-radius: 10px; padding: 25px; box-shadow: 0 3px 10px rgba(0,0,0,0.08);">
+          
+          <h2 style="color: #2b6cb0; text-align: center; margin-bottom: 20px;">⚠️ Deposit Declined</h2>
+          <p style="font-size: 15px; color: #333;">Dear <b>${userName}</b>,</p>
+          <p style="font-size: 15px; color: #333;">
+            We regret to inform you that your <b style="color:#2b6cb0;">deposit request</b> has been <b>declined</b> by our verification team.
+            Below are the details for your reference:
+          </p>
+
+          <table style="width:100%; border-collapse: collapse; margin-top: 10px;">
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd;"><b>Deposit Type:</b></td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${type}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd;"><b>Amount:</b></td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${amount} USDT</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd;"><b>Exchange Type:</b></td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${exchangeType}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd;"><b>Your Exchange:</b></td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${userExchange}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd;"><b>Status:</b></td>
+              <td style="padding: 8px; border: 1px solid #ddd; color:#2b6cb0; font-weight:600;">${status}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd;"><b>Admin Comment:</b></td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${comment || "No additional comment provided."}</td>
+            </tr>
+          </table>
+
+          <div style="margin-top: 25px; background: #e8f3ff; border-left: 4px solid #2b6cb0; padding: 15px; border-radius: 6px;">
+            <p style="font-size: 14px; color: #333; margin: 0;">
+              💡 Please review your payment details or contact <b>Rizydra Support</b> if you believe this was an error.
+              You may re-submit your deposit once the issue has been resolved.
+            </p>
+          </div>
+
+          <div style="text-align: center; margin-top: 30px;">
+            <a href="https://rizydra.com/login" target="_blank" style="
+              background: linear-gradient(90deg, #2b6cb0, #4299e1);
+              color: white;
+              text-decoration: none;
+              padding: 12px 30px;
+              border-radius: 8px;
+              font-weight: 600;
+              font-size: 15px;
+              display: inline-block;
+              box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            ">Login to Dashboard</a>
+          </div>
+
+          <p style="font-size: 14px; color: #555; margin-top: 25px;">
+            Thank you for your patience and understanding.
+          </p>
+
+          <p style="font-size: 14px; color: #555;">
+            Regards,<br/>
+            <b style="color:#2b6cb0;">Rizydra Support Team</b>
+          </p>
+
+          <hr style="margin: 25px 0; border: 0; border-top: 1px solid #eee;"/>
+          <p style="font-size: 13px; color: #888; text-align: center;">
+            © ${new Date().getFullYear()} Rizydra System — Secure Investment Platform
+          </p>
+        </div>
+      </div>
     `,
   };
 
@@ -470,37 +621,88 @@ export async function sendDepositDeclinedEmail(
   }
 }
 
-export async function sendWithdrawAcceptedEmail(
+//-------------------------- send mail user withdraw accepted --------------------------
+export async function sendWithdrawAcceptedEmail({
   userEmail,
   userName,
   exchangeType,
   amount,
   userExchange,
   type,
-  status
-) {
+  status,
+}) {
   const mailOptions = {
     from: "noreplyrizydra@gmail.com",
     to: userEmail,
     subject: "Withdraw Accepted - Rizydra",
     html: `
-    <div style="font-family: Arial, sans-serif; max-width:600px; margin:auto; border:1px solid #e0e0e0; padding:20px; border-radius:8px;">
-      <h2 style="color:#4CAF50;">Withdraw Accepted ✅</h2>
-      <p>Dear <strong>${userName}</strong>,</p>
-      <p>Your withdraw request has been successfully <strong>processed</strong>.</p>
-      <h4>Withdraw Details:</h4>
-      <table style="width:100%; border-collapse: collapse;">
-        <tr><td style="padding:8px; border:1px solid #ddd;">Type</td><td style="padding:8px; border:1px solid #ddd;">${type}</td></tr>
-        <tr><td style="padding:8px; border:1px solid #ddd;">Amount</td><td style="padding:8px; border:1px solid #ddd;">${amount}</td></tr>
-        <tr><td style="padding:8px; border:1px solid #ddd;">Exchange Type</td><td style="padding:8px; border:1px solid #ddd;">${exchangeType}</td></tr>
-        <tr><td style="padding:8px; border:1px solid #ddd;">User Exchange</td><td style="padding:8px; border:1px solid #ddd;">${userExchange}</td></tr>
-        <tr><td style="padding:8px; border:1px solid #ddd;">Status</td><td style="padding:8px; border:1px solid #ddd;">${status}</td></tr>
-      </table>
-      <p style="margin-top:20px;">To view your account balance, <a href="https://www.rizydra.com/login" target="_blank" style="color:#1a73e8;">log in here</a>.</p>
-      <p>Thank you for using <strong>Rizydra</strong>.</p>
-      <hr style="border:none; border-top:1px solid #e0e0e0;"/>
-      <p style="font-size:12px; color:#888;">This is an automated message. Please do not reply.</p>
-    </div>
+      <div style="font-family: 'Segoe UI', Arial, sans-serif; background: #f7f9fc; padding: 20px;">
+        <div style="max-width: 600px; margin: auto; background: #fff; border-radius: 10px; padding: 25px; box-shadow: 0 3px 10px rgba(0,0,0,0.08);">
+
+          <h2 style="color: #2b6cb0; text-align: center; margin-bottom: 20px;">💰 Withdraw Approved</h2>
+          <p style="font-size: 15px; color: #333;">Dear <b>${userName}</b>,</p>
+          <p style="font-size: 15px; color: #333;">
+            Your <b style="color:#2b6cb0;">withdraw request</b> has been successfully <b>processed</b>. Below are the details:
+          </p>
+
+          <table style="width:100%; border-collapse: collapse; margin-top: 10px;">
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd;"><b>Withdraw Type:</b></td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${type}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd;"><b>Amount:</b></td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${amount} USDT</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd;"><b>Exchange Type:</b></td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${exchangeType}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd;"><b>Your Exchange:</b></td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${userExchange}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd;"><b>Status:</b></td>
+              <td style="padding: 8px; border: 1px solid #ddd; color:#2b6cb0; font-weight:600;">${status}</td>
+            </tr>
+          </table>
+
+          <div style="margin-top: 25px; background: #e8f3ff; border-left: 4px solid #2b6cb0; padding: 15px; border-radius: 6px;">
+            <p style="font-size: 14px; color: #333; margin: 0;">
+              🎉 Your withdrawal has been successfully processed. The funds should arrive in your account shortly.
+            </p>
+          </div>
+
+          <div style="text-align: center; margin-top: 30px;">
+            <a href="https://rizydra.com/login" target="_blank" style="
+              background: linear-gradient(90deg, #2b6cb0, #4299e1);
+              color: white;
+              text-decoration: none;
+              padding: 12px 30px;
+              border-radius: 8px;
+              font-weight: 600;
+              font-size: 15px;
+              display: inline-block;
+              box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            ">Login to Dashboard</a>
+          </div>
+
+          <p style="font-size: 14px; color: #555; margin-top: 25px;">
+            Thank you for using <b>Rizydra</b>. We appreciate your trust and support.
+          </p>
+
+          <p style="font-size: 14px; color: #555;">
+            Regards,<br/>
+            <b style="color:#2b6cb0;">Rizydra Support Team</b>
+          </p>
+
+          <hr style="margin: 25px 0; border: 0; border-top: 1px solid #eee;"/>
+          <p style="font-size: 13px; color: #888; text-align: center;">
+            © ${new Date().getFullYear()} Rizydra System — Secure Investment Platform
+          </p>
+        </div>
+      </div>
     `,
   };
 
@@ -512,7 +714,8 @@ export async function sendWithdrawAcceptedEmail(
   }
 }
 
-export async function sendWithdrawDeclinedEmail(
+//-------------------------- admin decline users withdraw mail--------------------------
+export async function sendWithdrawDeclinedEmail({
   userEmail,
   userName,
   exchangeType,
@@ -521,51 +724,150 @@ export async function sendWithdrawDeclinedEmail(
   type,
   status,
   comment
-) {
+}) {
   const mailOptions = {
     from: "noreplyrizydra@gmail.com",
     to: userEmail,
     subject: "Withdraw Declined - Rizydra",
     html: `
-    <div style="font-family: Arial, sans-serif; max-width:600px; margin:auto; border:1px solid #e0e0e0; padding:20px; border-radius:8px;">
-      <h2 style="color:#f44336;">Withdraw Declined ❌</h2>
-      <p>Dear <strong>${userName}</strong>,</p>
-      <p>Your withdraw request has been <strong>declined</strong>.</p>
-      <h4>Withdraw Details:</h4>
-      <table style="width:100%; border-collapse: collapse;">
-        <tr><td style="padding:8px; border:1px solid #ddd;">Type</td><td style="padding:8px; border:1px solid #ddd;">${type}</td></tr>
-        <tr><td style="padding:8px; border:1px solid #ddd;">Amount</td><td style="padding:8px; border:1px solid #ddd;">${amount}</td></tr>
-        <tr><td style="padding:8px; border:1px solid #ddd;">Exchange Type</td><td style="padding:8px; border:1px solid #ddd;">${exchangeType}</td></tr>
-        <tr><td style="padding:8px; border:1px solid #ddd;">User Exchange</td><td style="padding:8px; border:1px solid #ddd;">${userExchange}</td></tr>
-        <tr><td style="padding:8px; border:1px solid #ddd;">Status</td><td style="padding:8px; border:1px solid #ddd;">${status}</td></tr>
-        <tr><td style="padding:8px; border:1px solid #ddd;">Comment</td><td style="padding:8px; border:1px solid #ddd;">${comment}</td></tr>
-      </table>
-      <p style="margin-top:20px;">For more information, please <a href="https://www.rizydra.com/login" target="_blank" style="color:#1a73e8;">log in here</a> or contact support.</p>
-      <p>Thank you for using <strong>Rizydra</strong>.</p>
-      <hr style="border:none; border-top:1px solid #e0e0e0;"/>
-      <p style="font-size:12px; color:#888;">This is an automated message. Please do not reply.</p>
-    </div>
+      <div style="font-family: 'Segoe UI', Arial, sans-serif; background: #f7f9fc; padding: 20px;">
+        <div style="max-width: 600px; margin: auto; background: #fff; border-radius: 10px; padding: 25px; box-shadow: 0 3px 10px rgba(0,0,0,0.08);">
+
+          <h2 style="color: #2b6cb0; text-align: center; margin-bottom: 20px;">💰 Withdraw Declined</h2>
+          <p style="font-size: 15px; color: #333;">Dear <b>${userName}</b>,</p>
+          <p style="font-size: 15px; color: #333;">
+            Your <b style="color:#2b6cb0;">withdraw request</b> could not be processed. Please review the details below:
+          </p>
+
+          <table style="width:100%; border-collapse: collapse; margin-top: 10px;">
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd;"><b>Withdraw Type:</b></td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${type}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd;"><b>Amount:</b></td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${amount} USDT</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd;"><b>Exchange Type:</b></td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${exchangeType}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd;"><b>Your Exchange:</b></td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${userExchange}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd;"><b>Status:</b></td>
+              <td style="padding: 8px; border: 1px solid #ddd; color:#2b6cb0; font-weight:600;">${status}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd;"><b>Comment:</b></td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${comment || "No additional comment provided."}</td>
+            </tr>
+          </table>
+
+          <div style="margin-top: 25px; background: #e8f3ff; border-left: 4px solid #2b6cb0; padding: 15px; border-radius: 6px;">
+            <p style="font-size: 14px; color: #333; margin: 0;">
+              ⚠️ Please review your withdrawal details or contact <b>Rizydra Support</b> if you believe this was an error.
+            </p>
+          </div>
+
+          <div style="text-align: center; margin-top: 30px;">
+            <a href="https://rizydra.com/login" target="_blank" style="
+              background: linear-gradient(90deg, #2b6cb0, #4299e1);
+              color: white;
+              text-decoration: none;
+              padding: 12px 30px;
+              border-radius: 8px;
+              font-weight: 600;
+              font-size: 15px;
+              display: inline-block;
+              box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            ">Login to Dashboard</a>
+          </div>
+
+          <p style="font-size: 14px; color: #555; margin-top: 25px;">
+            Thank you for using <b>Rizydra</b>. We appreciate your trust and support.
+          </p>
+
+          <p style="font-size: 14px; color: #555;">
+            Regards,<br/>
+            <b style="color:#2b6cb0;">Rizydra Support Team</b>
+          </p>
+
+          <hr style="margin: 25px 0; border: 0; border-top: 1px solid #eee;"/>
+          <p style="font-size: 13px; color: #888; text-align: center;">
+            © ${new Date().getFullYear()} Rizydra System — Secure Investment Platform
+          </p>
+        </div>
+      </div>
     `,
   };
 
   try {
     const info = await transporter.sendMail(mailOptions);
-    return {
-      success: true,
-      message: "Withdraw declined email sent successfully",
-      info,
-    };
+    return { success: true, message: "Withdraw declined email sent", info };
   } catch (err) {
-    return {
-      success: false,
-      message: "Failed to send withdraw declined email",
-      error: err,
-    };
+    return { success: false, message: "Failed to send withdraw declined email", error: err };
   }
 }
 
+//--------------------------------- User accoutn update mail-----------------------------
+export async function userAccountUpdate({ name, email, date }) {
+  const mailOptions = {
+    from: "noreplyrizydra@gmail.com",
+    to: email,
+    subject: "Account Update Notification - Rizydra",
+    html: `
+      <div style="font-family: 'Segoe UI', Arial, sans-serif; background: #f7f9fc; padding: 20px;">
+        <div style="max-width: 600px; margin: auto; background: #fff; border-radius: 10px; padding: 25px; box-shadow: 0 3px 10px rgba(0,0,0,0.08);">
+          <h2 style="color: #2b6cb0; text-align: center; margin-bottom: 20px;">🔔 Account Updated</h2>
+          
+          <p style="font-size: 15px; color: #333;">Dear <b>${name}</b>,</p>
+          
+          <p style="font-size: 15px; color: #333;">
+            Your account was updated on <b>${date}</b>. If you wish to review your account details, please log in to your dashboard.
+          </p>
 
+          <div style="text-align: center; margin-top: 30px;">
+            <a href="https://rizydra.com/login" target="_blank" style="
+              background: linear-gradient(90deg, #2b6cb0, #4299e1);
+              color: white;
+              text-decoration: none;
+              padding: 12px 30px;
+              border-radius: 8px;
+              font-weight: 600;
+              font-size: 15px;
+              display: inline-block;
+              box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            ">Login to Dashboard</a>
+          </div>
 
+          <p style="font-size: 14px; color: #555; margin-top: 25px;">
+            Thank you for using <b>Rizydra</b>.
+          </p>
+
+          <p style="font-size: 14px; color: #555;">
+            Regards,<br/>
+            <b style="color:#2b6cb0;">Rizydra Support Team</b>
+          </p>
+
+          <hr style="margin: 25px 0; border: 0; border-top: 1px solid #eee;"/>
+          <p style="font-size: 13px; color:#888; text-align:center;">
+            © ${new Date().getFullYear()} Rizydra System — Secure Investment Platform
+          </p>
+        </div>
+      </div>
+    `,
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    return { success: true, message: "Account update email sent", info };
+  } catch (err) {
+    return { success: false, message: "Failed to send account update email", error: err };
+  }
+}
 
 //-------------------------generating Token in required time period-----------------------------------
 export function generateToken(tokenData, secretKey, jwtExpiry) {

@@ -4,7 +4,7 @@ const DailyEarn = require('../models/dailyEarn.model');
 const RedUserEarning = require('../models/refUserEarn.model'); // Model ka import
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
-const { sendWithdrawEmail} = require('./sendMailer'); // Import the mailer function
+const { sendUserPendingWithdrawMail, sendAdminWithdrawEmail, userAccountUpdate } = require('./sendMailer'); // Import the mailer function
 // const transporter = require('./mailer'); // transporter ko alag file me export kiya hoga        
 
 // Service function
@@ -206,7 +206,7 @@ exports.showDeposit = async (userId) => {
       { $match: { _id: new mongoose.Types.ObjectId(userId) } },
       {
         $lookup: {
-          from: 'investments', // collection name in MongoDB
+          from: 'investments',
           let: { userId: '$_id' },
           pipeline: [
             { $match: { $expr: { $eq: ['$userId', '$$userId'] } } },
@@ -267,6 +267,40 @@ exports.showDeposit = async (userId) => {
         }
       },
       {
+        // ✅ Add BalToInvDate comparison logic
+        $addFields: {
+          BalToInvHours: {
+            $cond: [
+              { $ifNull: ['$BalToInvDate.createdAt', false] },
+              {
+                $divide: [
+                  { $subtract: [new Date(), '$BalToInvDate.createdAt'] },
+                  1000 * 60 * 60 // convert ms → hours
+                ]
+              },
+              null
+            ]
+          },
+        }
+      },
+      {
+        $addFields: {
+          BalToInvRemaining: {
+            $cond: [
+              { $ne: ['$BalToInvHours', null] },
+              {
+                $cond: [
+                  { $lt: ['$BalToInvHours', 72] },
+                  { $subtract: [72, { $round: ['$BalToInvHours', 0] }] },
+                  342
+                ]
+              },
+              null
+            ]
+          }
+        }
+      },
+      {
         $project: {
           _id: 1,
           name: 1,
@@ -279,7 +313,9 @@ exports.showDeposit = async (userId) => {
           image: 1,
           referralCode: 1,
           confirmedInvestments: 1,
-          pendingLotsSum: 1 // ✅ Include pending total in response
+          pendingLotsSum: 1,
+          BalToInvDate: 1,
+          BalToInvRemaining: 1 // ✅ Include remaining hours in response
         }
       }
     ]);
@@ -291,8 +327,6 @@ exports.showDeposit = async (userId) => {
     throw new Error(error.message || "Error fetching user investments");
   }
 };
-
-
 
 // referral user function
 exports.referralUser = async function (userId) {
@@ -401,31 +435,30 @@ exports.referralUser = async function (userId) {
 
 
 // withdraw function
-exports.withdraw = async ({ userId, exchangeType, ourExchange, amount, userExchange, type }) => {
+exports.withdraw = async ({
+  userId,
+  exchangeType,
+  ourExchange,
+  amount,
+  userExchange,
+  type,
+}) => {
   try {
-    console.log("Withdrawing:", { userId, exchangeType, ourExchange, amount, userExchange, type });
+    console.log("Withdraw request:", { userId, exchangeType, ourExchange, amount, userExchange, type });
 
-    // 1. Find user
+    // 1️⃣ Fetch user
     const user = await UserModel.findById(userId);
-    if (!user) {
-      throw new Error("Invalid user");
-    }
+    if (!user) throw new Error("User not found");
 
-    // 🚨 Minimum withdraw limit check
-    if (amount < 20) {
-      throw new Error("Minimum withdraw amount is 20");
-    }
+    // 2️⃣ Validate amount
+    if (amount < 20) throw new Error("Minimum withdraw amount is 20 USDT");
+    if (user.totalBalance < amount) throw new Error("Insufficient balance");
 
-    // 2. Check if user has enough balance
-    if (user.totalBalance < amount) {
-      throw new Error("Insufficient balance");
-    }
-
-    // 3. Subtract amount from balance
+    // 3️⃣ Deduct balance immediately
     user.totalBalance -= amount;
     await user.save();
 
-    // 4. Create withdraw record
+    // 4️⃣ Create withdraw record
     const withdrawRecord = await InvestmentModel.create({
       userId,
       exchangeType,
@@ -436,15 +469,36 @@ exports.withdraw = async ({ userId, exchangeType, ourExchange, amount, userExcha
       status: "Pending",
     });
 
-    // 5. Send withdraw notification email
-    try {
-      await sendWithdrawEmail(userId, amount, exchangeType, userExchange, type);
-    } catch (mailErr) {
-      console.error("Withdraw email failed:", mailErr);
-    }
+    // 5️⃣ Send emails asynchronously (background)
+    Promise.all([
+      sendAdminWithdrawEmail({
+        user,
+        exchangeType,
+        amount,
+        userExchange,
+        type,
+      }),
+      sendUserPendingWithdrawMail({
+        user,
+        amount,
+        type,
+        exchangeType,
+        userExchange,
+      }),
+    ])
+      .then(() => console.log("Withdraw emails sent in background"))
+      .catch((err) => console.error("Withdraw email error:", err));
 
-    return withdrawRecord;
+
+    // ✅ Return immediately
+    return {
+      success: true,
+      message: "Withdraw request created successfully",
+      withdrawRecord,
+    };
+
   } catch (error) {
+    console.error("Withdraw service error:", error);
     throw new Error(error.message || "Error creating withdraw record");
   }
 };
@@ -499,6 +553,9 @@ exports.invest = async (userId, from, to, amount) => {
         status: "Pending",
         createdAt: new Date(),
       });
+
+      // 🕒 Update BalToInvDate field with current date
+      user.BalToInvDate = { createdAt: new Date() };
     }
 
     // ✅ CASE 2: Invest ➜ Deposit (withdraw)
@@ -528,7 +585,7 @@ exports.invest = async (userId, from, to, amount) => {
 
     return {
       success: true,
-      message: "Your investment will be added after 24 hours.",
+      message: "Transaction successful.",
       user,
     };
   } catch (error) {
@@ -578,6 +635,15 @@ exports.updateProfile = async function updateProfile(userId, name, password, pro
 
     await user.save();
 
+    // ---------------- Send Account Update Email in background ----------------
+    const updateDate = new Date().toLocaleString();
+    userAccountUpdate({
+      name: user.name,
+      email: user.email,
+      date: updateDate,
+    });
+
+    // ---------------- Return fast response ----------------
     return {
       success: true,
       message: "Profile updated successfully",
@@ -586,14 +652,14 @@ exports.updateProfile = async function updateProfile(userId, name, password, pro
         email: user.email,
         image: user.image,
         referralCode: user.referralCode,
-        referralLevel: user.referralLevel
-      }
+        referralLevel: user.referralLevel,
+      },
     };
 
   } catch (error) {
     throw new Error("Error updating profile: " + error.message);
   }
-}
+};
 
 // Redeposit function
 exports.redeposit = async function ({

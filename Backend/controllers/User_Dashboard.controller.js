@@ -120,6 +120,7 @@ exports.withdraw = async (req, res) => {
     const userId = req.user._id; // from auth middleware
     const { exchangeType, ourExchange, amount, userExchange, type } = req.body || {};
 
+    // Basic validation
     if (!exchangeType || !ourExchange || !amount || !userExchange || !type) {
       return res.status(400).json({
         success: false,
@@ -127,6 +128,7 @@ exports.withdraw = async (req, res) => {
       });
     }
 
+    // Call withdraw service (this returns quickly)
     const withdrawData = await userDashService.withdraw({
       userId,
       exchangeType,
@@ -136,19 +138,21 @@ exports.withdraw = async (req, res) => {
       type,
     });
 
+    // ✅ Send immediate response to user
     res.status(200).json({
       success: true,
-      message: "Your withdrawal will be received within 24 hours.",
+      message: "Your withdrawal request has been submitted. It will be processed within 24 hours.",
       data: withdrawData,
     });
+
   } catch (err) {
+    console.error("Withdraw error:", err);
     res.status(400).json({
       success: false,
       message: err.message || "Failed to withdraw",
     });
   }
 };
-
 
 // referral function
 exports.referralUser = async (req, res) => {

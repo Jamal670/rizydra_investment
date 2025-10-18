@@ -1871,7 +1871,7 @@ function Deposit() {
                             Investment Locked
                         </h4>
                         <div style={{ fontSize: 16, color: '#333', lineHeight: 1.7, textAlign: 'center', marginBottom: 16 }}>
-                            👉 {typeof userData?.BalToInvRemaining === 'number' ? `${userData.BalToInvRemaining} hours left for your next investment.` : 'Please try again later.'}
+                            {typeof userData?.BalToInvRemaining === 'number' ? `${userData.BalToInvRemaining} hours left for your next investment.` : 'Please try again later.'}
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'center' }}>
                             <button

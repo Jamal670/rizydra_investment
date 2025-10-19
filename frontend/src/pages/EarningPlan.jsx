@@ -224,7 +224,7 @@ function EarningPlan() {
                     <h5 className="subtitle">Access Bot for Free Now</h5>
                   </div>
                   <div className="right-content">
-                    <a href="https://t.me/rizydra_bot" className="invest-button">Telegram Bot</a>
+                    <a href="https://t.me/rizydra_quotex_bot" className="invest-button">Telegram Bot</a>
                   </div>
                 </div>
               </div>

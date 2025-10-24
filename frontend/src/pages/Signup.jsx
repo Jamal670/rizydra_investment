@@ -412,7 +412,7 @@ function Signup() {
                                     {/* Referral Code Section */}
                                     <div className="form--group" style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '15px' }}>
                                         {/* Radio Button on Left */}
-                                        <div style={{ flex: '0 0 auto', display: 'flex', alignItems: 'center' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center' }}>
   <input
     type="checkbox"
     id="referralToggle"
@@ -420,13 +420,17 @@ function Signup() {
     onChange={(e) => setShowReferralField(e.target.checked)}
     style={{
       marginRight: '8px',
-      width: '18px',
-      height: '18px',
+      width: '15px',
+      height: '15px',
       cursor: 'pointer',
-      borderRadius: '50%',           // ✅ circular shape
-      accentColor: '#007bff',        // ✅ blue color (modern browsers)
-      border: '2px solid #007bff',   // ✅ blue border
+      appearance: 'none',          // ✅ remove default checkbox
+      WebkitAppearance: 'none',
+      border: '2px solid #007bff', // ✅ blue border
+      borderRadius: '50%',         // ✅ make it circular
+      position: 'relative',
+      outline: 'none',
     }}
+    onClick={(e) => e.target.style.backgroundColor = e.target.checked ? '#007bff' : 'transparent'}
   />
   <label
     htmlFor="referralToggle"
@@ -434,12 +438,13 @@ function Signup() {
       margin: 0,
       cursor: 'pointer',
       fontWeight: '500',
-      color: '#007bff',              // ✅ label text blue
+      color: '#007bff',
     }}
   >
     Referral code
   </label>
 </div>
+
 
                                         
                                         {/* Referral Input Field on Right - 50% width */}

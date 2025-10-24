@@ -510,7 +510,7 @@ exports.invest = async (userId, from, to, amount) => {
 
     const objectId = new mongoose.Types.ObjectId(userId);
     const user = await UserModel.findById(objectId);
-    if (!user) throw new Error("User not founddd");
+    if (!user) throw new Error("User not found");
 
     // Convert to number
     const amt = Number(amount);
@@ -543,8 +543,18 @@ exports.invest = async (userId, from, to, amount) => {
         }
       }
 
+      // ✅ NEW RULES:
+      // If amount is between 20 and 100 → must be multiple of 20
+      if (amt >= 20 && amt < 100 && amt % 20 !== 0) {
+        throw new Error("Investment must be a multiple of 20");
+      }
+
+      // If balance >= 100 → amount must be multiple of 100
+      if (user.totalBalance >= 100 && amt >= 100 && amt % 100 !== 0) {
+        throw new Error("Investment must be a multiple of 100");
+      }
+
       // 🧩 Deduct and record investment
-      // user.investedAmount += amt;
       user.totalBalance -= amt;
 
       // ✅ Push into investedLots with type = 'Pending'
@@ -592,6 +602,7 @@ exports.invest = async (userId, from, to, amount) => {
     throw new Error(error.message || "Error processing investment transaction");
   }
 };
+
 
 // profile function
 exports.profile = async function profile(userId) {

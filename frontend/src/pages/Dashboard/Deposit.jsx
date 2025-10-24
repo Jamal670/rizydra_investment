@@ -1129,7 +1129,7 @@ function Deposit() {
                                             if (/^\d*\.?\d*$/.test(value)) setInvestAmount(value);
                                         }}
                                         required
-                                        placeholder={totalBalance.toLocaleString() || userData?.investedAmount.toLocaleString() >= 100 ? "Minimum Invest Amount 100" : "Minimum Invest Amount 20"}
+                                        placeholder={ (userData?.investedAmount >= 100 || userData?.totalBalance >= 100) ? "MinimumInvestAmount 100" : "Minimum Invest Amount 20" } 
                                         style={{ fontSize: 16 }}
                                         autoComplete="off"
                                     />

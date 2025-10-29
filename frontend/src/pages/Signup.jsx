@@ -410,65 +410,61 @@ function Signup() {
                                     </div>
 
                                     {/* Referral Code Section */}
-                                    <div className="form--group" style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '15px' }}>
-                                        {/* Radio Button on Left */}
-                                        <div style={{ display: 'flex', alignItems: 'center' }}>
-  <input
-    type="checkbox"
-    id="referralToggle"
-    checked={showReferralField}
-    onChange={(e) => setShowReferralField(e.target.checked)}
-    style={{
-      marginRight: '8px',
-      width: '15px',
-      height: '15px',
-      cursor: 'pointer',
-      appearance: 'none',          // ✅ remove default checkbox
-      WebkitAppearance: 'none',
-      border: '2px solid #007bff', // ✅ blue border
-      borderRadius: '50%',         // ✅ make it circular
-      position: 'relative',
-      outline: 'none',
-    }}
-    onClick={(e) => e.target.style.backgroundColor = e.target.checked ? '#007bff' : 'transparent'}
-  />
-  <label
-    htmlFor="referralToggle"
-    style={{
-      margin: 0,
-      cursor: 'pointer',
-      fontWeight: '500',
-      color: '#007bff',
-    }}
-  >
-    Referral code
-  </label>
-</div>
+                                    <div className="form--group">
+                                        {/* Clickable Referral Toggle */}
+                                        <div
+                                            onClick={() => setShowReferralField(!showReferralField)}
+                                            style={{
+                                                cursor: 'pointer',
+                                                padding: '0px 5px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'space-between',
+                                                position: 'relative',
+                                                marginBottom: showReferralField ? '15px' : '25px'
+                                            }}
+                                        >
+                                            <span style={{ color: '#C9CCD5', fontWeight: '400', fontSize: '15px' }}>
+                                                Referral Code (Optional)
+                                            </span>
+                                            <i
+                                                className={`las ${showReferralField ? 'la-angle-up' : 'la-angle-down'}`}
+                                                style={{ color: '#C9CCD5', marginLeft: '155px', fontSize: '15px'}}
+                                            ></i>
+                                        </div>
 
-
-                                        
-                                        {/* Referral Input Field on Right - 50% width */}
+                                        {/* Referral Input Field - Shown/Hidden based on state */}
                                         {showReferralField && (
-                                            <div style={{ flex: '1', maxWidth: '100%' }}>
-                                            <input
-                                              type="text"
-                                              className="form--control"
-                                              placeholder={isReferralLocked ? "Referral Code (locked)" : "Referral Code (optional)"}
-                                              name="referralCode"
-                                              value={form.referralCode}
-                                              onChange={handleChange}
-                                              readOnly={isReferralLocked}
-                                              style={{
-                                                background: isReferralLocked ? '#f5f5f5' : undefined,
-                                                color: isReferralLocked ? '#888' : undefined,
-                                                cursor: isReferralLocked ? 'not-allowed' : undefined,
-                                                fontWeight: isReferralLocked ? 600 : undefined,
-                                                borderColor: isReferralLocked ? '#007bff' : undefined,
-                                                borderRadius: '1.5rem',
-                                              }}
-                                            />
-                                          </div>
-                                          
+                                            <div
+                                                style={{
+                                                    maxHeight: showReferralField ? '100px' : '0',
+                                                    overflow: 'hidden',
+                                                    transition: 'max-height 0.3s ease-in-out',
+                                                    marginTop: '10px',
+                                                    boxShadow: '0px 0px 10px 0px rgba(0, 0, 0, 0.1)',
+
+                                                }}
+                                            >
+                                                <div className="form--group" style={{ marginBottom: 0 }}>
+                                                    <i className="las la-user-friends"></i>
+                                                    <input
+                                                        type="text"
+                                                        className="form--control"
+                                                        placeholder={isReferralLocked ? "Referral Code (locked)" : "Enter Referral Code"}
+                                                        name="referralCode"
+                                                        value={form.referralCode}
+                                                        onChange={handleChange}
+                                                        readOnly={isReferralLocked}
+                                                        style={{
+                                                            background: isReferralLocked ? '#f5f5f5' : undefined,
+                                                            color: isReferralLocked ? '#888' : undefined,
+                                                            cursor: isReferralLocked ? 'not-allowed' : undefined,
+                                                            fontWeight: isReferralLocked ? 600 : undefined,
+                                                            borderColor: isReferralLocked ? '#007bff' : undefined,
+                                                        }}
+                                                    />
+                                                </div>
+                                            </div>
                                         )}
                                     </div>
 

@@ -8,8 +8,13 @@ const { sendDepositAcceptedEmail, sendDepositDeclinedEmail, sendWithdrawAccepted
 // ======================== Dashboard Data (All Graphs + Totals + Users List) ========================
 exports.GetAllUsers = async () => {
   try {
-    // 1) User Growth
+    const today = new Date();
+    const last7Days = new Date();
+    last7Days.setDate(today.getDate() - 7);
+
+    // 1) User Growth (Last 7 days)
     const userGrowthPromise = User.aggregate([
+      { $match: { createdAt: { $gte: last7Days } } },
       {
         $group: {
           _id: {
@@ -23,19 +28,21 @@ exports.GetAllUsers = async () => {
       { $sort: { "_id.year": 1, "_id.month": 1, "_id.day": 1 } },
     ]);
 
-    // 2) Referral Earnings (✅ refLevel wise SUM)
-    const referralPerformancePromise = RefUserEarning.aggregate([
+    // 2) Referral Performance: Count per Level (User table)
+    const referralPerformancePromise = User.aggregate([
+      { $match: { investedAmount: { $gt: 0 } } }, // active users only
       {
         $group: {
-          _id: "$refLevel",
-          totalAmount: { $sum: "$earningRef" },
-        },
+          _id: "$referralLevel",
+          count: { $sum: 1 } // count of users per level
+        }
       },
-      { $sort: { _id: 1 } },
+      { $sort: { _id: 1 } }
     ]);
 
-    // 3) Daily Earnings
+    // 3) Daily Earnings (Last 7 days)
     const dailyEarningsPromise = DailyEarn.aggregate([
+      { $match: { createdAt: { $gte: last7Days } } },
       {
         $group: {
           _id: {
@@ -43,27 +50,30 @@ exports.GetAllUsers = async () => {
             month: { $month: "$createdAt" },
             day: { $dayOfMonth: "$createdAt" },
           },
-          totalProfit: { $sum: "$dailyProfit" },
-          totalRef: { $sum: "$refEarn" },
+          dailyProfit: { $sum: "$dailyProfit" },
+          refEarn: { $sum: "$refEarn" },
         },
       },
-      { $sort: { "_id.year": 1, "_id.month": 1, "_id.day": 1 } },
+      { $sort: { "_id.year": 1, "_id.month": 1, "_id.day": 1 } }
     ]);
 
-    // 4) Investments Overview
+    // 4) Deposits vs Withdraws (Last 7 days)
     const depositsVsWithdrawsPromise = Investment.aggregate([
+      { $match: { createdAt: { $gte: last7Days } } },
       { $group: { _id: "$type", total: { $sum: "$amount" } } },
     ]);
 
-    // 5) Top Users
+    // 5) Top 5 Users (Only invested ones)
     const topUsersPromise = User.aggregate([
-      { $project: { name: 1, email: 1, totalBalance: 1, totalEarn: 1 } },
+      { $match: { investedAmount: { $gt: 0 } } },
+      { $project: { name: 1, totalBalance: 1, } },
       { $sort: { totalBalance: -1 } },
       { $limit: 5 },
     ]);
 
-    // 6) Totals (balance, invest, refEarn, earn) -> User se
+    // 6) System Totals (Only invested users)
     const totalsPromise = User.aggregate([
+      { $match: { investedAmount: { $gt: 0 } } },
       {
         $group: {
           _id: null,
@@ -75,28 +85,33 @@ exports.GetAllUsers = async () => {
       },
     ]);
 
-    // 7) Deposit Totals (Investment se)
+    // 7) Total Deposit (Last 7 days)
     const depositTotalsPromise = Investment.aggregate([
-      { $match: { type: "Deposit" } },
+      { $match: { type: "Deposit", createdAt: { $gte: last7Days } } },
       { $group: { _id: null, totalDeposit: { $sum: "$amount" } } },
     ]);
 
-    // 8) Withdraw Totals (Investment se)
+    // 8) Total Withdraw (Last 7 days)
     const withdrawTotalsPromise = Investment.aggregate([
-      { $match: { type: "Withdraw" } },
+      { $match: { type: "Withdraw", createdAt: { $gte: last7Days } } },
       { $group: { _id: null, totalWithdraw: { $sum: "$amount" } } },
     ]);
 
-    // 9) All Users List
+    // 9) All Active Users
     const allUsersPromise = User.find(
-      {},
-      "_id name email totalBalance depositAmount investedAmount refEarn totalEarn status createdAt"
-    ).lean();
+      { investedAmount: { $gt: 0 } },
+      "_id name email totalBalance depositAmount investedAmount refEarn totalEarn status createdAt investedLots"
+    )
+      .sort({ createdAt: -1 })  // latest users first
+      .limit(5)
+      .lean();
 
-    // 10) Total Users Count
-    const totalUsersCountPromise = User.countDocuments();
+    // 10) Total Active Users Count
+    const totalUsersCountPromise = User.countDocuments({
+      investedAmount: { $gt: 0 },
+    });
 
-    // Run all queries in parallel
+    // Await all promises
     const [
       userGrowth,
       referralPerformance,
@@ -121,35 +136,52 @@ exports.GetAllUsers = async () => {
       totalUsersCountPromise,
     ]);
 
-    // Format return
+    // Pending Lots Calculation
+    let pendingLotsTotal = 0;
+    allUsers.forEach((u) => {
+      if (u.investedLots?.length > 0) {
+        u.investedLots.forEach((lot) => {
+          if (lot.status === "Pending") pendingLotsTotal += lot.amount;
+        });
+      }
+    });
+
+    // Final return formatting
     return {
-      userGrowth: userGrowth.map(u => ({
+      userGrowth: userGrowth.map((u) => ({
         date: `${u._id.year}-${u._id.month}-${u._id.day}`,
         count: u.count,
       })),
-      referralPerformance: referralPerformance.map(r => ({
+      referralPerformance: referralPerformance.map((r) => ({
         refLevel: r._id,
-        totalAmount: r.totalAmount,
+        count: r.count,
       })),
-      dailyEarnings: dailyEarnings.map(e => ({
+      dailyEarnings: dailyEarnings.map((e) => ({
         date: `${e._id.year}-${e._id.month}-${e._id.day}`,
-        profit: e.totalProfit,
-        ref: e.totalRef,
+        dailyProfit: e.dailyProfit,
+        refEarn: e.refEarn,
       })),
-      investments: {
-        depositsVsWithdraws,
-      },
+      investments: { depositsVsWithdraws },
       topUsers,
       totals: {
         totalBalance: totals[0]?.totalBalance || 0,
-        totalDeposit: depositTotals[0]?.totalDeposit || 0, // ✅ ab Investment se
+        totalDeposit: depositTotals[0]?.totalDeposit || 0,
         totalInvest: totals[0]?.totalInvest || 0,
         totalRefEarn: totals[0]?.totalRefEarn || 0,
         totalEarn: totals[0]?.totalEarn || 0,
         totalWithdraw: withdrawTotals[0]?.totalWithdraw || 0,
+        pendingLotsTotal,
       },
-      allUsers: allUsers.map(u => ({
-        ...u,
+      allUsers: allUsers.map((u) => ({
+        _id: u._id,
+        name: u.name,
+        email: u.email,
+        totalBalance: u.totalBalance,
+        totalEarn: u.totalEarn,
+        refEarn: u.refEarn,
+        depositAmount: u.depositAmount,
+        investedAmount: u.investedAmount,
+        status: u.status,
         createdAt: new Date(u.createdAt).toLocaleDateString("en-GB", {
           day: "2-digit",
           month: "short",
@@ -160,6 +192,149 @@ exports.GetAllUsers = async () => {
     };
   } catch (err) {
     throw new Error("Error fetching dashboard data: " + err.message);
+  }
+};
+
+//======================Get all User by search=======================
+exports.AdminGetUserBySearch = async (search) => {
+  try {
+    const user = await User.findOne({
+      $or: [
+        { name: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } }
+      ]
+    });
+
+    if (!user) return null;
+
+    // Format the date
+    const formattedDate = new Date(user.createdAt).toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+    // RETURN ONLY REQUIRED FIELDS
+    return {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      totalBalance: user.totalBalance,
+      totalEarn: user.totalEarn,
+      refEarn: user.refEarn,
+      depositAmount: user.depositAmount,
+      investedAmount: user.investedAmount,
+      status: user.status,
+      createdAt: formattedDate,
+    };
+  } catch (err) {
+    throw new Error("Error fetching user by search: " + err.message);
+  }
+};
+
+//======================Get all User by paginated=======================
+exports.AdminGetUsersPaginated = async (page, limit) => {
+  try {
+    const skip = (page - 1) * limit;
+
+    // ⭐ Fetch only invested users (or all users if you prefer)
+    const users = await User.find(
+      {investedAmount: { $gt: 0 }},
+      "_id name email totalBalance depositAmount investedAmount refEarn totalEarn status referralLevel createdAt"
+    )
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    const totalUsers = await User.countDocuments({}); // total users count
+
+    // Format date + return updated format
+    const formatted = users.map((u) => {
+      const formattedDate = new Date(u.createdAt).toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      });
+
+      return {
+        _id: u._id,
+        name: u.name,
+        email: u.email,
+        totalBalance: u.totalBalance,
+        totalEarn: u.totalEarn,
+        refEarn: u.refEarn,
+        depositAmount: u.depositAmount,
+        investedAmount: u.investedAmount,
+        status: u.status,
+        referralLevel: u.referralLevel,
+        createdAt: formattedDate,
+      };
+    });
+
+    return {
+      users: formatted,
+      totalUsers,
+      totalPages: Math.ceil(totalUsers / limit),
+      currentPage: page,
+    };
+  } catch (err) {
+    throw new Error("Error fetching paginated users: " + err.message);
+  }
+};
+
+//======================Get all User by paginated backward=======================
+exports.AdminGetUsersPaginatedBackward = async (page, limit) => {
+  try {
+    const totalUsers = await User.countDocuments({ investedAmount: { $gt: 0 } });
+    const totalPages = Math.ceil(totalUsers / limit);
+
+    // Ensure page is valid
+    const currentPage = page > totalPages ? totalPages : page;
+
+    // Calculate skip from the end for backward pagination
+    const skip = totalUsers - currentPage * limit;
+    const adjustedSkip = skip < 0 ? 0 : skip;
+    const adjustedLimit = skip < 0 ? limit + skip : limit; // adjust limit if fewer users remain
+
+    const users = await User.find(
+      {investedAmount: { $gt: 0 }},
+      "_id name email totalBalance depositAmount investedAmount refEarn totalEarn status referralLevel createdAt"
+    )
+      .sort({ createdAt: 1 }) // ascending order for backward fetch
+      .skip(adjustedSkip)
+      .limit(adjustedLimit)
+      .lean();
+
+    // Format date
+    const formatted = users.map((u) => {
+      const formattedDate = new Date(u.createdAt).toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      });
+      return {
+        _id: u._id,
+        name: u.name,
+        email: u.email,
+        totalBalance: u.totalBalance,
+        totalEarn: u.totalEarn,
+        refEarn: u.refEarn,
+        depositAmount: u.depositAmount,
+        investedAmount: u.investedAmount,
+        status: u.status,
+        referralLevel: u.referralLevel,
+        createdAt: formattedDate,
+      };
+    });
+
+    return {
+      users: formatted,
+      totalUsers,
+      totalPages,
+      currentPage,
+    };
+  } catch (err) {
+    throw new Error("Error fetching backward paginated users: " + err.message);
   }
 };
 

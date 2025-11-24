@@ -10,6 +10,50 @@ exports.AdminGetAllUsers = async (req, res) => {
   }
 };
 
+//------------Get specific User by search----------------
+exports.AdminGetUserBySearch = async (req, res) => {
+  try {
+    const { search } = req.query;
+    const user = await AdminDashService.AdminGetUserBySearch(search);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json(user);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
+
+//------------Get user paginated----------------
+exports.AdminGetUsersPaginated = async (req, res) => {
+  try {
+    const { page = 1, limit = 5 } = req.query;
+
+    const data = await AdminDashService.AdminGetUsersPaginated(
+      parseInt(page),
+      parseInt(limit)
+    );
+
+    res.status(200).json(data);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
+
+//------------Get user paginated backward----------------
+exports.AdminGetUsersPaginatedBackward = async (req, res) => {
+  try {
+    const { page = 1, limit = 5 } = req.query;
+    const data = await AdminDashService.AdminGetUsersPaginatedBackward(
+      parseInt(page),
+      parseInt(limit)
+    );
+    res.status(200).json(data);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
+
 //------------Get all User----------------
 exports.AdminGetAllUsersdata = async (req, res) => {
   try {

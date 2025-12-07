@@ -22,18 +22,18 @@ app.use(helmet());
 app.use(rateLimit({ windowMs: 15*60*1000, max: 300 }));
 app.use(express.json());
 
-// ✅ Cron Job: Har din raat 12 baje run hoga
+//  Cron Job: Har din raat 12 baje run hoga
 cron.schedule('5 0 * * *', async () => {
   console.log('⏳ Running Daily Earnings Calculation...');
   try {
     await dailyEarningService.calculateDailyEarnings();
-    console.log('✅ Daily earnings calculated successfully (UTC)');
+    console.log(' Daily earnings calculated successfully (UTC)');
   } catch (err) {
-    console.error('❌ Error in daily earnings calculation:', err);
+    console.error(' Error in daily earnings calculation:', err);
   }
 }, {
   scheduled: true,
-  timezone: "UTC"   // ✅ Force UTC timezone
+  timezone: "UTC"   //  Force UTC timezone
 });
 
 
@@ -51,7 +51,7 @@ app.use(cors({
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      console.log("❌ CORS blocked for origin:", origin);
+      console.log(" CORS blocked for origin:", origin);
       callback(new Error("Not allowed by CORS"));
     }
   },

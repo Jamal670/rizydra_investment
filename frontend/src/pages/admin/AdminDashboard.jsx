@@ -177,11 +177,11 @@ const AdminDashboard = () => {
   ] : [];
 
   const userSummary = dashboard ? [
-    { label: "Users", value: dashboard.totalUsers, icon: "bi-people", color: "linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)" },
+    { label: "Users", value: totalUsersCount-1, icon: "bi-people", color: "linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)" },
     { label: "Referral Earn", value: formatCurrency(totals.totalRefEarn), icon: "bi-arrow-repeat", color: "linear-gradient(135deg, #36D1DC 0%, #5B86E5 100%)" },
     { label: "Earnings", value: formatCurrency(totals.totalEarn), icon: "bi-speedometer2", color: "linear-gradient(135deg, #FF5F6D 0%, #FFC371 100%)" },
-    { label: "Deposit (7d)", value: formatCurrency(totals.totalDeposit), icon: "bi-graph-up", color: "linear-gradient(135deg, #f46b45 0%, #eea849 100%)" },
-    { label: "Withdraw (7d)", value: formatCurrency(totals.totalWithdraw), icon: "bi-wallet2", color: "linear-gradient(135deg, #0ba360 0%, #3cba92 100%)" },
+    { label: "Deposit", value: formatCurrency(totals.totalDeposit), icon: "bi-graph-up", color: "linear-gradient(135deg, #f46b45 0%, #eea849 100%)" },
+    { label: "Withdraw", value: formatCurrency(totals.totalWithdraw), icon: "bi-wallet2", color: "linear-gradient(135deg, #0ba360 0%, #3cba92 100%)" },
   ] : [];
 
   const mapUserToRow = useCallback((user = {}) => ({

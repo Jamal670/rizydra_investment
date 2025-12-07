@@ -87,13 +87,13 @@ exports.GetAllUsers = async () => {
 
     // 7) Total Deposit (Last 7 days)
     const depositTotalsPromise = Investment.aggregate([
-      { $match: { type: "Deposit", createdAt: { $gte: last7Days } } },
+      { $match: { type: "Deposit",  } },
       { $group: { _id: null, totalDeposit: { $sum: "$amount" } } },
     ]);
 
     // 8) Total Withdraw (Last 7 days)
     const withdrawTotalsPromise = Investment.aggregate([
-      { $match: { type: "Withdraw", createdAt: { $gte: last7Days } } },
+      { $match: { type: "Withdraw",  } },
       { $group: { _id: null, totalWithdraw: { $sum: "$amount" } } },
     ]);
 

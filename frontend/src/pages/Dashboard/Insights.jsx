@@ -396,7 +396,7 @@ function Insights() {
                   <a href="/user-dashboard">Dashboard</a>
                 </li>
                 <li>
-                  <span>Referral Users</span>
+                  <span>Analytics</span>
                 </li>
               </ul>
             </div>

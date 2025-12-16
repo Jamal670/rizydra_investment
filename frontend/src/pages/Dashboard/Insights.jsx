@@ -686,7 +686,7 @@ function Insights() {
                   }}
                 >
                   <div>
-                    <h4 className="title m-0">Performance Overview</h4>
+                    <h4 className="title m-0">Performance</h4>
                   </div>
                   <div>
                     <select

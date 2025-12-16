@@ -230,11 +230,15 @@ function Insights() {
   useEffect(() => {
     const init = async () => {
       setIsLoading(true);
-      await Promise.all([fetchCards(), fetchGraphs(timeRange), loadAssets()]);
+      await Promise.all([fetchCards(), loadAssets()]);
       setIsLoading(false);
     };
     init();
-  }, []); // Run once on mount
+  }, []); // Run once on mount - fetchCards and loadAssets only
+
+  useEffect(() => {
+    fetchGraphs(timeRange);
+  }, [timeRange, fetchGraphs]);
 
   // Chart configurations
   const lineChartData = {
@@ -682,7 +686,7 @@ function Insights() {
                   }}
                 >
                   <div>
-                    <h4 className="title m-0">Performance</h4>
+                    <h4 className="title m-0">Performance Overview</h4>
                   </div>
                   <div>
                     <select
@@ -699,8 +703,8 @@ function Insights() {
                           "👆 [USER ACTION] Dropdown changed to:",
                           selectedRange
                         );
+                        // Update state - useEffect will automatically trigger API call
                         setTimeRange(selectedRange);
-                        fetchGraphs(selectedRange); // ← Directly call API
                       }}
                     >
                       <option value="Weekly">Weekly</option>

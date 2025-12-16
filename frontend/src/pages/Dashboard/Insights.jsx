@@ -234,14 +234,8 @@ function Insights() {
       setIsLoading(false);
     };
     init();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Run once on mount - fetchCards and loadAssets only
 
-  // Auto-update graphs when timeRange changes
-  // This useEffect automatically triggers API call whenever:
-  // 1. Component mounts (initial load with default "Weekly" range)
-  // 2. User selects a different range from dropdown
-  // The fetchGraphs function handles its own loading state (isLoadingGraphs)
   useEffect(() => {
     fetchGraphs(timeRange);
   }, [timeRange, fetchGraphs]);

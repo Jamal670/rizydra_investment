@@ -226,17 +226,25 @@ function Insights() {
     }
   }, []);
 
-  // Initial Load
+  // Initial Load (Run once on mount)
   useEffect(() => {
     const init = async () => {
       setIsLoading(true);
-      await Promise.all([fetchCards(), fetchGraphs(timeRange), loadAssets()]);
+      await Promise.all([fetchCards(), loadAssets()]);
       setIsLoading(false);
     };
     init();
-  }, []); // Run once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run once on mount - fetchCards and loadAssets only
 
-  // Update Graphs on Range Change
+  // Auto-update graphs when timeRange changes
+  // This useEffect automatically triggers API call whenever:
+  // 1. Component mounts (initial load with default "Weekly" range)
+  // 2. User selects a different range from dropdown
+  // The fetchGraphs function handles its own loading state (isLoadingGraphs)
+  useEffect(() => {
+    fetchGraphs(timeRange);
+  }, [timeRange, fetchGraphs]);
 
   // Chart configurations
   const lineChartData = {
@@ -701,8 +709,8 @@ function Insights() {
                           "👆 [USER ACTION] Dropdown changed to:",
                           selectedRange
                         );
+                        // Update state - useEffect will automatically trigger API call
                         setTimeRange(selectedRange);
-                        fetchGraphs(selectedRange);
                       }}
                     >
                       <option value="Weekly">Weekly</option>

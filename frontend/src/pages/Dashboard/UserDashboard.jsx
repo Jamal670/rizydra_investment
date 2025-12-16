@@ -750,7 +750,7 @@ function UserDashboard() {
                       padding: "0px 0",
                     }}
                   >
-                    Weekly Progress Summary
+                    Weekly Progress
                   </h3>
                 </div>
               </div>

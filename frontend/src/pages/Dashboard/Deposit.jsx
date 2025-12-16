@@ -1,2133 +1,3223 @@
-import React, { useEffect, useState, useRef } from 'react';
-import api from '../../Api';
+import React, { useEffect, useState, useRef } from "react";
+import api from "../../Api";
+import { MdOutlineArrowBackIos, MdArrowForwardIos } from "react-icons/md";
 
 function Deposit() {
-    const [isLoading, setIsLoading] = useState(true);
-    const [showModal, setShowModal] = useState(false);
-    const [depositAmount, setDepositAmount] = useState('');
-    const [binanceTR20, setBinanceTR20] = useState('');
-    const [loadingDeposit, setLoadingDeposit] = useState(false);
-    const [selectedNetwork, setSelectedNetwork] = useState('Select');
-    const [copySuccess, setCopySuccess] = useState('');
-    const [showHelper, setShowHelper] = useState(false);
-    const [showVerification, setShowVerification] = useState(false);
-    const [depositInput, setDepositInput] = useState("");
-    const [depositScreenshot, setDepositScreenshot] = useState(null);
-    const [focusedDeposit, setFocusedDeposit] = useState(false);
-    const [focusedAddress, setFocusedAddress] = useState(false);
-    const fileInputRef = useRef(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [depositAmount, setDepositAmount] = useState("");
+  const [binanceTR20, setBinanceTR20] = useState("");
+  const [loadingDeposit, setLoadingDeposit] = useState(false);
+  const [selectedNetwork, setSelectedNetwork] = useState("Select");
+  const [copySuccess, setCopySuccess] = useState("");
+  const [showHelper, setShowHelper] = useState(false);
+  const [showVerification, setShowVerification] = useState(false);
+  const [depositInput, setDepositInput] = useState("");
 
+  const [depositScreenshot, setDepositScreenshot] = useState(null);
+  const [focusedDeposit, setFocusedDeposit] = useState(false);
+  const [focusedAddress, setFocusedAddress] = useState(false);
+  const fileInputRef = useRef(null);
 
-    const [userData, setUserData] = useState(null);
-    const [selectedTransaction, setSelectedTransaction] = useState(null);
-    const [showTxnModal, setShowTxnModal] = useState(false);
-    const [isRedeposit, setIsRedeposit] = useState(false);
-    const [reDepId, setReDepId] = useState(null);
-    const [showDeclineDetailModal, setShowDeclineDetailModal] = useState(false);
+  const [userData, setUserData] = useState(null);
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const [showTxnModal, setShowTxnModal] = useState(false);
+  const [isRedeposit, setIsRedeposit] = useState(false);
+  const [reDepId, setReDepId] = useState(null);
+  const [showDeclineDetailModal, setShowDeclineDetailModal] = useState(false);
 
-    // Pagination state
-    const [currentPage, setCurrentPage] = useState(1);
-    const rowsPerPage = 8;
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const rowsPerPage = 8;
 
-    const [showWithdrawModal, setShowWithdrawModal] = useState(false);
-    const [withdrawExchange, setWithdrawExchange] = useState('Select');
-    const [withdrawAmount, setWithdrawAmount] = useState('');
-    const [withdrawUserExchange, setWithdrawUserExchange] = useState('');
-    const [withdrawLoading, setWithdrawLoading] = useState(false);
-    const [focusedWithdrawAmount, setFocusedWithdrawAmount] = useState(false); // New state for withdraw amount focus
-    const [focusedWithdrawAddress, setFocusedWithdrawAddress] = useState(false); // New state for withdraw address focus
-    const [showWithdrawConfirmation, setShowWithdrawConfirmation] = useState(false); // New state for withdrawal confirmation popup
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+  const [withdrawExchange, setWithdrawExchange] = useState("Select");
+  const [withdrawAmount, setWithdrawAmount] = useState("");
+  const [withdrawUserExchange, setWithdrawUserExchange] = useState("");
+  const [withdrawLoading, setWithdrawLoading] = useState(false);
+  const [focusedWithdrawAmount, setFocusedWithdrawAmount] = useState(false); // New state for withdraw amount focus
+  const [focusedWithdrawAddress, setFocusedWithdrawAddress] = useState(false); // New state for withdraw address focus
+  const [showWithdrawConfirmation, setShowWithdrawConfirmation] =
+    useState(false); // New state for withdrawal confirmation popup
+  const [showWithdrawVerification, setShowWithdrawVerification] =
+    useState(false); // New state for withdrawal verification modal
+  const [showOtpSentNotification, setShowOtpSentNotification] = useState(false); // New state for OTP sent notification
+  const [withdrawOtp, setWithdrawOtp] = useState("");
+  const [verificationLoading, setVerificationLoading] = useState(false);
+  const [withdrawError, setWithdrawError] = useState(""); // State for withdrawal validation error
+  const [showWeekendRestrictionModal, setShowWeekendRestrictionModal] =
+    useState(false); // State for weekend restriction modal
 
-    const [showInvestModal, setShowInvestModal] = useState(false);
-    const [investFrom, setInvestFrom] = useState('Deposit');
-    const [investTo, setInvestTo] = useState('Invest');
-    const [investAmount, setInvestAmount] = useState('');
+  const [showInvestModal, setShowInvestModal] = useState(false);
+  const [investFrom, setInvestFrom] = useState("Deposit");
+  const [investTo, setInvestTo] = useState("Invest");
+  const [investAmount, setInvestAmount] = useState("");
 
-    const walletAddresses = {
-        TRC20: 'TFU1q2LLEpnCJA7udzmUcvozUuyMaFYSyC',
-        BEP20: '0x32100614cf179e38452abf61033b686c8256bab6'
-    };
+  const walletAddresses = {
+    TRC20: "TFU1q2LLEpnCJA7udzmUcvozUuyMaFYSyC",
+    BEP20: "0x32100614cf179e38452abf61033b686c8256bab6",
+  };
 
-    const qrImages = {
-        TRC20: '/assets/images/account/TRC20.jpeg',
-        BEP20: '/assets/images/account/BEP20.jpeg'
-    };
+  const qrImages = {
+    TRC20: "/assets/images/account/TRC20.jpeg",
+    BEP20: "/assets/images/account/BEP20.jpeg",
+  };
 
-    // Add new state for address validation
-    const [addressError, setAddressError] = useState('');
-    const [isAddressValid, setIsAddressValid] = useState(false);
+  // Add new state for address validation
+  const [addressError, setAddressError] = useState("");
+  const [isAddressValid, setIsAddressValid] = useState(false);
 
-    // Add state for loading in Deposit and Invest modals
-    const [depositProcessing, setDepositProcessing] = useState(false);
-    const [investProcessing, setInvestProcessing] = useState(false);
-    const [showInvestConfirmation, setShowInvestConfirmation] = useState(false);
-    const [showPendingInfoModal, setShowPendingInfoModal] = useState(false);
-    const [showInvestBlocker, setShowInvestBlocker] = useState(false);
+  // Add state for loading in Deposit and Invest modals
+  const [depositProcessing, setDepositProcessing] = useState(false);
+  const [investProcessing, setInvestProcessing] = useState(false);
+  const [showInvestConfirmation, setShowInvestConfirmation] = useState(false);
+  const [showPendingInfoModal, setShowPendingInfoModal] = useState(false);
+  const [showInvestBlocker, setShowInvestBlocker] = useState(false);
 
-    // Add new state for transaction ID validation
-    const [txnIdError, setTxnIdError] = useState('');
+  // Add new state for transaction ID validation
+  const [txnIdError, setTxnIdError] = useState("");
 
-    // Address validation function
-    const validateAddress = (address, network) => {
-        if (!address || !network) return false;
+  // Address validation function
+  const validateAddress = (address, network) => {
+    if (!address || !network) return false;
 
-        const trimmedAddress = address.trim();
+    const trimmedAddress = address.trim();
 
-        if (network === 'TRC20') {
-            // TRC20: 34 chars, starts with "T", Base58-like
-            if (trimmedAddress.length !== 34) return false;
-            // if (!trimmedAddress.startsWith('T')) return false;
+    if (network === "TRC20") {
+      // TRC20: 34 chars, starts with "T", Base58-like
+      if (trimmedAddress.length !== 34) return false;
+      // if (!trimmedAddress.startsWith('T')) return false;
 
-            // Base58 validation (A-Z, a-z, 0-9, excluding 0,O,I,l)
-            const base58Regex = /^[1-9A-HJ-NP-Za-km-z]+$/;
-            return base58Regex.test(trimmedAddress);
+      // Base58 validation (A-Z, a-z, 0-9, excluding 0,O,I,l)
+      const base58Regex = /^[1-9A-HJ-NP-Za-km-z]+$/;
+      return base58Regex.test(trimmedAddress);
+    }
+
+    if (network === "BEP20") {
+      // BEP20: 42 chars, starts with "0x", hex
+      if (trimmedAddress.length !== 42) return false;
+      // if (!trimmedAddress.startsWith('0x')) return false;
+
+      // Hex validation for remaining 40 chars
+      const hexRegex = /^0x[0-9a-fA-F]{40}$/;
+      return hexRegex.test(trimmedAddress);
+    }
+
+    return false;
+  };
+
+  // Handle address input change with validation
+  const handleAddressChange = (address) => {
+    setBinanceTR20(address);
+
+    if (selectedNetwork === "Select") {
+      setAddressError("Please select an exchange first");
+      setIsAddressValid(false);
+      return;
+    }
+
+    const isValid = validateAddress(address, selectedNetwork);
+    setIsAddressValid(isValid);
+
+    if (!isValid && address) {
+      if (selectedNetwork === "TRC20") {
+        setAddressError(
+          'TRC20 address must be 34 characters, start with "T", and contain only Base58 characters'
+        );
+      } else if (selectedNetwork === "BEP20") {
+        setAddressError(
+          'BEP20 address must be 42 characters, start with "0x", and contain only hex characters'
+        );
+      }
+    } else {
+      setAddressError("");
+    }
+  };
+
+  // Handle network selection change
+  const handleNetworkChange = (network) => {
+    setSelectedNetwork(network);
+    setBinanceTR20(""); // Clear entered address
+    setAddressError(""); // Clear error
+    setIsAddressValid(false); // Reset validation
+  };
+
+  useEffect(() => {
+    const loadAssets = () =>
+      new Promise((resolve) => {
+        if (window.__rizydraAssetsLoaded) {
+          resolve(true);
+          return;
         }
+        const cssFiles = [
+          "/assets/css/bootstrap.min.css",
+          "/assets/css/all.min.css",
+          "/assets/css/line-awesome.min.css",
+          "/assets/css/animate.css",
+          "/assets/css/magnific-popup.css",
+          "/assets/css/nice-select.css",
+          "/assets/css/odometer.css",
+          "/assets/css/slick.css",
+          "/assets/css/main.css",
+        ];
+        const jsFiles = [
+          "/assets/js/jquery-3.3.1.min.js",
+          "/assets/js/bootstrap.min.js",
+          "/assets/js/jquery.ui.js",
+          "/assets/js/slick.min.js",
+          "/assets/js/wow.min.js",
+          "/assets/js/magnific-popup.min.js",
+          "/assets/js/odometer.min.js",
+          "/assets/js/viewport.jquery.js",
+          "/assets/js/nice-select.js",
+          "/assets/js/main.js",
+        ];
 
-        if (network === 'BEP20') {
-            // BEP20: 42 chars, starts with "0x", hex
-            if (trimmedAddress.length !== 42) return false;
-            // if (!trimmedAddress.startsWith('0x')) return false;
-
-            // Hex validation for remaining 40 chars
-            const hexRegex = /^0x[0-9a-fA-F]{40}$/;
-            return hexRegex.test(trimmedAddress);
-        }
-
-        return false;
-    };
-
-    // Handle address input change with validation
-    const handleAddressChange = (address) => {
-        setBinanceTR20(address);
-
-        if (selectedNetwork === 'Select') {
-            setAddressError('Please select an exchange first');
-            setIsAddressValid(false);
-            return;
-        }
-
-        const isValid = validateAddress(address, selectedNetwork);
-        setIsAddressValid(isValid);
-
-        if (!isValid && address) {
-            if (selectedNetwork === 'TRC20') {
-                setAddressError('TRC20 address must be 34 characters, start with "T", and contain only Base58 characters');
-            } else if (selectedNetwork === 'BEP20') {
-                setAddressError('BEP20 address must be 42 characters, start with "0x", and contain only hex characters');
-            }
-        } else {
-            setAddressError('');
-        }
-    };
-
-    // Handle network selection change
-    const handleNetworkChange = (network) => {
-        setSelectedNetwork(network);
-        setBinanceTR20(''); // Clear entered address
-        setAddressError(''); // Clear error
-        setIsAddressValid(false); // Reset validation
-    };
-
-    useEffect(() => {
-        const loadAssets = () => new Promise(resolve => {
-            if (window.__rizydraAssetsLoaded) {
-                resolve(true);
-                return;
-            }
-            const cssFiles = [
-                '/assets/css/bootstrap.min.css',
-                '/assets/css/all.min.css',
-                '/assets/css/line-awesome.min.css',
-                '/assets/css/animate.css',
-                '/assets/css/magnific-popup.css',
-                '/assets/css/nice-select.css',
-                '/assets/css/odometer.css',
-                '/assets/css/slick.css',
-                '/assets/css/main.css'
-            ];
-            const jsFiles = [
-                '/assets/js/jquery-3.3.1.min.js',
-                '/assets/js/bootstrap.min.js',
-                '/assets/js/jquery.ui.js',
-                '/assets/js/slick.min.js',
-                '/assets/js/wow.min.js',
-                '/assets/js/magnific-popup.min.js',
-                '/assets/js/odometer.min.js',
-                '/assets/js/viewport.jquery.js',
-                '/assets/js/nice-select.js',
-                '/assets/js/main.js'
-            ];
-
-            let loaded = 0;
-            const total = cssFiles.length + jsFiles.length;
-            const markLoaded = () => {
-                loaded += 1;
-                if (loaded >= total) {
-                    window.__rizydraAssetsLoaded = true;
-                    resolve(true);
-                }
-            };
-
-            cssFiles.forEach(href => {
-                const existing = document.querySelector(`link[href="${href}"]`);
-                if (existing) {
-                    markLoaded();
-                } else {
-                    const link = document.createElement('link');
-                    link.rel = 'stylesheet';
-                    link.href = href;
-                    link.onload = markLoaded;
-                    link.onerror = markLoaded;
-                    document.head.appendChild(link);
-                }
-            });
-
-            jsFiles.forEach(src => {
-                const existing = document.querySelector(`script[src="${src}"]`);
-                if (existing) {
-                    markLoaded();
-                } else {
-                    const script = document.createElement('script');
-                    script.src = src;
-                    script.async = false;
-                    script.onload = markLoaded;
-                    script.onerror = markLoaded;
-                    document.body.appendChild(script);
-                }
-            });
-        });
-
-        const init = async () => {
-            try {
-                await api.get("/user/verify", { withCredentials: true });
-                const res = await api.get('/user/showdeposit', { withCredentials: true });
-                if (res.data.success) setUserData(res.data.data);
-            } catch (err) {
-                console.error('Authentication or data loading failed:', err);
-                localStorage.removeItem("authenticated");
-                localStorage.removeItem("isAdmin");
-                alert("Your session has expired, Please login again.");
-                window.location.href = '/login';
-                return;
-            }
-
-            await loadAssets();
-            setIsLoading(false);
+        let loaded = 0;
+        const total = cssFiles.length + jsFiles.length;
+        const markLoaded = () => {
+          loaded += 1;
+          if (loaded >= total) {
+            window.__rizydraAssetsLoaded = true;
+            resolve(true);
+          }
         };
 
-        init();
+        cssFiles.forEach((href) => {
+          const existing = document.querySelector(`link[href="${href}"]`);
+          if (existing) {
+            markLoaded();
+          } else {
+            const link = document.createElement("link");
+            link.rel = "stylesheet";
+            link.href = href;
+            link.onload = markLoaded;
+            link.onerror = markLoaded;
+            document.head.appendChild(link);
+          }
+        });
+
+        jsFiles.forEach((src) => {
+          const existing = document.querySelector(`script[src="${src}"]`);
+          if (existing) {
+            markLoaded();
+          } else {
+            const script = document.createElement("script");
+            script.src = src;
+            script.async = false;
+            script.onload = markLoaded;
+            script.onerror = markLoaded;
+            document.body.appendChild(script);
+          }
+        });
+      });
+
+    const init = async () => {
+      try {
+        await api.get("/user/verify", { withCredentials: true });
+        const res = await api.get("/user/showdeposit", {
+          withCredentials: true,
+        });
+        if (res.data.success) setUserData(res.data.data);
+      } catch (err) {
+        console.error("Authentication or data loading failed:", err);
+        localStorage.removeItem("authenticated");
+        localStorage.removeItem("isAdmin");
+        alert("Your session has expired, Please login again.");
+        window.location.href = "/login";
+        return;
+      }
+
+      await loadAssets();
+      setIsLoading(false);
+    };
+
+    init();
+  }, []);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(walletAddresses[selectedNetwork]);
+      setCopySuccess("Copied!");
+      setTimeout(() => setCopySuccess(""), 1200);
+    } catch {
+      setCopySuccess("Failed!");
+      setTimeout(() => setCopySuccess(""), 1200);
+    }
+  };
+
+  const handleDepositVerification = () => setShowVerification(true);
+
+  // ...existing code...
+  const handleDepositSubmit = async (e) => {
+    e.preventDefault();
+
+    // Validate exchange selection
+    if (selectedNetwork !== "TRC20" && selectedNetwork !== "BEP20") {
+      alert("Please select your exchange.");
+      return;
+    }
+
+    // Validate deposit amount
+    if (!depositInput || isNaN(depositInput) || Number(depositInput) <= 0) {
+      alert("Please enter deposit amount.");
+      return;
+    }
+
+    // Validate transaction ID
+    if (!binanceTR20 || binanceTR20.length < 5) {
+      alert("Please enter transaction ID.");
+      return;
+    }
+
+    // Validate screenshot
+    if (!depositScreenshot) {
+      alert("Please upload an image of your deposit.");
+      return;
+    }
+
+    setDepositProcessing(true); // Start loading
+
+    const formData = new FormData();
+    formData.append("exchangeType", selectedNetwork);
+    formData.append("ourExchange", walletAddresses[selectedNetwork]);
+    formData.append("amount", depositInput);
+    formData.append("userExchange", binanceTR20);
+    formData.append("type", "Deposit");
+    if (depositScreenshot) {
+      if (isRedeposit) {
+        formData.append("images", depositScreenshot);
+        if (reDepId) formData.append("reDepId", reDepId);
+      } else {
+        formData.append("image", depositScreenshot);
+      }
+    }
+
+    try {
+      const endpoint = isRedeposit ? "/user/redeposit" : "/user/deposit";
+      const res = await api.post(endpoint, formData, {
+        withCredentials: true,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      alert(
+        res.data.message ||
+          (isRedeposit ? "Redeposit submitted!" : "Deposit submitted!")
+      );
+      setShowVerification(false);
+      setDepositInput("");
+      setBinanceTR20("");
+      setDepositScreenshot(null);
+      setShowModal(false);
+      setIsRedeposit(false);
+      setReDepId(null);
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+
+      window.location.reload();
+    } catch (err) {
+      alert(
+        err.response?.data?.message ||
+          (isRedeposit ? "Redeposit failed!" : "Deposit failed!")
+      );
+      setDepositProcessing(false); // Stop loading on error
+    }
+  };
+  // ...existing
+  const handleScreenshotChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setDepositScreenshot(e.target.files[0]);
+    }
+  };
+
+  // Helper Modal
+  const HelperModal = () => (
+    <div
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100vw",
+        height: "100vh",
+        background: "rgba(0,0,0,0.25)",
+        zIndex: 2000,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        animation: "fadeIn .25s",
+      }}
+      onClick={() => setShowHelper(false)}
+    >
+      <div
+        style={{
+          background: "#fff",
+          borderRadius: 16,
+          boxShadow: "0 8px 32px rgba(0,0,0,0.15)",
+          padding: "2rem 2rem 1.5rem 2rem",
+          maxWidth: 400,
+          width: "90%",
+          animation: "slideDown .3s",
+          position: "relative",
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          type="button"
+          onClick={() => setShowHelper(false)}
+          style={{
+            position: "absolute",
+            top: 8,
+            right: 10,
+            width: "24px",
+            height: "24px",
+            background: "transparent",
+            border: "none",
+            fontSize: "1.2rem",
+            lineHeight: "1rem",
+            cursor: "pointer",
+            color: "#000",
+            padding: 0,
+            zIndex: 2,
+          }}
+          aria-label="Close"
+        >
+          &times;
+        </button>
+        <h4 style={{ fontWeight: 700, marginBottom: 18, color: "#222" }}>
+          How to Deposit
+        </h4>
+        <div style={{ fontSize: 16, color: "#333", lineHeight: 1.7 }}>
+          <div style={{ marginBottom: 10 }}>
+            - <b>Copy</b> the exchange code according to the exchange method you
+            selected.
+          </div>
+          <div style={{ marginBottom: 10 }}>
+            - <b>Open your Binance account</b> and transfer USDT to this
+            exchange code.
+          </div>
+          <div style={{ marginBottom: 10 }}>
+            - <b>Once the transfer is complete</b>, return here and upload a
+            screenshot.
+          </div>
+          <div>
+            - <b>After verification</b>, system will credit the USDT to your
+            wallet.
+          </div>
+        </div>
+      </div>
+      <style>
+        {`
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                @keyframes slideDown {
+                    from { transform: translateY(-30px); opacity: 0; }
+                    to { transform: translateY(0); opacity: 1; }
+                }
+                `}
+      </style>
+    </div>
+  );
+  const handleTxnIdChange = (value) => {
+    setBinanceTR20(value);
+    if (value.length > 0 && value.length < 5) {
+      setTxnIdError("");
+      setIsAddressValid(false);
+    } else if (value.length >= 5) {
+      setTxnIdError("");
+      setIsAddressValid(true);
+    } else {
+      setTxnIdError("");
+      setIsAddressValid(false);
+    }
+  };
+
+  // Modal JSX
+  const DepositModal = () => (
+    <div
+      className="modal"
+      style={{
+        display: "block",
+        background: "rgba(0,0,0,0.5)",
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100vw",
+        height: "100vh",
+        zIndex: 1050,
+      }}
+      tabIndex="-1"
+      role="dialog"
+    >
+      <div
+        className="modal-dialog modal-dialog-centered"
+        style={{
+          width: "40vw",
+          minWidth: 320,
+          maxWidth: 600,
+          margin: "auto",
+        }}
+        role="document"
+      >
+        <div
+          className="modal-content"
+          style={{ position: "relative", borderRadius: 12, padding: 0 }}
+        >
+          <div
+            className="modal-header"
+            style={{
+              borderBottom: "none",
+              alignItems: "center",
+              padding: "1.2rem 1.5rem 0.5rem 1.5rem",
+              background: "#fff",
+              borderTopLeftRadius: 12,
+              borderTopRightRadius: 12,
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "flex-start",
+              position: "relative",
+            }}
+          >
+            <img
+              src="/loader.jpeg"
+              alt="Binance"
+              style={{ width: 50, height: 50, marginRight: 12 }}
+            />
+            <h5
+              className="modal-title"
+              style={{
+                fontWeight: 600,
+                fontSize: 20,
+                margin: 0,
+                lineHeight: "36px",
+              }}
+            >
+              Deposit
+            </h5>
+            <button
+              type="button"
+              onClick={() => {
+                setShowModal(false);
+                setIsRedeposit(false);
+                setReDepId(null);
+              }}
+              style={{
+                position: "absolute",
+                top: 12,
+                right: 18,
+                width: 28,
+                height: 28,
+                background: "transparent",
+                border: "none",
+                fontSize: "1.5rem",
+                lineHeight: "1rem",
+                cursor: "pointer",
+                color: "#222",
+                zIndex: 2,
+              }}
+              aria-label="Close"
+            >
+              &times;
+            </button>
+          </div>
+          <div
+            className="modal-body"
+            style={{
+              padding: "1.5rem",
+              maxHeight: "70vh",
+              overflowY: "auto",
+            }}
+          >
+            <div className="mb-3">
+              <label className="form-label mb-1" style={{ fontWeight: 500 }}>
+                Select your exchange
+              </label>
+              <select
+                className="form-select"
+                value={selectedNetwork}
+                onChange={(e) => handleNetworkChange(e.target.value)}
+                style={{ width: "100%" }}
+              >
+                <option value="Select">Select</option>
+                <option value="TRC20">TRC20</option>
+                <option value="BEP20">BEP20</option>
+              </select>
+            </div>
+            <div className="mb-3">
+              <label
+                className="form-label mb-1"
+                style={{
+                  fontWeight: 500,
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                Copy and Deposit
+                <span
+                  style={{
+                    marginLeft: 8,
+                    width: 24,
+                    height: 24,
+                    border: "1.5px solid #C9CDCF",
+                    borderRadius: "50%",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontWeight: 700,
+                    color: "#879196ff",
+                    cursor: "pointer",
+                    fontSize: 16,
+                    background: "#f8faff",
+                    transition: "background 0.2s",
+                  }}
+                  onClick={() => setShowHelper(true)}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.background = "#eaf3ff")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.background = "#f8faff")
+                  }
+                  title="How to deposit"
+                >
+                  ?
+                </span>
+              </label>
+              <div
+                className="input-group"
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <input
+                  type="text"
+                  className="form-control"
+                  value={walletAddresses[selectedNetwork] || ""}
+                  readOnly
+                  style={{
+                    background: "#f7f7f7",
+                    fontWeight: 500,
+                    fontSize: 15,
+                  }}
+                />
+                <button
+                  className="btn btn-outline-primary"
+                  type="button"
+                  onClick={handleCopy}
+                  style={{ minWidth: 70, fontWeight: 500, margin: 8 }}
+                  disabled={selectedNetwork === "Select"}
+                >
+                  Copy
+                </button>
+              </div>
+              {copySuccess && (
+                <div style={{ color: "#28a745", fontSize: 13, marginTop: 4 }}>
+                  {copySuccess}
+                </div>
+              )}
+            </div>
+            <div className="text-center mb-3">
+              <img
+                src={
+                  qrImages[selectedNetwork] ||
+                  "/assets/images/account/TRC20.jpeg"
+                }
+                alt={selectedNetwork + " QR"}
+                style={{
+                  width: 140,
+                  height: 140,
+                  objectFit: "contain",
+                  background: "#f5f5f5",
+                  borderRadius: 8,
+                  border: "1px solid #eee",
+                }}
+              />
+            </div>
+            {/* Deposit Verification Section */}
+            {!showVerification && (
+              <div className="text-center">
+                <button
+                  className="btn btn-primary"
+                  style={{ width: "100%", fontWeight: 600, marginTop: 10 }}
+                  onClick={handleDepositVerification}
+                >
+                  Deposit Verification
+                </button>
+              </div>
+            )}
+            {showVerification && (
+              <form
+                onSubmit={handleDepositSubmit}
+                style={{ marginTop: 20, animation: "slideDown .3s" }}
+              >
+                <div className="mb-3">
+                  <label className="form-label" style={{ fontWeight: 500 }}>
+                    Enter your deposit amount (USDT)
+                  </label>
+                  <input
+                    type="tel"
+                    inputMode="decimal"
+                    pattern="[0-9]*[.,]?[0-9]*"
+                    className="form-control"
+                    placeholder="Enter your deposit amount"
+                    value={depositInput}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (/^\d*\.?\d*$/.test(value)) {
+                        setDepositInput(value);
+                      }
+                    }}
+                    onFocus={() => setFocusedDeposit(true)}
+                    onBlur={() => setFocusedDeposit(false)}
+                    ref={(input) => {
+                      if (focusedDeposit && input) {
+                        input.focus();
+                      }
+                    }}
+                    required
+                    autoComplete="off"
+                  />
+                </div>
+
+                <div className="mb-3">
+                  <label className="form-label" style={{ fontWeight: 500 }}>
+                    Enter your transaction ID
+                  </label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={binanceTR20}
+                    onChange={(e) => handleTxnIdChange(e.target.value)}
+                    onFocus={() => setFocusedAddress(true)}
+                    onBlur={() => setFocusedAddress(false)}
+                    ref={(input) => {
+                      if (focusedAddress && input) {
+                        input.focus();
+                      }
+                    }}
+                    placeholder="Enter your transaction ID"
+                    required
+                    style={{
+                      borderColor: txnIdError
+                        ? "#dc3545"
+                        : isAddressValid
+                        ? "#28a745"
+                        : "#ced4da",
+                    }}
+                  />
+                  {txnIdError && (
+                    <div
+                      style={{ color: "#dc3545", fontSize: 12, marginTop: 4 }}
+                    >
+                      {txnIdError}
+                    </div>
+                  )}
+                  {isAddressValid && (
+                    <div
+                      style={{ color: "#28a745", fontSize: 12, marginTop: 4 }}
+                    >
+                      ✓ Looks good
+                    </div>
+                  )}
+                </div>
+                <div className="mb-3">
+                  <label className="form-label" style={{ fontWeight: 500 }}>
+                    Upload your screenshot
+                  </label>
+                  <input
+                    type="file"
+                    className="form-control"
+                    accept="image/*"
+                    onChange={handleScreenshotChange}
+                    ref={fileInputRef}
+                  />
+                  {depositScreenshot && (
+                    <div style={{ marginTop: 8 }}>
+                      <img
+                        src={URL.createObjectURL(depositScreenshot)}
+                        alt="Screenshot Preview"
+                        style={{
+                          width: 100,
+                          borderRadius: 6,
+                          border: "1px solid #eee",
+                        }}
+                      />
+                      <button
+                        type="button"
+                        className="btn btn-link"
+                        style={{ color: "#007bff", padding: 0, marginLeft: 10 }}
+                        onClick={() => {
+                          setDepositScreenshot(null);
+                          if (fileInputRef.current) {
+                            fileInputRef.current.value = "";
+                          }
+                        }}
+                      >
+                        Change Image
+                      </button>
+                    </div>
+                  )}
+                </div>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  style={{ width: "100%", fontWeight: 600 }}
+                  disabled={
+                    !isAddressValid ||
+                    !depositInput ||
+                    !depositScreenshot ||
+                    depositProcessing
+                  }
+                >
+                  {depositProcessing
+                    ? "Processing..."
+                    : isRedeposit
+                    ? "Redeposit"
+                    : "Deposit"}
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      </div>
+      {showHelper && <HelperModal />}
+    </div>
+  );
+
+  // OTP Sent Notification Modal Component
+  const OtpSentNotificationModal = () => (
+    <div
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100vw",
+        height: "100vh",
+        background: "rgba(0,0,0,0.5)",
+        zIndex: 2100,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        animation: "fadeIn .25s",
+      }}
+      onClick={() => {
+        setShowOtpSentNotification(false);
+        setShowWithdrawVerification(true);
+      }}
+    >
+      <div
+        style={{
+          background: "#fff",
+          borderRadius: 16,
+          boxShadow: "0 8px 32px rgba(0,0,0,0.15)",
+          padding: "2rem 2rem 1.5rem 2rem",
+          maxWidth: 450,
+          width: "90%",
+          animation: "slideDown .3s",
+          position: "relative",
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div
+          style={{
+            textAlign: "center",
+            marginBottom: 20,
+          }}
+        >
+          <div
+            style={{
+              width: 64,
+              height: 64,
+              borderRadius: "50%",
+              background: "#e7f3ff",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              margin: "0 auto 16px",
+            }}
+          >
+            <i
+              className="las la-envelope"
+              style={{
+                fontSize: "32px",
+                color: "#3f58e3",
+              }}
+            ></i>
+          </div>
+          <h4
+            style={{
+              fontWeight: 700,
+              marginBottom: 12,
+              color: "#222",
+              fontSize: "20px",
+            }}
+          >
+            Verification Code Sent
+          </h4>
+          <p
+            style={{
+              fontSize: 16,
+              color: "#555",
+              lineHeight: 1.6,
+              marginBottom: 24,
+            }}
+          >
+            A verification code has been sent to your email address. Please
+            check your inbox and enter the code to complete your withdrawal.
+          </p>
+        </div>
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <button
+            className="btn btn-primary"
+            onClick={() => {
+              setShowOtpSentNotification(false);
+              setShowWithdrawVerification(true);
+            }}
+            style={{
+              padding: "10px 32px",
+              borderRadius: 8,
+              fontWeight: 600,
+              minWidth: 120,
+            }}
+          >
+            Continue
+          </button>
+        </div>
+      </div>
+      <style>
+        {`
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                @keyframes slideDown {
+                    from { transform: translateY(-30px); opacity: 0; }
+                    to { transform: translateY(0); opacity: 1; }
+                }
+                `}
+      </style>
+    </div>
+  );
+
+  // Weekend Restriction Modal Component
+  const WeekendRestrictionModal = () => (
+    <div
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100vw",
+        height: "100vh",
+        background: "rgba(0,0,0,0.5)",
+        zIndex: 2100,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        animation: "fadeIn .25s",
+      }}
+      onClick={() => setShowWeekendRestrictionModal(false)}
+    >
+      <div
+        style={{
+          background: "#fff",
+          borderRadius: 16,
+          boxShadow: "0 8px 32px rgba(0,0,0,0.15)",
+          padding: "2rem 2rem 1.5rem 2rem",
+          maxWidth: 450,
+          width: "90%",
+          animation: "slideDown .3s",
+          position: "relative",
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          type="button"
+          onClick={() => setShowWeekendRestrictionModal(false)}
+          style={{
+            position: "absolute",
+            top: 8,
+            right: 10,
+            width: "24px",
+            height: "24px",
+            background: "transparent",
+            border: "none",
+            fontSize: "1.2rem",
+            lineHeight: "1rem",
+            cursor: "pointer",
+            color: "#000",
+            padding: 0,
+            zIndex: 2,
+          }}
+          aria-label="Close"
+        >
+          &times;
+        </button>
+        <div
+          style={{
+            textAlign: "center",
+            marginBottom: 20,
+          }}
+        >
+          <div
+            style={{
+              width: 64,
+              height: 64,
+              borderRadius: "50%",
+              background: "#fff3cd",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              margin: "0 auto 16px",
+            }}
+          >
+            <i
+              className="las la-calendar-times"
+              style={{
+                fontSize: "32px",
+                color: "#ffc107",
+              }}
+            ></i>
+          </div>
+          <h4
+            style={{
+              fontWeight: 700,
+              marginBottom: 12,
+              color: "#222",
+              fontSize: "20px",
+            }}
+          >
+            Withdrawal Unavailable
+          </h4>
+          <p
+            style={{
+              fontSize: 16,
+              color: "#555",
+              lineHeight: 1.6,
+              marginBottom: 24,
+            }}
+          >
+            Withdrawals are only available on weekends (Saturday & Sunday).
+            <br />
+            <br />
+            Please try again on Saturday or Sunday to process your withdrawal
+            request.
+          </p>
+        </div>
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <button
+            className="btn btn-primary"
+            onClick={() => setShowWeekendRestrictionModal(false)}
+            style={{
+              padding: "10px 32px",
+              borderRadius: 8,
+              fontWeight: 600,
+              minWidth: 120,
+            }}
+          >
+            OK
+          </button>
+        </div>
+      </div>
+      <style>
+        {`
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                @keyframes slideDown {
+                    from { transform: translateY(-30px); opacity: 0; }
+                    to { transform: translateY(0); opacity: 1; }
+                }
+                `}
+      </style>
+    </div>
+  );
+
+  // Withdrawal Confirmation Popup Component
+  const WithdrawConfirmationPopup = () => (
+    <div
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100vw",
+        height: "100vh",
+        background: "rgba(0,0,0,0.5)",
+        zIndex: 2000,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        animation: "fadeIn .25s",
+      }}
+      onClick={() => setShowWithdrawConfirmation(false)}
+    >
+      <div
+        style={{
+          background: "#fff",
+          borderRadius: 16,
+          boxShadow: "0 8px 32px rgba(0,0,0,0.15)",
+          padding: "2rem 2rem 1.5rem 2rem",
+          maxWidth: 400,
+          width: "90%",
+          animation: "slideDown .3s",
+          position: "relative",
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h4
+          style={{
+            fontWeight: 700,
+            marginBottom: 18,
+            color: "#222",
+            textAlign: "center",
+          }}
+        >
+          Confirm Withdrawal
+        </h4>
+        <div
+          style={{
+            fontSize: 16,
+            color: "#333",
+            lineHeight: 1.7,
+            textAlign: "center",
+            marginBottom: 24,
+          }}
+        >
+          Are you sure to withdraw?
+        </div>
+        <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
+          <button
+            className="btn btn-secondary"
+            onClick={() => setShowWithdrawConfirmation(false)}
+            style={{
+              padding: "10px 24px",
+              borderRadius: 8,
+              fontWeight: 600,
+              minWidth: 100,
+            }}
+          >
+            No
+          </button>
+          <button
+            className="btn btn-primary"
+            onClick={async () => {
+              // Close confirmation modal immediately for fast UI response
+              setShowWithdrawConfirmation(false);
+
+              // Call /withdrawOtp in background (non-blocking)
+              // Show notification modal immediately while OTP is being sent
+              setShowOtpSentNotification(true);
+
+              // Send OTP request in background (don't await to keep UI responsive)
+              api
+                .post("/user/withdrawOtp", {}, { withCredentials: true })
+                .then(() => {
+                  // OTP sent successfully - notification modal already shown
+                  console.log("OTP sent successfully");
+                })
+                .catch((err) => {
+                  // If OTP fails, close notification and show error
+                  setShowOtpSentNotification(false);
+                  alert(
+                    err.response?.data?.message ||
+                      "Failed to send OTP. Please try again."
+                  );
+                });
+            }}
+            style={{
+              padding: "10px 24px",
+              borderRadius: 8,
+              fontWeight: 600,
+              minWidth: 100,
+            }}
+          >
+            Yes
+          </button>
+        </div>
+      </div>
+      <style>
+        {`
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                @keyframes slideDown {
+                    from { transform: translateY(-30px); opacity: 0; }
+                    to { transform: translateY(0); opacity: 1; }
+                }
+                `}
+      </style>
+    </div>
+  );
+
+  // Withdrawal Verification Modal
+  const WithdrawVerificationModal = () => (
+    <div
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100vw",
+        height: "100vh",
+        background: "rgba(0,0,0,0.5)",
+        zIndex: 2000,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        animation: "fadeIn .25s",
+      }}
+      onClick={() => setShowWithdrawVerification(false)}
+    >
+      <div
+        style={{
+          background: "#fff",
+          borderRadius: 16,
+          boxShadow: "0 8px 32px rgba(0,0,0,0.15)",
+          padding: "2rem 2rem 1.5rem 2rem",
+          maxWidth: 400,
+          width: "90%",
+          animation: "slideDown .3s",
+          position: "relative",
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          type="button"
+          onClick={() => setShowWithdrawVerification(false)}
+          style={{
+            position: "absolute",
+            top: 8,
+            right: 10,
+            width: "24px",
+            height: "24px",
+            background: "transparent",
+            border: "none",
+            fontSize: "1.2rem",
+            lineHeight: "1rem",
+            cursor: "pointer",
+            color: "#000",
+            padding: 0,
+            zIndex: 2,
+          }}
+          aria-label="Close"
+        >
+          &times;
+        </button>
+        <div
+          style={{
+            textAlign: "center",
+            marginBottom: 20,
+          }}
+        >
+          <div
+            style={{
+              width: 56,
+              height: 56,
+              borderRadius: "50%",
+              background: "#e7f3ff",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              margin: "0 auto 16px",
+            }}
+          >
+            <i
+              className="las la-shield-alt"
+              style={{
+                fontSize: "28px",
+                color: "#3f58e3",
+              }}
+            ></i>
+          </div>
+          <h4
+            style={{
+              fontWeight: 700,
+              marginBottom: 10,
+              color: "#222",
+              textAlign: "center",
+              fontSize: "20px",
+            }}
+          >
+            Security Verification
+          </h4>
+          <div
+            style={{
+              fontSize: 15,
+              color: "#555",
+              textAlign: "center",
+              marginBottom: 24,
+              lineHeight: 1.6,
+            }}
+          >
+            Please enter the 6-digit verification code that was sent to your
+            email address.
+          </div>
+        </div>
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault();
+            setVerificationLoading(true);
+            try {
+              const payload = {
+                exchangeType: withdrawExchange,
+                ourExchange: walletAddresses[withdrawExchange],
+                amount: withdrawAmount,
+                userExchange: withdrawUserExchange,
+                type: "Withdraw",
+                otp: withdrawOtp, // Send OTP
+              };
+
+              // Call withdraw endpoint
+              const res = await api.post("/user/withdraw", payload, {
+                withCredentials: true,
+              });
+
+              // Success - show message and reset everything
+              alert(res.data.message || "Withdraw request submitted!");
+
+              // Close all modals and reset states
+              setShowWithdrawVerification(false);
+              setShowOtpSentNotification(false);
+              setShowWithdrawModal(false);
+              setShowWithdrawConfirmation(false);
+              setWithdrawExchange("Select");
+              setWithdrawAmount("");
+              setWithdrawUserExchange("");
+              setWithdrawOtp("");
+
+              // Reload to show updated balance
+              window.location.reload();
+            } catch (err) {
+              const errorMessage =
+                err.response?.data?.message || "Withdraw failed!";
+              alert(errorMessage);
+              // Don't close modal on error - let user retry
+            } finally {
+              setVerificationLoading(false);
+            }
+          }}
+        >
+          <div className="mb-3">
+            <input
+              type="tel"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              className="form-control"
+              placeholder="Enter 6-digit code"
+              value={withdrawOtp}
+              onChange={(e) => {
+                // Allow continuous typing - filter only digits and limit to 6
+                const val = e.target.value.replace(/\D/g, "").slice(0, 6);
+                setWithdrawOtp(val);
+              }}
+              onPaste={(e) => {
+                // Handle paste events to allow pasting codes
+                e.preventDefault();
+                const pastedData = e.clipboardData.getData("text");
+                const numericOnly = pastedData.replace(/\D/g, "").slice(0, 6);
+                setWithdrawOtp(numericOnly);
+              }}
+              autoFocus
+              maxLength={6}
+              style={{
+                textAlign: "center",
+                letterSpacing: "4px",
+                fontSize: "1.2rem",
+                fontWeight: "600",
+                caretColor: "#3f58e3",
+              }}
+              required
+            />
+          </div>
+          <button
+            type="submit"
+            className="btn btn-primary"
+            style={{ width: "100%", fontWeight: 600, marginBottom: 12 }}
+            disabled={verificationLoading || withdrawOtp.length < 6}
+          >
+            {verificationLoading ? "Processing..." : "Confirm & Withdraw"}
+          </button>
+        </form>
+        <div style={{ textAlign: "center", marginTop: 12 }}>
+          <button
+            type="button"
+            className="btn btn-link"
+            onClick={async () => {
+              try {
+                await api.post(
+                  "/user/withdrawOtp",
+                  {},
+                  { withCredentials: true }
+                );
+                alert("Verification code has been resent to your email.");
+              } catch (err) {
+                alert(
+                  err.response?.data?.message ||
+                    "Failed to resend OTP. Please try again."
+                );
+              }
+            }}
+            style={{
+              color: "#3f58e3",
+              textDecoration: "none",
+              fontSize: "14px",
+              padding: 0,
+              border: "none",
+              background: "transparent",
+              cursor: "pointer",
+            }}
+          >
+            Resend Verification Code
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Withdraw Modal Component
+  const WithdrawModal = () => (
+    <div
+      className="modal"
+      style={{
+        display: "block",
+        background: "rgba(0,0,0,0.5)",
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100vw",
+        height: "100vh",
+        zIndex: 1050,
+      }}
+      tabIndex="-1"
+      role="dialog"
+    >
+      <div
+        className="modal-dialog modal-dialog-centered"
+        style={{
+          width: "40vw",
+          minWidth: 320,
+          maxWidth: 600,
+          margin: "auto",
+        }}
+        role="document"
+      >
+        <div
+          className="modal-content"
+          style={{ position: "relative", borderRadius: 12, padding: 0 }}
+        >
+          <div
+            className="modal-header"
+            style={{
+              borderBottom: "none",
+              alignItems: "center",
+              padding: "1.2rem 1.5rem 0.5rem 1.5rem",
+              background: "#fff",
+              borderTopLeftRadius: 12,
+              borderTopRightRadius: 12,
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "flex-start",
+              position: "relative",
+            }}
+          >
+            <img
+              src="/loader.jpeg"
+              alt="Binance"
+              style={{ width: 50, height: 50, marginRight: 12 }}
+            />
+            <h5
+              className="modal-title"
+              style={{
+                fontWeight: 600,
+                fontSize: 20,
+                margin: 0,
+                lineHeight: "36px",
+              }}
+            >
+              Withdraw
+            </h5>
+            <button
+              type="button"
+              onClick={() => {
+                setWithdrawError(""); // Clear error when closing modal
+                setShowWithdrawModal(false);
+              }}
+              style={{
+                position: "absolute",
+                top: 12,
+                right: 18,
+                width: 28,
+                height: 28,
+                background: "transparent",
+                border: "none",
+                fontSize: "1.5rem",
+                lineHeight: "1rem",
+                cursor: "pointer",
+                color: "#222",
+                zIndex: 2,
+              }}
+              aria-label="Close"
+            >
+              &times;
+            </button>
+          </div>
+          <div
+            className="modal-body"
+            style={{ padding: "1.5rem", maxHeight: "70vh", overflowY: "auto" }}
+          >
+            <div
+              className="d-flex flex-column flex-md-row justify-content-evenly mb-4"
+              style={{ gap: 24 }}
+            >
+              <div>
+                <div style={{ fontWeight: 500, fontSize: 15, color: "#888" }}>
+                  Total Balance:
+                </div>
+                <div style={{ fontWeight: 700, fontSize: 18, color: "#222" }}>
+                  ${(userData?.totalBalance || 0).toLocaleString()}
+                </div>
+              </div>
+              <div>
+                <div style={{ fontWeight: 500, fontSize: 15, color: "#888" }}>
+                  Invest Balance:
+                </div>
+                <div style={{ fontWeight: 700, fontSize: 18, color: "#222" }}>
+                  ${(userData?.investedAmount || 0).toLocaleString()}
+                </div>
+              </div>
+            </div>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+
+                // Clear any previous errors
+                setWithdrawError("");
+
+                // Basic validation
+                if (
+                  withdrawExchange === "Select" ||
+                  !withdrawAmount ||
+                  !withdrawUserExchange
+                ) {
+                  setWithdrawError("Please fill in all required fields.");
+                  return;
+                }
+
+                // Convert amount to number for validation
+                const amount = parseFloat(withdrawAmount);
+                const totalBalance = parseFloat(userData?.totalBalance || 0);
+
+                // Validate amount
+                if (isNaN(amount) || amount <= 0) {
+                  setWithdrawError("Please enter a valid withdrawal amount.");
+                  return;
+                }
+
+                // Check minimum withdrawal amount
+                if (amount < 20) {
+                  setWithdrawError("Minimum withdrawal amount is 20 USDT.");
+                  return;
+                }
+
+                // Check if amount exceeds balance
+                if (amount > totalBalance) {
+                  setWithdrawError(`Insufficient balance.`);
+                  return;
+                }
+
+                // Amount is valid - skip confirmation and go directly to OTP sent notification
+                // Close withdraw modal
+                setShowWithdrawModal(false);
+
+                // Call /withdrawOtp in background (non-blocking)
+                // Show notification modal immediately while OTP is being sent
+                setShowOtpSentNotification(true);
+
+                // Send OTP request in background (don't await to keep UI responsive)
+                api
+                  .post("/user/withdrawOtp", {}, { withCredentials: true })
+                  .then(() => {
+                    // OTP sent successfully - notification modal already shown
+                    console.log("OTP sent successfully");
+                  })
+                  .catch((err) => {
+                    // If OTP fails, close notification and show error
+                    setShowOtpSentNotification(false);
+                    setShowWithdrawModal(true); // Reopen withdraw modal
+                    setWithdrawError(
+                      err.response?.data?.message ||
+                        "Failed to send verification code. Please try again."
+                    );
+                  });
+              }}
+              style={{ marginTop: 10 }}
+            >
+              <div className="mb-3">
+                <label className="form-label" style={{ fontWeight: 500 }}>
+                  Enter your withdraw exchange
+                </label>
+                <select
+                  className="form-select"
+                  value={withdrawExchange}
+                  onChange={(e) => {
+                    setWithdrawExchange(e.target.value);
+                    // Clear error when user changes exchange
+                    if (withdrawError) setWithdrawError("");
+                  }}
+                  style={{ width: "100%" }}
+                >
+                  <option value="Select">Select</option>
+                  <option value="BEP20">BEP20 (Recommended)</option>
+                  <option value="TRC20">TRC20</option>
+                </select>
+              </div>
+              {withdrawExchange !== "Select" && (
+                <>
+                  <div className="mb-3">
+                    <label className="form-label" style={{ fontWeight: 500 }}>
+                      Enter your withdraw amount (USDT)
+                    </label>
+                    <input
+                      type="tel"
+                      inputMode="decimal"
+                      pattern="[0-9]*[.,]?[0-9]*"
+                      className="form-control"
+                      value={withdrawAmount}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (/^\d*\.?\d*$/.test(value)) {
+                          setWithdrawAmount(value);
+                          // Clear error when user starts typing
+                          if (withdrawError) setWithdrawError("");
+                        }
+                      }}
+                      onFocus={() => setFocusedWithdrawAmount(true)} // Add onFocus
+                      onBlur={() => setFocusedWithdrawAmount(false)} // Add onBlur
+                      ref={(input) => {
+                        if (focusedWithdrawAmount && input) {
+                          input.focus();
+                        }
+                      }} // Add ref
+                      required
+                      autoComplete="off"
+                    />
+                  </div>
+
+                  <div className="mb-3">
+                    <label className="form-label" style={{ fontWeight: 500 }}>
+                      Enter your exchange address
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={withdrawUserExchange}
+                      onChange={(e) => {
+                        setWithdrawUserExchange(e.target.value);
+                        // Clear error when user starts typing
+                        if (withdrawError) setWithdrawError("");
+                      }}
+                      onFocus={() => setFocusedWithdrawAddress(true)} // Add onFocus
+                      onBlur={() => setFocusedWithdrawAddress(false)} // Add onBlur
+                      ref={(input) => {
+                        if (focusedWithdrawAddress && input) {
+                          input.focus();
+                        }
+                      }} // Add ref
+                      placeholder="Enter your exchange address"
+                      autoComplete="off"
+                      spellCheck="false"
+                      required
+                    />
+                  </div>
+                </>
+              )}
+              {/* Error message display */}
+              {withdrawError && (
+                <div
+                  className="alert alert-danger"
+                  style={{
+                    marginBottom: "16px",
+                    padding: "12px 16px",
+                    borderRadius: "8px",
+                    fontSize: "14px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                  }}
+                  role="alert"
+                >
+                  <i
+                    className="las la-exclamation-circle"
+                    style={{ fontSize: "18px" }}
+                  ></i>
+                  <span>{withdrawError}</span>
+                </div>
+              )}
+              <button
+                type="submit"
+                className="btn btn-primary"
+                style={{ width: "100%", fontWeight: 600 }}
+                disabled={
+                  withdrawExchange === "Select" ||
+                  !withdrawAmount ||
+                  !withdrawUserExchange ||
+                  withdrawLoading
+                }
+              >
+                {withdrawLoading ? "Processing..." : "Withdraw"}
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Invest Modal Component
+  const InvestModal = () => {
+    const inputRef = useRef(null);
+
+    useEffect(() => {
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
     }, []);
 
-    const handleCopy = async () => {
-        try {
-            await navigator.clipboard.writeText(walletAddresses[selectedNetwork]);
-            setCopySuccess('Copied!');
-            setTimeout(() => setCopySuccess(''), 1200);
-        } catch {
-            setCopySuccess('Failed!');
-            setTimeout(() => setCopySuccess(''), 1200);
-        }
-    };
-
-    const handleDepositVerification = () => setShowVerification(true);
-
-    // ...existing code...
-    const handleDepositSubmit = async (e) => {
-        e.preventDefault();
-
-        // Validate exchange selection
-        if (selectedNetwork !== 'TRC20' && selectedNetwork !== 'BEP20') {
-            alert('Please select your exchange.');
-            return;
-        }
-
-        // Validate deposit amount
-        if (!depositInput || isNaN(depositInput) || Number(depositInput) <= 0) {
-            alert('Please enter deposit amount.');
-            return;
-        }
-
-        // Validate transaction ID
-        if (!binanceTR20 || binanceTR20.length < 5) {
-            alert('Please enter transaction ID.');
-            return;
-        }
-
-        // Validate screenshot
-        if (!depositScreenshot) {
-            alert('Please upload an image of your deposit.');
-            return;
-        }
-
-        setDepositProcessing(true); // Start loading
-
-        const formData = new FormData();
-        formData.append('exchangeType', selectedNetwork);
-        formData.append('ourExchange', walletAddresses[selectedNetwork]);
-        formData.append('amount', depositInput);
-        formData.append('userExchange', binanceTR20);
-        formData.append('type', 'Deposit');
-        if (depositScreenshot) {
-            if (isRedeposit) {
-                formData.append('images', depositScreenshot);
-                if (reDepId) formData.append('reDepId', reDepId);
-            } else {
-                formData.append('image', depositScreenshot);
-            }
-        }
-
-        try {
-            const endpoint = isRedeposit ? '/user/redeposit' : '/user/deposit';
-            const res = await api.post(endpoint, formData, {
-                withCredentials: true,
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            });
-            alert(res.data.message || (isRedeposit ? 'Redeposit submitted!' : 'Deposit submitted!'));
-            setShowVerification(false);
-            setDepositInput('');
-            setBinanceTR20('');
-            setDepositScreenshot(null);
-            setShowModal(false);
-            setIsRedeposit(false);
-            setReDepId(null);
-
-            if (fileInputRef.current) {
-                fileInputRef.current.value = "";
-            }
-
-            window.location.reload();
-        } catch (err) {
-            alert(err.response?.data?.message || (isRedeposit ? 'Redeposit failed!' : 'Deposit failed!'));
-            setDepositProcessing(false); // Stop loading on error
-        }
-    };
-    // ...existing
-    const handleScreenshotChange = (e) => {
-        if (e.target.files && e.target.files[0]) {
-            setDepositScreenshot(e.target.files[0]);
-        }
-    };
-
-    // Helper Modal
-    const HelperModal = () => (
-        <div
-            style={{
-                position: 'fixed',
-                top: 0, left: 0, width: '100vw', height: '100vh',
-                background: 'rgba(0,0,0,0.25)',
-                zIndex: 2000,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                animation: 'fadeIn .25s'
-            }}
-            onClick={() => setShowHelper(false)}
-        >
-            <div
-                style={{
-                    background: '#fff',
-                    borderRadius: 16,
-                    boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
-                    padding: '2rem 2rem 1.5rem 2rem',
-                    maxWidth: 400,
-                    width: '90%',
-                    animation: 'slideDown .3s',
-                    position: 'relative'
-                }}
-                onClick={e => e.stopPropagation()}
-            >
-                <button
-                    type="button"
-                    onClick={() => setShowHelper(false)}
-                    style={{
-                        position: 'absolute',
-                        top: 8,
-                        right: 10,
-                        width: '24px',
-                        height: '24px',
-                        background: 'transparent',
-                        border: 'none',
-                        fontSize: '1.2rem',
-                        lineHeight: '1rem',
-                        cursor: 'pointer',
-                        color: '#000',
-                        padding: 0,
-                        zIndex: 2
-                    }}
-                    aria-label="Close"
-                >
-                    &times;
-                </button>
-                <h4 style={{ fontWeight: 700, marginBottom: 18, color: '#222' }}>How to Deposit</h4>
-                <div style={{ fontSize: 16, color: '#333', lineHeight: 1.7 }}>
-                    <div style={{ marginBottom: 10 }}>- <b>Copy</b> the exchange code according to the exchange method you selected.</div>
-                    <div style={{ marginBottom: 10 }}>- <b>Open your Binance account</b> and transfer USDT to this exchange code.</div>
-                    <div style={{ marginBottom: 10 }}>- <b>Once the transfer is complete</b>, return here and upload a screenshot.</div>
-                    <div>- <b>After verification</b>, we will credit the USDT to your wallet.</div>
-                </div>
-            </div>
-            <style>
-                {`
-                @keyframes fadeIn {
-                    from { opacity: 0; }
-                    to { opacity: 1; }
-                }
-                @keyframes slideDown {
-                    from { transform: translateY(-30px); opacity: 0; }
-                    to { transform: translateY(0); opacity: 1; }
-                }
-                `}
-            </style>
-        </div>
-    );
-    const handleTxnIdChange = (value) => {
-        setBinanceTR20(value);
-        if (value.length > 0 && value.length < 5) {
-            setTxnIdError('');
-            setIsAddressValid(false);
-        } else if (value.length >= 5) {
-            setTxnIdError('');
-            setIsAddressValid(true);
-        } else {
-            setTxnIdError('');
-            setIsAddressValid(false);
-        }
-    };
-
-    // Modal JSX
-    const DepositModal = () => (
-        <div
-            className="modal"
-            style={{
-                display: 'block',
-                background: 'rgba(0,0,0,0.5)',
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                width: '100vw',
-                height: '100vh',
-                zIndex: 1050
-            }}
-            tabIndex="-1"
-            role="dialog"
-        >
-            <div
-                className="modal-dialog modal-dialog-centered"
-                style={{
-                    width: '40vw',
-                    minWidth: 320,
-                    maxWidth: 600,
-                    margin: 'auto'
-                }}
-                role="document"
-            >
-                <div
-                    className="modal-content"
-                    style={{ position: 'relative', borderRadius: 12, padding: 0 }}
-                >
-                    <div
-                        className="modal-header"
-                        style={{
-                            borderBottom: 'none',
-                            alignItems: 'center',
-                            padding: '1.2rem 1.5rem 0.5rem 1.5rem',
-                            background: '#fff',
-                            borderTopLeftRadius: 12,
-                            borderTopRightRadius: 12,
-                            display: 'flex',
-                            flexDirection: 'row',
-                            justifyContent: 'flex-start',
-                            position: 'relative'
-                        }}
-                    >
-                        <img src="/loader.jpeg" alt="Binance" style={{ width: 50, height: 50, marginRight: 12 }} />
-                        <h5 className="modal-title" style={{ fontWeight: 600, fontSize: 20, margin: 0, lineHeight: '36px' }}>
-                            Deposit
-                        </h5>
-                        <button
-                            type="button"
-                            onClick={() => { setShowModal(false); setIsRedeposit(false); setReDepId(null); }}
-                            style={{
-                                position: 'absolute',
-                                top: 12,
-                                right: 18,
-                                width: 28,
-                                height: 28,
-                                background: 'transparent',
-                                border: 'none',
-                                fontSize: '1.5rem',
-                                lineHeight: '1rem',
-                                cursor: 'pointer',
-                                color: '#222',
-                                zIndex: 2
-                            }}
-                            aria-label="Close"
-                        >
-                            &times;
-                        </button>
-                    </div>
-                    <div
-                        className="modal-body"
-                        style={{
-                            padding: '1.5rem',
-                            maxHeight: '70vh',
-                            overflowY: 'auto'
-                        }}
-                    >
-                        <div className="mb-3">
-                            <label className="form-label mb-1" style={{ fontWeight: 500 }}>Select your exchange</label>
-                            <select
-                                className="form-select"
-                                value={selectedNetwork}
-                                onChange={e => handleNetworkChange(e.target.value)}
-                                style={{ width: '100%' }}
-                            >
-                                <option value="Select">Select</option>
-                                <option value="TRC20">TRC20</option>
-                                <option value="BEP20">BEP20</option>
-                            </select>
-                        </div>
-                        <div className="mb-3">
-                            <label className="form-label mb-1" style={{ fontWeight: 500, display: 'flex', alignItems: 'center' }}>
-                                Copy and Deposit
-                                <span
-                                    style={{
-                                        marginLeft: 8,
-                                        width: 24,
-                                        height: 24,
-                                        border: '1.5px solid #C9CDCF',
-                                        borderRadius: '50%',
-                                        display: 'inline-flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        fontWeight: 700,
-                                        color: '#879196ff',
-                                        cursor: 'pointer',
-                                        fontSize: 16,
-                                        background: '#f8faff',
-                                        transition: 'background 0.2s'
-                                    }}
-                                    onClick={() => setShowHelper(true)}
-                                    onMouseEnter={e => e.currentTarget.style.background = '#eaf3ff'}
-                                    onMouseLeave={e => e.currentTarget.style.background = '#f8faff'}
-                                    title="How to deposit"
-                                >?</span>
-                            </label>
-                            <div className="input-group" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                                <input
-                                    type="text"
-                                    className="form-control"
-                                    value={walletAddresses[selectedNetwork] || ''}
-                                    readOnly
-                                    style={{ background: '#f7f7f7', fontWeight: 500, fontSize: 15 }}
-                                />
-                                <button
-                                    className="btn btn-outline-primary"
-                                    type="button"
-                                    onClick={handleCopy}
-                                    style={{ minWidth: 70, fontWeight: 500, margin: 8 }}
-                                    disabled={selectedNetwork === 'Select'}
-                                >
-                                    Copy
-                                </button>
-                            </div>
-                            {copySuccess && (
-                                <div style={{ color: '#28a745', fontSize: 13, marginTop: 4 }}>{copySuccess}</div>
-                            )}
-                        </div>
-                        <div className="text-center mb-3">
-                            <img
-                                src={qrImages[selectedNetwork] || '/assets/images/account/TRC20.jpeg'}
-                                alt={selectedNetwork + " QR"}
-                                style={{
-                                    width: 140,
-                                    height: 140,
-                                    objectFit: 'contain',
-                                    background: '#f5f5f5',
-                                    borderRadius: 8,
-                                    border: '1px solid #eee'
-                                }}
-                            />
-                        </div>
-                        {/* Deposit Verification Section */}
-                        {!showVerification && (
-                            <div className="text-center">
-                                <button
-                                    className="btn btn-primary"
-                                    style={{ width: '100%', fontWeight: 600, marginTop: 10 }}
-                                    onClick={handleDepositVerification}
-                                >
-                                    Deposit Verification
-                                </button>
-                            </div>
-                        )}
-                        {showVerification && (
-                            <form onSubmit={handleDepositSubmit} style={{ marginTop: 20, animation: 'slideDown .3s' }}>
-                                <div className="mb-3">
-                                    <label className="form-label" style={{ fontWeight: 500 }}>
-                                        Enter your deposit amount (USDT)
-                                    </label>
-                                    <input
-                                        type="tel"
-                                        inputMode="decimal"
-                                        pattern="[0-9]*[.,]?[0-9]*"
-                                        className="form-control"
-                                        placeholder='Enter your deposit amount'
-                                        value={depositInput}
-                                        onChange={(e) => {
-                                            const value = e.target.value;
-                                            if (/^\d*\.?\d*$/.test(value)) {
-                                                setDepositInput(value);
-                                            }
-                                        }}
-                                        onFocus={() => setFocusedDeposit(true)}
-                                        onBlur={() => setFocusedDeposit(false)}
-                                        ref={(input) => {
-                                            if (focusedDeposit && input) {
-                                                input.focus();
-                                            }
-                                        }}
-                                        required
-                                        autoComplete="off"
-                                    />
-                                </div>
-
-                                <div className="mb-3">
-                                    <label className="form-label" style={{ fontWeight: 500 }}>
-                                        Enter your transaction ID
-                                    </label>
-                                    <input
-                                        type="text"
-                                        className="form-control"
-                                        value={binanceTR20}
-                                        onChange={e => handleTxnIdChange(e.target.value)}
-                                        onFocus={() => setFocusedAddress(true)}
-                                        onBlur={() => setFocusedAddress(false)}
-                                        ref={(input) => {
-                                            if (focusedAddress && input) {
-                                                input.focus();
-                                            }
-                                        }}
-                                        placeholder="Enter your transaction ID"
-                                        required
-                                        style={{
-                                            borderColor: txnIdError ? '#dc3545' : isAddressValid ? '#28a745' : '#ced4da'
-                                        }}
-                                    />
-                                    {txnIdError && (
-                                        <div style={{ color: '#dc3545', fontSize: 12, marginTop: 4 }}>{txnIdError}</div>
-                                    )}
-                                    {isAddressValid && (
-                                        <div style={{ color: '#28a745', fontSize: 12, marginTop: 4 }}>✓ Looks good</div>
-                                    )}
-                                </div>
-                                <div className="mb-3">
-                                    <label className="form-label" style={{ fontWeight: 500 }}>Upload your screenshot</label>
-                                    <input
-                                        type="file"
-                                        className="form-control"
-                                        accept="image/*"
-                                        onChange={handleScreenshotChange}
-                                        ref={fileInputRef}
-                                    />
-                                    {depositScreenshot && (
-                                        <div style={{ marginTop: 8 }}>
-                                            <img
-                                                src={URL.createObjectURL(depositScreenshot)}
-                                                alt="Screenshot Preview"
-                                                style={{ width: 100, borderRadius: 6, border: '1px solid #eee' }}
-                                            />
-                                            <button
-                                                type="button"
-                                                className="btn btn-link"
-                                                style={{ color: '#007bff', padding: 0, marginLeft: 10 }}
-                                                onClick={() => {
-                                                    setDepositScreenshot(null);
-                                                    if (fileInputRef.current) {
-                                                        fileInputRef.current.value = "";
-                                                    }
-                                                }}
-                                            >
-                                                Change Image
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
-                                <button
-                                    type="submit"
-                                    className="btn btn-primary"
-                                    style={{ width: '100%', fontWeight: 600 }}
-                                    disabled={!isAddressValid || !depositInput || !depositScreenshot || depositProcessing}
-                                >
-                                    {depositProcessing ? 'Processing...' : (isRedeposit ? 'Redeposit' : 'Deposit')}
-                                </button>
-                            </form>
-                        )}
-                    </div>
-                </div>
-            </div>
-            {showHelper && <HelperModal />}
-        </div>
-    );
-
-    // Withdrawal Confirmation Popup Component
-    const WithdrawConfirmationPopup = () => (
-        <div
-            style={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                width: '100vw',
-                height: '100vh',
-                background: 'rgba(0,0,0,0.5)',
-                zIndex: 2000,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                animation: 'fadeIn .25s'
-            }}
-            onClick={() => setShowWithdrawConfirmation(false)}
-        >
-            <div
-                style={{
-                    background: '#fff',
-                    borderRadius: 16,
-                    boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
-                    padding: '2rem 2rem 1.5rem 2rem',
-                    maxWidth: 400,
-                    width: '90%',
-                    animation: 'slideDown .3s',
-                    position: 'relative'
-                }}
-                onClick={e => e.stopPropagation()}
-            >
-                <h4 style={{ fontWeight: 700, marginBottom: 18, color: '#222', textAlign: 'center' }}>
-                    Confirm Withdrawal
-                </h4>
-                <div style={{ fontSize: 16, color: '#333', lineHeight: 1.7, textAlign: 'center', marginBottom: 24 }}>
-                    Are you sure to withdraw?
-                </div>
-                <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
-                    <button
-                        className="btn btn-secondary"
-                        onClick={() => setShowWithdrawConfirmation(false)}
-                        style={{
-                            padding: '10px 24px',
-                            borderRadius: 8,
-                            fontWeight: 600,
-                            minWidth: 100
-                        }}
-                    >
-                        No
-                    </button>
-                    <button
-                        className="btn btn-primary"
-                        onClick={async () => {
-                            setShowWithdrawConfirmation(false);
-                            setWithdrawLoading(true);
-                            try {
-                                const payload = {
-                                    exchangeType: withdrawExchange,
-                                    ourExchange: walletAddresses[withdrawExchange],
-                                    amount: withdrawAmount,
-                                    userExchange: withdrawUserExchange,
-                                    type: "Withdraw"
-                                };
-
-                                const res = await api.post('/user/withdraw', payload, { withCredentials: true });
-
-                                alert(res.data.message || 'Withdraw request submitted!');
-                                setShowWithdrawModal(false);
-                                setWithdrawExchange('Select');
-                                setWithdrawAmount('');
-                                setWithdrawUserExchange('');
-                                window.location.reload();
-                            } catch (err) {
-                                const errorMessage = err.response?.data?.message || 'Withdraw failed!';
-                                alert(errorMessage);
-                            }
-                            setWithdrawLoading(false);
-                        }}
-                        style={{
-                            padding: '10px 24px',
-                            borderRadius: 8,
-                            fontWeight: 600,
-                            minWidth: 100
-                        }}
-                    >
-                        Yes
-                    </button>
-                </div>
-            </div>
-            <style>
-                {`
-                @keyframes fadeIn {
-                    from { opacity: 0; }
-                    to { opacity: 1; }
-                }
-                @keyframes slideDown {
-                    from { transform: translateY(-30px); opacity: 0; }
-                    to { transform: translateY(0); opacity: 1; }
-                }
-                `}
-            </style>
-        </div>
-    );
-
-    // Withdraw Modal Component
-    const WithdrawModal = () => (
-        <div
-            className="modal"
-            style={{
-                display: 'block',
-                background: 'rgba(0,0,0,0.5)',
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                width: '100vw',
-                height: '100vh',
-                zIndex: 1050
-            }}
-            tabIndex="-1"
-            role="dialog"
-        >
-            <div
-                className="modal-dialog modal-dialog-centered"
-                style={{
-                    width: '40vw',
-                    minWidth: 320,
-                    maxWidth: 600,
-                    margin: 'auto'
-                }}
-                role="document"
-            >
-                <div
-                    className="modal-content"
-                    style={{ position: 'relative', borderRadius: 12, padding: 0 }}
-                >
-                    <div
-                        className="modal-header"
-                        style={{
-                            borderBottom: 'none',
-                            alignItems: 'center',
-                            padding: '1.2rem 1.5rem 0.5rem 1.5rem',
-                            background: '#fff',
-                            borderTopLeftRadius: 12,
-                            borderTopRightRadius: 12,
-                            display: 'flex',
-                            flexDirection: 'row',
-                            justifyContent: 'flex-start',
-                            position: 'relative'
-                        }}
-                    >
-                        <img src="/loader.jpeg" alt="Binance" style={{ width: 50, height: 50, marginRight: 12 }} />
-                        <h5 className="modal-title" style={{ fontWeight: 600, fontSize: 20, margin: 0, lineHeight: '36px' }}>
-                            Withdraw
-                        </h5>
-                        <button
-                            type="button"
-                            onClick={() => setShowWithdrawModal(false)}
-                            style={{
-                                position: 'absolute',
-                                top: 12,
-                                right: 18,
-                                width: 28,
-                                height: 28,
-                                background: 'transparent',
-                                border: 'none',
-                                fontSize: '1.5rem',
-                                lineHeight: '1rem',
-                                cursor: 'pointer',
-                                color: '#222',
-                                zIndex: 2
-                            }}
-                            aria-label="Close"
-                        >
-                            &times;
-                        </button>
-                    </div>
-                    <div className="modal-body" style={{ padding: '1.5rem', maxHeight: '70vh', overflowY: 'auto' }}>
-                        <div className="d-flex flex-column flex-md-row justify-content-evenly mb-4" style={{ gap: 24 }}>
-                            <div>
-                                <div style={{ fontWeight: 500, fontSize: 15, color: '#888' }}>Total Balance:</div>
-                                <div style={{ fontWeight: 700, fontSize: 18, color: '#222' }}>
-                                    ${(userData?.totalBalance || 0).toLocaleString()}
-                                </div>
-                            </div>
-                            <div>
-                                <div style={{ fontWeight: 500, fontSize: 15, color: '#888' }}>Invest Balance:</div>
-                                <div style={{ fontWeight: 700, fontSize: 18, color: '#222' }}>${(userData?.investedAmount || 0).toLocaleString()}</div>
-                            </div>
-                        </div>
-                        <form
-                            onSubmit={(e) => {
-                                e.preventDefault();
-                                if (
-                                    withdrawExchange === 'Select' ||
-                                    !withdrawAmount ||
-                                    !withdrawUserExchange
-                                ) return;
-
-                                // Show confirmation popup instead of directly calling API
-                                setShowWithdrawConfirmation(true);
-                            }}
-
-                            style={{ marginTop: 10 }}
-                        >
-                            <div className="mb-3">
-                                <label className="form-label" style={{ fontWeight: 500 }}>
-                                    Enter your withdraw exchange
-                                </label>
-                                <select
-                                    className="form-select"
-                                    value={withdrawExchange}
-                                    onChange={e => setWithdrawExchange(e.target.value)}
-                                    style={{ width: '100%' }}
-                                >
-                                    <option value="Select">Select</option>
-                                    <option value="BEP20">BEP20 (Recommended)</option>
-                                    <option value="TRC20">TRC20</option>
-                                </select>
-                            </div>
-                            {withdrawExchange !== 'Select' && (
-                                <>
-                                    <div className="mb-3">
-                                        <label className="form-label" style={{ fontWeight: 500 }}>
-                                            Enter your withdraw amount (USDT)
-                                        </label>
-                                        <input
-                                            type="tel"
-                                            inputMode="decimal"
-                                            pattern="[0-9]*[.,]?[0-9]*"
-                                            className="form-control"
-                                            value={withdrawAmount}
-                                            onChange={(e) => {
-                                                const value = e.target.value;
-                                                if (/^\d*\.?\d*$/.test(value)) {
-                                                    setWithdrawAmount(value);
-                                                }
-                                            }}
-                                            onFocus={() => setFocusedWithdrawAmount(true)} // Add onFocus
-                                            onBlur={() => setFocusedWithdrawAmount(false)}  // Add onBlur
-                                            ref={(input) => {
-                                                if (focusedWithdrawAmount && input) {
-                                                    input.focus();
-                                                }
-                                            }} // Add ref
-                                            required
-                                            autoComplete="off"
-                                        />
-                                    </div>
-
-                                    <div className="mb-3">
-                                        <label className="form-label" style={{ fontWeight: 500 }}>
-                                            Enter your exchange address
-                                        </label>
-                                        <input
-                                            type="text"
-                                            className="form-control"
-                                            value={withdrawUserExchange}
-                                            onChange={(e) => setWithdrawUserExchange(e.target.value)}
-                                            onFocus={() => setFocusedWithdrawAddress(true)}  // Add onFocus
-                                            onBlur={() => setFocusedWithdrawAddress(false)}   // Add onBlur
-                                            ref={(input) => {
-                                                if (focusedWithdrawAddress && input) {
-                                                    input.focus();
-                                                }
-                                            }} // Add ref
-                                            placeholder="Enter your exchange address"
-                                            autoComplete="off"
-                                            spellCheck="false"
-                                            required
-                                        />
-                                    </div>
-                                </>
-                            )}
-                            <button
-                                type="submit"
-                                className="btn btn-primary"
-                                style={{ width: '100%', fontWeight: 600 }}
-                                disabled={
-                                    withdrawExchange === 'Select' ||
-                                    !withdrawAmount ||
-                                    !withdrawUserExchange ||
-                                    withdrawLoading
-                                }
-                            >
-                                {withdrawLoading ? 'Processing...' : 'Withdraw'}
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-
-    // Invest Modal Component
-    const InvestModal = () => {
-        const inputRef = useRef(null);
-
-        useEffect(() => {
-            if (inputRef.current) {
-                inputRef.current.focus();
-            }
-        }, []);
-
-        return (
-            <div
-                className="modal"
-                style={{
-                    display: 'block',
-                    background: 'rgba(0,0,0,0.5)',
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    width: '100vw',
-                    height: '100vh',
-                    zIndex: 1050
-                }}
-                tabIndex="-1"
-                role="dialog"
-            >
-                <div
-                    className="modal-dialog modal-dialog-centered"
-                    style={{
-                        width: '40vw',
-                        minWidth: 320,
-                        maxWidth: 600,
-                        margin: 'auto'
-                    }}
-                    role="document"
-                >
-                    <div
-                        className="modal-content"
-                        style={{ position: 'relative', borderRadius: 12, padding: 0 }}
-                    >
-                        <div
-                            className="modal-header"
-                            style={{
-                                borderBottom: 'none',
-                                alignItems: 'center',
-                                padding: '1.2rem 1.5rem 0.5rem 1.5rem',
-                                background: '#fff',
-                                borderTopLeftRadius: 12,
-                                borderTopRightRadius: 12,
-                                display: 'flex',
-                                flexDirection: 'row',
-                                justifyContent: 'flex-start',
-                                position: 'relative'
-                            }}
-                        >
-                            <img src="/loader.jpeg" alt="Binance" style={{ width: 50, height: 50, marginRight: 12 }} />
-                            <h5 className="modal-title" style={{ fontWeight: 600, fontSize: 20, margin: 0, lineHeight: '36px' }}>
-                                Invest
-                            </h5>
-                            <button
-                                type="button"
-                                onClick={() => setShowInvestModal(false)}
-                                style={{
-                                    position: 'absolute',
-                                    top: 12,
-                                    right: 18,
-                                    width: 28,
-                                    height: 28,
-                                    background: 'transparent',
-                                    border: 'none',
-                                    fontSize: '1.5rem',
-                                    lineHeight: '1rem',
-                                    cursor: 'pointer',
-                                    color: '#222',
-                                    zIndex: 2
-                                }}
-                                aria-label="Close"
-                            >
-                                &times;
-                            </button>
-                        </div>
-                        <div className="modal-body" style={{ padding: '2rem 1.5rem', background: '#fff' }}>
-                            <div className="d-flex flex-column flex-md-row justify-content-evenly mb-4" style={{ gap: 24 }}>
-                                <div>
-                                    <div style={{ fontWeight: 500, fontSize: 15, color: '#888' }}>Total Balance:</div>
-                                    <div style={{ fontWeight: 700, fontSize: 18, color: '#222' }}>
-                                        ${(userData?.totalBalance || 0).toLocaleString()}
-                                    </div>
-                                </div>
-                                <div>
-                                    <div style={{ fontWeight: 500, fontSize: 15, color: '#888' }}>Invest Balance:</div>
-                                    <div style={{ fontWeight: 700, fontSize: 18, color: '#222' }}>${(userData?.investedAmount || 0).toLocaleString()}</div>
-                                </div>
-                            </div>
-                            <form
-                                onSubmit={async e => {
-                                    e.preventDefault();
-                                    // Show confirmation only for From: Deposit -> To: Invest
-                                    if (investFrom === 'Deposit' && investTo === 'Invest') {
-                                        setShowInvestConfirmation(true);
-                                        return;
-                                    }
-
-                                    setInvestProcessing(true);
-                                    try {
-                                        const res = await api.post(
-                                            '/user/investamount',
-                                            {
-                                                from: investFrom,
-                                                to: investTo,
-                                                amount: investAmount
-                                            },
-                                            { withCredentials: true }
-                                        );
-                                        alert(res.data.message || 'Invest submitted!');
-                                        window.location.reload();
-                                    } catch (err) {
-                                        alert(err.response?.data?.message || 'Invest failed!');
-                                        setInvestProcessing(false);
-                                    }
-                                    setInvestAmount('');
-                                }}
-                            >
-
-                                <div className="d-flex flex-column flex-md-row justify-content-between mb-3" style={{ gap: 16 }}>
-                                    <div style={{ flex: 1 }}>
-                                        <label className="form-label" style={{ fontWeight: 500 }}>From</label>
-                                        <select
-                                            className="form-select"
-                                            value={investFrom}
-                                            onChange={e => setInvestFrom(e.target.value)}
-                                            style={{ width: '100%' }}
-                                        >
-                                            <option value="Deposit">Balance</option>
-                                            <option value="Invest">Invest</option>
-                                        </select>
-                                    </div>
-                                    <div style={{ flex: 1 }}>
-                                        <label className="form-label" style={{ fontWeight: 500 }}>To</label>
-                                        <select
-                                            className="form-select"
-                                            value={investTo}
-                                            onChange={e => setInvestTo(e.target.value)}
-                                            style={{ width: '100%' }}
-                                        >
-                                            <option value="Deposit">Balance</option>
-                                            <option value="Invest">Invest</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div className="mb-4">
-                                    <label className="form-label" style={{ fontWeight: 500 }}>Enter Your Amount (USDT)</label>
-                                    <input
-                                        ref={inputRef}
-                                        type="tel"
-                                        inputMode="decimal"
-                                        pattern="[0-9]*[.,]?[0-9]*"
-                                        className="form-control"
-                                        value={investAmount}
-                                        onChange={e => {
-                                            const value = e.target.value;
-                                            if (/^\d*\.?\d*$/.test(value)) setInvestAmount(value);
-                                        }}
-                                        required
-                                        placeholder={ (userData?.investedAmount >= 100 || userData?.totalBalance >= 100) ? "MinimumInvestAmount 100" : "Minimum Invest Amount 20" } 
-                                        style={{ fontSize: 16 }}
-                                        autoComplete="off"
-                                    />
-                                </div>
-                                <button
-                                    type="submit"
-                                    className="btn btn-primary"
-                                    style={{ width: '100%', fontWeight: 600, fontSize: 17, padding: '12px 0', borderRadius: 8 }}
-                                    disabled={investProcessing || !investAmount}
-                                >
-                                    {investProcessing ? 'Processing...' : 'Submit'}
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
-    };
-
-    const totalBalance = Number(userData?.totalBalance) || 0;
-
-    // Pagination logic
-    const tableData = userData?.confirmedInvestments || [];
-    const totalRows = tableData.length;
-    const totalPages = Math.ceil(totalRows / rowsPerPage);
-    const paginatedData = tableData.slice(
-        (currentPage - 1) * rowsPerPage,
-        currentPage * rowsPerPage
-    );
-
-    // --- Add this TableLayout component at the top of your file (after imports) ---
-    function TableLayout({ columns, data, renderRow, emptyText, showPagination = false }) {
-        return (
-            <div>
-                <div
-                    style={{
-                        width: '100%',
-                        overflowX: 'auto',
-                        WebkitOverflowScrolling: 'touch',
-                        background: '#fff',
-                        borderRadius: 8,
-                        boxShadow: '0 2px 12px rgba(0,0,0,0.04)',
-                        marginBottom: '1.5rem',
-                        border: '1px solid #eee'
-                    }}
-                >
-                    <table
-                        style={{
-                            width: '100%',
-                            borderCollapse: 'collapse',
-                            minWidth: 400,
-                            fontSize: '15px',
-                            background: '#fff'
-                        }}
-                    >
-                        <thead>
-                            <tr>
-                                {columns.map(header => (
-                                    <th
-                                        key={header}
-                                        style={{
-                                            background: '#f8f9fa',
-                                            fontWeight: 600,
-                                            color: '#222',
-                                            padding: '12px 10px',
-                                            borderBottom: '1px solid #eee',
-                                            position: 'sticky',
-                                            top: 0,
-                                            zIndex: 2,
-                                            textAlign: 'left',
-                                            whiteSpace: 'normal'
-                                        }}
-                                    >
-                                        {header}
-                                    </th>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {data && data.length > 0 ? (
-                                data.map(renderRow)
-                            ) : (
-                                <tr>
-                                    <td colSpan={columns.length} style={{ textAlign: 'center', padding: '12px 10px' }}>
-                                        {emptyText || 'No data found.'}
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-
-                {/* Pagination Controls */}
-                {showPagination && totalPages > 1 && (
-                    <div style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        padding: '1rem 0',
-                        background: '#fff',
-                        borderRadius: '8px',
-                        marginBottom: '1.5rem'
-                    }}>
-                        <div style={{ fontSize: '14px', color: '#666' }}>
-                            Showing {((currentPage - 1) * rowsPerPage) + 1} to {Math.min(currentPage * rowsPerPage, totalRows)} of {totalRows} results
-                        </div>
-                        <nav aria-label="Table pagination">
-                            <ul style={{
-                                display: 'flex',
-                                listStyle: 'none',
-                                margin: 0,
-                                padding: 0,
-                                gap: '4px'
-                            }}>
-                                <li>
-                                    <button
-                                        style={{
-                                            padding: '8px 12px',
-                                            border: '1px solid #dee2e6',
-                                            background: currentPage === 1 ? '#e9ecef' : '#fff',
-                                            color: currentPage === 1 ? '#6c757d' : '#007bff',
-                                            cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
-                                            borderRadius: '4px',
-                                            fontSize: '14px'
-                                        }}
-                                        onClick={() => setCurrentPage(currentPage - 1)}
-                                        disabled={currentPage === 1}
-                                    >
-                                        Previous
-                                    </button>
-                                </li>
-                                {[...Array(totalPages)].map((_, idx) => (
-                                    <li key={idx + 1}>
-                                        <button
-                                            style={{
-                                                padding: '8px 12px',
-                                                border: '1px solid #dee2e6',
-                                                background: currentPage === idx + 1 ? '#007bff' : '#fff',
-                                                color: currentPage === idx + 1 ? '#fff' : '#007bff',
-                                                cursor: 'pointer',
-                                                borderRadius: '4px',
-                                                fontSize: '14px'
-                                            }}
-                                            onClick={() => setCurrentPage(idx + 1)}
-                                        >
-                                            {idx + 1}
-                                        </button>
-                                    </li>
-                                ))}
-                                <li>
-                                    <button
-                                        style={{
-                                            padding: '8px 12px',
-                                            border: '1px solid #dee2e6',
-                                            background: currentPage === totalPages ? '#e9ecef' : '#fff',
-                                            color: currentPage === totalPages ? '#6c757d' : '#007bff',
-                                            cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
-                                            borderRadius: '4px',
-                                            fontSize: '14px'
-                                        }}
-                                        onClick={() => setCurrentPage(currentPage + 1)}
-                                        disabled={currentPage === totalPages}
-                                    >
-                                        Next
-                                    </button>
-                                </li>
-                            </ul>
-                        </nav>
-                    </div>
-                )}
-            </div>
-        );
-    }
-    // --- End TableLayout component ---
-
     return (
-        <>
-            {isLoading && (
-                <>
-                    <div
-                        className="loader-bg"
-                        style={{
-                            position: 'fixed',
-                            top: 0,
-                            left: 0,
-                            width: '100vw',
-                            height: '100vh',
-                            background: '#fff',
-                            zIndex: 9999,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                        }}
+      <div
+        className="modal"
+        style={{
+          display: "block",
+          background: "rgba(0,0,0,0.5)",
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100vw",
+          height: "100vh",
+          zIndex: 1050,
+        }}
+        tabIndex="-1"
+        role="dialog"
+      >
+        <div
+          className="modal-dialog modal-dialog-centered"
+          style={{
+            width: "40vw",
+            minWidth: 320,
+            maxWidth: 600,
+            margin: "auto",
+          }}
+          role="document"
+        >
+          <div
+            className="modal-content"
+            style={{ position: "relative", borderRadius: 12, padding: 0 }}
+          >
+            <div
+              className="modal-header"
+              style={{
+                borderBottom: "none",
+                alignItems: "center",
+                padding: "1.2rem 1.5rem 0.5rem 1.5rem",
+                background: "#fff",
+                borderTopLeftRadius: 12,
+                borderTopRightRadius: 12,
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: "flex-start",
+                position: "relative",
+              }}
+            >
+              <img
+                src="/loader.jpeg"
+                alt="Binance"
+                style={{ width: 50, height: 50, marginRight: 12 }}
+              />
+              <h5
+                className="modal-title"
+                style={{
+                  fontWeight: 600,
+                  fontSize: 20,
+                  margin: 0,
+                  lineHeight: "36px",
+                }}
+              >
+                Invest
+              </h5>
+              <button
+                type="button"
+                onClick={() => setShowInvestModal(false)}
+                style={{
+                  position: "absolute",
+                  top: 12,
+                  right: 18,
+                  width: 28,
+                  height: 28,
+                  background: "transparent",
+                  border: "none",
+                  fontSize: "1.5rem",
+                  lineHeight: "1rem",
+                  cursor: "pointer",
+                  color: "#222",
+                  zIndex: 2,
+                }}
+                aria-label="Close"
+              >
+                &times;
+              </button>
+            </div>
+            <div
+              className="modal-body"
+              style={{ padding: "2rem 1.5rem", background: "#fff" }}
+            >
+              <div
+                className="d-flex flex-column flex-md-row justify-content-evenly mb-4"
+                style={{ gap: 24 }}
+              >
+                <div>
+                  <div style={{ fontWeight: 500, fontSize: 15, color: "#888" }}>
+                    Total Balance:
+                  </div>
+                  <div style={{ fontWeight: 700, fontSize: 18, color: "#222" }}>
+                    ${(userData?.totalBalance || 0).toLocaleString()}
+                  </div>
+                </div>
+                <div>
+                  <div style={{ fontWeight: 500, fontSize: 15, color: "#888" }}>
+                    Invest Balance:
+                  </div>
+                  <div style={{ fontWeight: 700, fontSize: 18, color: "#222" }}>
+                    ${(userData?.investedAmount || 0).toLocaleString()}
+                  </div>
+                </div>
+              </div>
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  // Show confirmation only for From: Deposit -> To: Invest
+                  if (investFrom === "Deposit" && investTo === "Invest") {
+                    setShowInvestConfirmation(true);
+                    return;
+                  }
+
+                  setInvestProcessing(true);
+                  try {
+                    const res = await api.post(
+                      "/user/investamount",
+                      {
+                        from: investFrom,
+                        to: investTo,
+                        amount: investAmount,
+                      },
+                      { withCredentials: true }
+                    );
+                    alert(res.data.message || "Invest submitted!");
+                    window.location.reload();
+                  } catch (err) {
+                    alert(err.response?.data?.message || "Invest failed!");
+                    setInvestProcessing(false);
+                  }
+                  setInvestAmount("");
+                }}
+              >
+                <div
+                  className="d-flex flex-column flex-md-row justify-content-between mb-3"
+                  style={{ gap: 16 }}
+                >
+                  <div style={{ flex: 1 }}>
+                    <label className="form-label" style={{ fontWeight: 500 }}>
+                      From
+                    </label>
+                    <select
+                      className="form-select"
+                      value={investFrom}
+                      onChange={(e) => setInvestFrom(e.target.value)}
+                      style={{ width: "100%" }}
                     >
-                        <img
-                            src="/loader.jpeg"
-                            alt="Loading..."
-                            style={{
-                                width: 260,
-                                height: 260,
-                                animation: 'blink 1s infinite',
-                            }}
-                        />
-                    </div>
-                    <style>
-                        {`
+                      <option value="Deposit">Balance</option>
+                      <option value="Invest">Invest</option>
+                    </select>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label className="form-label" style={{ fontWeight: 500 }}>
+                      To
+                    </label>
+                    <select
+                      className="form-select"
+                      value={investTo}
+                      onChange={(e) => setInvestTo(e.target.value)}
+                      style={{ width: "100%" }}
+                    >
+                      <option value="Deposit">Balance</option>
+                      <option value="Invest">Invest</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="mb-4">
+                  <label className="form-label" style={{ fontWeight: 500 }}>
+                    Enter Your Amount (USDT)
+                  </label>
+                  <input
+                    ref={inputRef}
+                    type="tel"
+                    inputMode="decimal"
+                    pattern="[0-9]*[.,]?[0-9]*"
+                    className="form-control"
+                    value={investAmount}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (/^\d*\.?\d*$/.test(value)) setInvestAmount(value);
+                    }}
+                    required
+                    placeholder={
+                      userData?.investedAmount >= 100 ||
+                      userData?.totalBalance >= 100
+                        ? "MinimumInvestAmount 100"
+                        : "Minimum Invest Amount 20"
+                    }
+                    style={{ fontSize: 16 }}
+                    autoComplete="off"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  style={{
+                    width: "100%",
+                    fontWeight: 600,
+                    fontSize: 17,
+                    padding: "12px 0",
+                    borderRadius: 8,
+                  }}
+                  disabled={investProcessing || !investAmount}
+                >
+                  {investProcessing ? "Processing..." : "Submit"}
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const totalBalance = Number(userData?.totalBalance) || 0;
+
+  // Pagination logic
+  const tableData = userData?.confirmedInvestments || [];
+  const totalRows = tableData.length;
+  const totalPages = Math.ceil(totalRows / rowsPerPage);
+  const paginatedData = tableData.slice(
+    (currentPage - 1) * rowsPerPage,
+    currentPage * rowsPerPage
+  );
+
+  // --- Add this TableLayout component at the top of your file (after imports) ---
+  function TableLayout({
+    columns,
+    data,
+    renderRow,
+    emptyText,
+    showPagination = false,
+  }) {
+    return (
+      <div>
+        <div
+          style={{
+            width: "100%",
+            overflowX: "auto",
+            WebkitOverflowScrolling: "touch",
+            background: "#fff",
+            borderRadius: 8,
+            boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
+            marginBottom: "1.5rem",
+            border: "1px solid #eee",
+          }}
+        >
+          <table
+            style={{
+              width: "100%",
+              borderCollapse: "collapse",
+              minWidth: 400,
+              fontSize: "15px",
+              background: "#fff",
+            }}
+          >
+            <thead>
+              <tr>
+                {columns.map((header) => (
+                  <th
+                    key={header}
+                    style={{
+                      background: "#f8f9fa",
+                      fontWeight: 600,
+                      color: "#222",
+                      padding: "12px 10px",
+                      borderBottom: "1px solid #eee",
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 2,
+                      textAlign: "left",
+                      whiteSpace: "normal",
+                    }}
+                  >
+                    {header}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {data && data.length > 0 ? (
+                data.map(renderRow)
+              ) : (
+                <tr>
+                  <td
+                    colSpan={columns.length}
+                    style={{ textAlign: "center", padding: "12px 10px" }}
+                  >
+                    {emptyText || "No data found."}
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Pagination Controls */}
+        {showPagination && totalPages > 1 && (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              padding: "1rem 0",
+              background: "#fff",
+              borderRadius: "8px",
+              marginBottom: "1.5rem",
+            }}
+          >
+            <div style={{ fontSize: "14px", color: "#666" }}>
+              Showing {Math.min(currentPage * rowsPerPage, totalRows)} of{" "}
+              {totalRows} results
+            </div>
+            <nav aria-label="Table pagination">
+              <ul
+                style={{
+                  display: "flex",
+                  listStyle: "none",
+                  margin: 0,
+                  padding: 0,
+                  gap: "4px",
+                }}
+              >
+                <li>
+                  <button
+                    style={{
+                      padding: "8px 12px",
+                      border: "1px solid #dee2e6",
+                      background: currentPage === 1 ? "#e9ecef" : "#fff",
+                      color: currentPage === 1 ? "#6c757d" : "#007bff",
+                      cursor: currentPage === 1 ? "not-allowed" : "pointer",
+                      borderRadius: "4px",
+                      fontSize: "14px",
+                    }}
+                    onClick={() => setCurrentPage(currentPage - 1)}
+                    disabled={currentPage === 1}
+                  >
+                    <MdOutlineArrowBackIos />
+                  </button>
+                </li>
+                <li>
+                  <button
+                    style={{
+                      padding: "8px 12px",
+                      border: "1px solid #dee2e6",
+                      background:
+                        currentPage === totalPages ? "#e9ecef" : "#fff",
+                      color: currentPage === totalPages ? "#6c757d" : "#007bff",
+                      cursor:
+                        currentPage === totalPages ? "not-allowed" : "pointer",
+                      borderRadius: "4px",
+                      fontSize: "14px",
+                    }}
+                    onClick={() => setCurrentPage(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                  >
+                    <MdArrowForwardIos />
+                  </button>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        )}
+      </div>
+    );
+  }
+  // --- End TableLayout component ---
+
+  return (
+    <>
+      {isLoading && (
+        <>
+          <div
+            className="loader-bg"
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              width: "100vw",
+              height: "100vh",
+              background: "#fff",
+              zIndex: 9999,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <img
+              src="/loader.jpeg"
+              alt="Loading..."
+              style={{
+                width: 260,
+                height: 260,
+                animation: "blink 1s infinite",
+              }}
+            />
+          </div>
+          <style>
+            {`
         @keyframes blink {
           0% { opacity: 1; }
           50% { opacity: 0.3; }
           100% { opacity: 1; }
         }
       `}
-                    </style>
-                </>
-            )}
-
-            {/* Banner Section */}
-            <section className="inner-banner bg_img padding-bottom" style={{ background: "url(/assets/images/about/bg.png) no-repeat right bottom" }}>
-                <div className="container">
-                    <div className="inner-banner-wrapper">
-                        <div className="inner-banner-content">
-                            <h2 className="inner-banner-title">User <br /> Dashboard</h2>
-                            <ul className="breadcums">
-                                {/* <li><a href="/">Home</a></li> */}
-                                <li><a href="/user-dashboard">Dashboard</a></li>
-                                <li><span>Deposit And Withdraw</span></li>
-                            </ul>
-                        </div>
-                        <div className="inner-banner-thumb about d-none d-md-block">
-                            <img src="/assets/images/dashboard/thumb.png" alt="about" />
-                        </div>
-                    </div>
-                </div>
-                <div className="shape1 paroller" data-paroller-factor=".2">
-                    <img src="/assets/images/about/balls.png" alt="about" />
-                </div>
-            </section>
-
-            {/* User Dashboard Section */}
-            <section className="user-dashboard padding-top padding-bottom">
-                <div className="container">
-                    <div className="row gy-5">
-                        <div className="col-lg-3">
-                            <div className="dashboard-sidebar">
-                                <div className="close-dashboard d-lg-none">
-                                    <i className="las la-times"></i>
-                                </div>
-                                <div className="dashboard-user">
-                                    <div className="user-thumb">
-                                        <img
-                                            src={userData?.image ? (userData?.image.startsWith('data:image') ? userData?.image : `data:image/png;base64,${userData?.image}`) : "/assets/images/testimonial/aa.png"}
-                                            alt="dashboard"
-                                            style={{ width: "100px", height: "100px", borderRadius: "50%", objectFit: "cover" }}
-                                        />
-                                    </div>
-                                    <div className="user-content">
-                                        <span>Welcome</span>
-                                        <h5 className="name">{userData?.name || 'User'}</h5>
-                                        <p className="email">{userData?.email || ''}</p>
-                                        <hr />
-                                    </div>
-                                    {/* Referral Code Display */}
-                                    <div style={{ marginTop: '5px', padding: '5px', background: '#f8f9fa', borderRadius: '8px', border: '1px solid #e9ecef' }}>
-                                        <div style={{ fontSize: '12px', color: '#6c757d', marginBottom: '0px' }}>Referral Code:</div>
-                                        <div style={{ fontSize: '16px', fontWeight: '600', color: '#007bff', fontFamily: 'monospace' }}>
-                                            {userData?.referralCode || 'N/A'}
-                                        </div>
-                                    </div>
-                                </div>
-                                <ul className="user-dashboard-tab">
-                                    <li><a href="/user-dashboard" >Account Overview</a></li>
-                                    <li><a href="/earning-history">Earnings History</a></li>
-                                    <li><a href="/referal-users">Referral Users</a></li>
-                                    <li><a href="/deposit" className="active">Deposit/Withdraw</a></li>
-                                    <li><a href="/account-settings">Account Settings</a></li>
-                                    <li>
-                                        <a
-                                            href="#0"
-                                            onClick={async (e) => {
-                                                e.preventDefault();
-                                                try {
-                                                    // Call logout API
-                                                    await api.get('/logout', { withCredentials: true });
-
-                                                    // Remove localStorage flag
-                                                    localStorage.removeItem("authenticated");
-
-                                                    // Redirect to homepage
-                                                    window.location.href = '/';
-                                                } catch (err) {
-                                                    console.error("Logout failed:", err);
-                                                    // Optionally show an error message
-                                                }
-                                            }}
-                                        >
-                                            Sign Out
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                        <div className="col-lg-9">
-                            <div className="user-toggler-wrapper d-flex d-lg-none">
-                                <h4 className="title">User Dashboard</h4>
-                                <div className="user-toggler">
-                                    <i className="las la-sliders-h"></i>
-                                </div>
-                            </div>
-
-                            {/* Dashboard Boxes Section */}
-                            <div className="dashboard-boxes">
-                                <div className="row justify-content-center g-4 mb-3">
-                                    {/* Total Balance */}
-                                    <div className="col-12 col-sm-6 col-md-4">
-                                        <div className="dashboard-item">
-                                            <div className="row align-items-center">
-                                                <div className="col-4 text-center">
-                                                    <img src="/assets/images/dashboard/wallet.png" alt="dashboard" style={{ width: 48, height: 48 }} />
-                                                </div>
-                                                <div className="col-8">
-                                                    <h6 className="title mb-0" style={{ fontWeight: 600 }}>Total Balance</h6>
-                                                </div>
-                                            </div>
-                                            <div className="row mt-2">
-                                                <div className="col-12 text-center">
-                                                    <h3 className="ammount theme-one" style={{ fontWeight: 700, fontSize: 22 }}>
-                                                        ${totalBalance.toLocaleString()}
-                                                    </h3>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {/* Deposit Amount */}
-                                    <div className="col-12 col-sm-6 col-md-4">
-                                        <div className="dashboard-item">
-                                            <div className="row align-items-center">
-                                                <div className="col-4 text-center">
-                                                    <img src="/assets/images/dashboard/deposit.png" alt="dashboard" style={{ width: 48, height: 48 }} />
-                                                </div>
-                                                <div className="col-8">
-                                                    <h6 className="title mb-0" style={{ fontWeight: 600 }}>Deposit Amount</h6>
-                                                </div>
-                                            </div>
-                                            <div className="row mt-2">
-                                                <div className="col-12 text-center">
-                                                    <h3 className="ammount theme-four" style={{ fontWeight: 700, fontSize: 22 }}>
-                                                        ${(userData?.depositAmount || 0).toLocaleString()}
-                                                    </h3>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {/* Invested Amount */}
-                                    <div className="col-12 col-sm-6 col-md-4">
-                                        <div className="dashboard-item">
-                                            <div className="row align-items-center">
-                                                <div className="col-4 text-center">
-                                                    <img src="/assets/images/dashboard/invest.png" alt="dashboard" style={{ width: 48, height: 48 }} />
-                                                </div>
-                                                <div className="col-8">
-                                                    <h6 className="title mb-0" style={{ fontWeight: 600 }}>Invested Amount</h6>
-                                                </div>
-                                            </div>
-                                            <div className="row mt-2">
-                                                <div className="col-12 text-center">
-                                                    <h3 className="ammount theme-four" style={{ fontWeight: 700, fontSize: 22 }}>
-                                                        ${(userData?.investedAmount || 0).toLocaleString()}
-                                                    </h3>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {/* Total Earning */}
-                                    <div className="col-12 col-sm-6 col-md-4">
-                                        <div className="dashboard-item">
-                                            <div className="row align-items-center">
-                                                <div className="col-4 text-center">
-                                                    <img src="/assets/images/dashboard/profit.png" alt="dashboard" style={{ width: 48, height: 48 }} />
-                                                </div>
-                                                <div className="col-8">
-                                                    <h6 className="title mb-0" style={{ fontWeight: 600 }}>Total Earning</h6>
-                                                </div>
-                                            </div>
-                                            <div className="row mt-2">
-                                                <div className="col-12 text-center">
-                                                    <h3 className="ammount theme-two" style={{ fontWeight: 700, fontSize: 22 }}>
-                                                        ${(userData?.totalEarn || 0).toLocaleString()}
-                                                    </h3>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {/* Referral Earning */}
-                                    <div className="col-12 col-sm-6 col-md-4">
-                                        <div className="dashboard-item">
-                                            <div className="row align-items-center">
-                                                <div className="col-4 text-center">
-                                                    <img src="/assets/images/dashboard/reference.png" alt="dashboard" style={{ width: 48, height: 48 }} />
-                                                </div>
-                                                <div className="col-8">
-                                                    <h6 className="title mb-0" style={{ fontWeight: 600 }}>Referral Earning</h6>
-                                                </div>
-                                            </div>
-                                            <div className="row mt-2">
-                                                <div className="col-12 text-center">
-                                                    <h3 className="ammount theme-four" style={{ fontWeight: 700, fontSize: 22 }}>
-                                                        ${(userData?.refEarn || 0).toLocaleString()}
-                                                    </h3>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {/* Pending Amount Box */}
-                                    <div className="col-12 col-sm-6 col-md-4">
-                                        <div className="dashboard-item position-relative">
-                                            {/* Top-right info icon */}
-                                            <div
-                                                className="position-absolute top-0 end-0 me-2 mt-2"
-                                                style={{ cursor: "pointer" }}
-                                                title="The money you have invested will generate profit after 24 hours."
-                                                onClick={() => {
-                                                    try {
-                                                        const isTouch = typeof window !== 'undefined' && (window.matchMedia && window.matchMedia('(hover: none)').matches);
-                                                        if (isTouch) setShowPendingInfoModal(true);
-                                                    } catch (_) {
-                                                        // no-op
-                                                    }
-                                                }}
-                                            >
-                                                <span
-                                                    style={{
-                                                        display: "inline-block",
-                                                        backgroundColor: "#ff3b30",
-                                                        color: "#fff",
-                                                        borderRadius: "50%",
-                                                        width: "20px",
-                                                        height: "20px",
-                                                        textAlign: "center",
-                                                        lineHeight: "20px",
-                                                        fontWeight: "bold",
-                                                        fontSize: "14px",
-                                                    }}
-                                                >
-                                                    ?
-                                                </span>
-                                            </div>
-
-                                            <div className="row align-items-center">
-                                                <div className="col-4 text-center">
-                                                    <img
-                                                        src="/assets/images/dashboard/queue.png"
-                                                        alt="dashboard"
-                                                        style={{ width: 48, height: 48 }}
-                                                    />
-                                                </div>
-                                                <div className="col-8">
-                                                    <h6 className="title mb-0" style={{ fontWeight: 600 }}>
-                                                        Pending Amount
-                                                    </h6>
-                                                </div>
-                                            </div>
-
-                                            <div className="row mt-2">
-                                                <div className="col-12 text-center">
-                                                    <h3
-                                                        className="ammount theme-four"
-                                                        style={{ fontWeight: 700, fontSize: 22 }}
-                                                    >
-                                                        ${(userData?.pendingLotsSum || 0).toLocaleString()}
-                                                    </h3>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                </div>
-                            </div>
-                            <div className="col-lg-12">
-                                <div className="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center justify-content-lg-between mb-4" style={{ gap: "12px" }}>
-                                    <h4 className="title mb-3 mb-lg-0">Deposit history</h4>
-                                    <div className="d-flex flex-column flex-lg-row w-100 w-lg-auto justify-content-lg-end" style={{ gap: "12px" }}>
-                                        <button
-                                            className="btn btn-primary px-4 py-2 w-100 w-lg-auto"
-                                            onClick={() => setShowModal(true)}
-                                        >
-                                            Deposit
-                                        </button>
-                                        <button
-                                            className="btn btn-primary px-4 py-2 w-100 w-lg-auto"
-                                            onClick={() => setShowWithdrawModal(true)}
-                                        >
-                                            Withdraw
-                                        </button>
-                                        <button
-                                            className="btn btn-primary px-4 py-2 w-100 w-lg-auto"
-                                            onClick={() => {
-                                                const remaining = userData?.BalToInvRemaining;
-                                                if (typeof remaining === 'number' && remaining !== 342) {
-                                                    setShowInvestBlocker(true);
-                                                } else {
-                                                    setShowInvestModal(true);
-                                                }
-                                            }}
-                                        >
-                                            Invest
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <TableLayout
-                                columns={['Amount', 'Type', 'Status', 'Action', 'Date']}
-                                data={paginatedData}
-                                emptyText="No deposit history found."
-                                showPagination={true}
-                                renderRow={txn => (
-                                    <tr key={txn._id}>
-                                        <td style={{
-                                            padding: '12px 10px',
-                                            borderBottom: '1px solid #eee',
-                                            whiteSpace: 'normal',
-                                            wordBreak: 'break-word',
-                                            verticalAlign: 'middle',
-                                            textAlign: 'left'
-                                        }}>
-                                            {txn.type === 'Withdraw'
-                                                ? `- $${Number(txn.amount).toLocaleString()}`
-                                                : txn.type === 'Deposit'
-                                                    ? `+ $${Number(txn.amount).toLocaleString()}`
-                                                    : `$${Number(txn.amount).toLocaleString()}`}
-                                        </td>
-                                        <td style={{
-                                            padding: '3px 3px',
-                                            borderBottom: '1px solid #eee',
-                                            whiteSpace: 'normal',
-                                            wordBreak: 'break-word',
-                                            verticalAlign: 'middle',
-                                            textAlign: 'left'
-                                        }}>{txn.type}</td>
-                                        <td style={{
-                                            padding: '3px 3px',
-                                            borderBottom: '1px solid #eee',
-                                            whiteSpace: 'normal',
-                                            wordBreak: 'break-word',
-                                            verticalAlign: 'middle',
-                                            textAlign: 'left'
-                                        }}>{txn.status}</td>
-                                        <td style={{
-                                            padding: '8px 8px',
-                                            borderBottom: '1px solid #eee',
-                                            whiteSpace: 'normal',
-                                            wordBreak: 'break-word',
-                                            verticalAlign: 'middle',
-                                            textAlign: 'left'
-                                        }}>
-                                            <button
-                                                className="btn btn-sm"
-                                                style={{
-                                                    backgroundColor: '#C9CDCF',
-                                                    color: '#000',
-                                                    borderRadius: '20px',
-                                                    border: 'none',
-                                                    padding: '6px 6px',
-                                                    fontWeight: 500,
-                                                }}
-                                                onClick={() => {
-                                                    setSelectedTransaction(txn);
-                                                    setShowTxnModal(true);
-                                                }}
-                                            >
-                                                View
-                                            </button>
-                                        </td>
-                                        <td style={{
-                                            padding: '12px 10px',
-                                            borderBottom: '1px solid #eee',
-                                            whiteSpace: 'normal',
-                                            wordBreak: 'break-word',
-                                            verticalAlign: 'middle',
-                                            textAlign: 'left'
-                                        }}>{txn.date}</td>
-                                    </tr>
-                                )}
-                            />
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-
-
-            <a href="#0" className="scrollToTop active"><i className="las la-chevron-up"></i></a>
-
-            {/* Deposit Modal */}
-            {showModal && <DepositModal />}
-
-            {/* Withdraw Modal */}
-            {showWithdrawModal && <WithdrawModal />}
-
-            {/* Withdrawal Confirmation Popup */}
-            {showWithdrawConfirmation && <WithdrawConfirmationPopup />}
-
-            {/* Invest Modal */}
-            {showInvestModal && <InvestModal />}
-
-            {/* Invest Confirmation Popup */}
-            {showInvestConfirmation && (
-                <div
-                    style={{
-                        position: 'fixed',
-                        top: 0,
-                        left: 0,
-                        width: '100vw',
-                        height: '100vh',
-                        background: 'rgba(0,0,0,0.5)',
-                        zIndex: 2100,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        animation: 'fadeIn .25s'
-                    }}
-                    onClick={() => setShowInvestConfirmation(false)}
-                >
-                    <div
-                        style={{
-                            background: '#fff',
-                            borderRadius: 16,
-                            boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
-                            padding: '2rem 2rem 1.5rem 2rem',
-                            maxWidth: 520,
-                            width: '92%',
-                            animation: 'slideDown .3s',
-                            position: 'relative'
-                        }}
-                        onClick={e => e.stopPropagation()}
-                    >
-                        <h4 style={{ fontWeight: 700, marginBottom: 18, color: '#222', textAlign: 'center' }}>
-                            Confirm Investment
-                        </h4>
-                        <div style={{ fontSize: 16, color: '#333', lineHeight: 1.7, textAlign: 'center', marginBottom: 24 }}>
-                            Your profit will start in 24–48 hours. Next investment is allowed after 3 days. Do you want to invest this amount?
-                        </div>
-                        <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
-                            <button
-                                className="btn btn-secondary"
-                                onClick={() => setShowInvestConfirmation(false)}
-                                style={{
-                                    padding: '10px 24px',
-                                    borderRadius: 8,
-                                    fontWeight: 600,
-                                    minWidth: 100
-                                }}
-                            >
-                                No
-                            </button>
-                            <button
-                                className="btn btn-primary"
-                                onClick={async () => {
-                                    setShowInvestConfirmation(false);
-                                    setInvestProcessing(true);
-                                    try {
-                                        const res = await api.post(
-                                            '/user/investamount',
-                                            {
-                                                from: investFrom,
-                                                to: investTo,
-                                                amount: investAmount
-                                            },
-                                            { withCredentials: true }
-                                        );
-                                        alert(res.data.message || 'Invest submitted!');
-                                        setShowInvestModal(false);
-                                        window.location.reload();
-                                    } catch (err) {
-                                        alert(err.response?.data?.message || 'Invest failed!');
-                                        setInvestProcessing(false);
-                                    }
-                                }}
-                                style={{
-                                    padding: '10px 24px',
-                                    borderRadius: 8,
-                                    fontWeight: 600,
-                                    minWidth: 100
-                                }}
-                                disabled={investProcessing}
-                            >
-                                Yes
-                            </button>
-                        </div>
-                    </div>
-                    <style>
-                        {`
-                        @keyframes fadeIn {
-                            from { opacity: 0; }
-                            to { opacity: 1; }
-                        }
-                        @keyframes slideDown {
-                            from { transform: translateY(-30px); opacity: 0; }
-                            to { transform: translateY(0); opacity: 1; }
-                        }
-                        `}
-                    </style>
-                </div>
-            )}
-
-            {/* Invest Blocker (remaining hours) */}
-            {showInvestBlocker && (
-                <div
-                    style={{
-                        position: 'fixed',
-                        top: 0,
-                        left: 0,
-                        width: '100vw',
-                        height: '100vh',
-                        background: 'rgba(0,0,0,0.5)',
-                        zIndex: 2100,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        animation: 'fadeIn .25s'
-                    }}
-                    onClick={() => setShowInvestBlocker(false)}
-                >
-                    <div
-                        style={{
-                            background: '#fff',
-                            borderRadius: 16,
-                            boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
-                            padding: '1.5rem 1.5rem 1.25rem',
-                            maxWidth: 460,
-                            width: '90%',
-                            animation: 'slideDown .3s',
-                            position: 'relative'
-                        }}
-                        onClick={e => e.stopPropagation()}
-                    >
-                        <h4 style={{ fontWeight: 700, marginBottom: 12, color: '#222', textAlign: 'center' }}>
-                            Investment Locked
-                        </h4>
-                        <div style={{ fontSize: 16, color: '#333', lineHeight: 1.7, textAlign: 'center', marginBottom: 16 }}>
-                            {typeof userData?.BalToInvRemaining === 'number' ? `${userData.BalToInvRemaining} hours left for your next investment.` : 'Please try again later.'}
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'center' }}>
-                            <button
-                                className="btn btn-primary"
-                                onClick={() => setShowInvestBlocker(false)}
-                                style={{ padding: '8px 22px', borderRadius: 8, fontWeight: 600 }}
-                            >
-                                OK
-                            </button>
-                        </div>
-                    </div>
-                    <style>
-                        {`
-                        @keyframes fadeIn {
-                            from { opacity: 0; }
-                            to { opacity: 1; }
-                        }
-                        @keyframes slideDown {
-                            from { transform: translateY(-30px); opacity: 0; }
-                            to { transform: translateY(0); opacity: 1; }
-                        }
-                        `}
-                    </style>
-                </div>
-            )}
-
-            {/* Pending Amount Info (mobile) */}
-            {showPendingInfoModal && (
-                <div
-                    style={{
-                        position: 'fixed',
-                        top: 0,
-                        left: 0,
-                        width: '100vw',
-                        height: '100vh',
-                        background: 'rgba(0,0,0,0.5)',
-                        zIndex: 2100,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        animation: 'fadeIn .25s'
-                    }}
-                    onClick={() => setShowPendingInfoModal(false)}
-                >
-                    <div
-                        style={{
-                            background: '#fff',
-                            borderRadius: 16,
-                            boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
-                            padding: '1.5rem 1.5rem 1.25rem',
-                            maxWidth: 420,
-                            width: '90%',
-                            animation: 'slideDown .3s',
-                            position: 'relative'
-                        }}
-                        onClick={e => e.stopPropagation()}
-                    >
-                        <h4 style={{ fontWeight: 700, marginBottom: 12, color: '#222', textAlign: 'center', fontSize: 18 }}>
-                            Pending Amount Info
-                        </h4>
-                        <div style={{ fontSize: 15, color: '#333', lineHeight: 1.7, textAlign: 'center', marginBottom: 16 }}>
-                            The money you have invested will generate profit after 24 hours.
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'center' }}>
-                            <button
-                                className="btn btn-primary"
-                                onClick={() => setShowPendingInfoModal(false)}
-                                style={{ padding: '8px 22px', borderRadius: 8, fontWeight: 600 }}
-                            >
-                                OK
-                            </button>
-                        </div>
-                    </div>
-                    <style>
-                        {`
-                        @keyframes fadeIn {
-                            from { opacity: 0; }
-                            to { opacity: 1; }
-                        }
-                        @keyframes slideDown {
-                            from { transform: translateY(-30px); opacity: 0; }
-                            to { transform: translateY(0); opacity: 1; }
-                        }
-                        `}
-                    </style>
-                </div>
-            )}
-
-            {/* Transaction Modal */}
-            {showTxnModal && selectedTransaction && (
-                <div
-                    className="modal"
-                    style={{
-                        display: 'block',
-                        background: 'rgba(0,0,0,0.5)',
-                        position: 'fixed',
-                        top: 0,
-                        left: 0,
-                        width: '100vw',
-                        height: '100vh',
-                        zIndex: 2000
-                    }}
-                    tabIndex="-1"
-                    role="dialog"
-                >
-                    <div
-                        className="modal-dialog modal-dialog-centered"
-                        style={{
-                            width: '90vw',
-                            maxWidth: 600,
-                            margin: 'auto'
-                        }}
-                        role="document"
-                    >
-                        <div className="modal-content" style={{ borderRadius: 12, padding: 0, maxHeight: '90vh' }}>
-                            <div className="modal-header" style={{ justifyContent: 'center', borderBottom: 'none' }}>
-                                <h5 className="modal-title" style={{ fontWeight: 700, fontSize: 22, margin: 'auto' }}>
-                                    Transaction History
-                                </h5>
-                            </div>
-                            <div className="modal-body" style={{
-                                padding: '1.5rem',
-                                maxHeight: '60vh',
-                                overflowY: 'auto',
-                                overflowX: 'hidden'
-                            }}>
-                                <div style={{ marginBottom: '12px' }}><b>Exchange Type:</b> {selectedTransaction.exchangeType}</div>
-                                <div style={{ marginBottom: '12px' }}><b>Exchange Address:</b> {selectedTransaction.ourExchange}</div>
-                                <div style={{ marginBottom: '12px' }}><b>Amount:</b> ${Number(selectedTransaction.amount).toLocaleString()}</div>
-                                <div style={{ marginBottom: '12px' }}><b>User Exchange Address:</b> {selectedTransaction.userExchange}</div>
-                                <div style={{ marginBottom: '12px' }}><b>Status:</b> {selectedTransaction.status}</div>
-                                <div style={{ marginBottom: '12px' }}><b>Type:</b> {selectedTransaction.type}</div>
-                                <div style={{ marginBottom: '12px' }}><b>Date:</b> {selectedTransaction.date}</div>
-                                {selectedTransaction.status === 'Declined' && selectedTransaction.type === 'Deposit' && (
-                                    <div className="text-start mt-2">
-                                        <button
-                                            className="btn btn-primary btn-sm"
-                                            onClick={() => {
-                                                setShowTxnModal(false);
-                                                setShowDeclineDetailModal(true);
-                                            }}
-                                        >
-                                            View Detail
-                                        </button>
-                                    </div>
-
-                                )}
-                                {selectedTransaction.image && selectedTransaction.image.length > 30 && (
-                                    <div style={{ marginTop: 12 }}>
-                                        <b>Screenshot:</b><br />
-                                        <img
-                                            src={`data:image/png;base64,${selectedTransaction.image}`}
-                                            alt="Transaction Screenshot"
-                                            style={{
-                                                maxWidth: '100%',
-                                                borderRadius: 8,
-                                                border: '1px solid #eee',
-                                                marginTop: '8px'
-                                            }}
-                                        />
-                                    </div>
-                                )}
-                            </div>
-                            <div className="modal-footer" style={{ justifyContent: 'center', borderTop: 'none' }}>
-                                <button
-                                    className="btn btn-secondary"
-                                    onClick={() => setShowTxnModal(false)}
-                                >
-                                    Close
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-            {/* Decline Detail Modal */}
-            {showDeclineDetailModal && selectedTransaction && (
-                <div
-                    className="modal"
-                    style={{
-                        display: 'block',
-                        background: 'rgba(0,0,0,0.5)',
-                        position: 'fixed',
-                        top: 0,
-                        left: 0,
-                        width: '100vw',
-                        height: '100vh',
-                        zIndex: 2100
-                    }}
-                    tabIndex="-1"
-                    role="dialog"
-                >
-                    <div
-                        className="modal-dialog modal-dialog-centered"
-                        style={{ width: '90vw', maxWidth: 520, margin: 'auto' }}
-                        role="document"
-                    >
-                        <div className="modal-content" style={{ borderRadius: 12, padding: 0 }}>
-                            <div className="modal-header" style={{ justifyContent: 'center', borderBottom: 'none' }}>
-                                <h5 className="modal-title" style={{ fontWeight: 700, fontSize: 20, margin: 'auto' }}>
-                                    Deposit Information
-                                </h5>
-                            </div>
-                            <div className="modal-body" style={{ padding: '1.5rem' }}>
-                                <div style={{ marginBottom: 12 }}>
-                                    <b>Reason</b>
-                                </div>
-                                <div
-                                    style={{
-                                        padding: '12px',
-                                        background: '#f8f9fa',
-                                        border: '1px solid #eee',
-                                        borderRadius: 8,
-                                        whiteSpace: 'pre-wrap'
-                                    }}
-                                >
-                                    {selectedTransaction.comment || 'No reason provided'}
-                                </div>
-                            </div>
-                            <div className="modal-footer" style={{ justifyContent: 'space-between', borderTop: 'none', padding: '1rem 1.5rem 1.25rem' }}>
-                                <button
-                                    className="btn btn-secondary"
-                                    onClick={() => setShowDeclineDetailModal(false)}
-                                >
-                                    Close
-                                </button>
-                                {selectedTransaction.alreadyRedeposit ? (
-                                    <div style={{ color: '#0c5460', background: '#d1ecf1', border: '1px solid #bee5eb', borderRadius: 6, padding: '8px 12px' }}>
-                                        You have already redeposited
-                                    </div>
-                                ) : (
-                                    <button
-                                        className="btn btn-primary"
-                                        onClick={() => {
-                                            setShowDeclineDetailModal(false);
-                                            setIsRedeposit(true);
-                                            setReDepId(selectedTransaction._id);
-                                            setSelectedNetwork('Select');
-                                            setDepositInput('');
-                                            setBinanceTR20('');
-                                            setDepositScreenshot(null);
-                                            setShowVerification(false);
-                                            setDepositProcessing(false);
-                                            setShowModal(true);
-                                        }}
-                                    >
-                                        Redeposit
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
+          </style>
         </>
-    );
+      )}
+
+      {/* Styles for hiding scrollbar */}
+      <style>
+        {`
+          .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+          }
+          .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+          }
+        `}
+      </style>
+
+      {/* Banner Section */}
+      <section
+        className="inner-banner bg_img padding-bottom"
+        style={{
+          background: "url(/assets/images/about/bg.png) no-repeat right bottom",
+        }}
+      >
+        <div className="container">
+          <div className="inner-banner-wrapper">
+            <div className="inner-banner-content">
+              <h2 className="inner-banner-title">
+                User <br /> Dashboard
+              </h2>
+              <ul className="breadcums">
+                {/* <li><a href="/">Home</a></li> */}
+                <li>
+                  <a href="/user-dashboard">Dashboard</a>
+                </li>
+                <li>
+                  <span>Deposit And Withdraw</span>
+                </li>
+              </ul>
+            </div>
+            <div className="inner-banner-thumb about d-none d-md-block">
+              <img src="/assets/images/dashboard/thumb.png" alt="about" />
+            </div>
+          </div>
+        </div>
+        <div className="shape1 paroller" data-paroller-factor=".2">
+          <img src="/assets/images/about/balls.png" alt="about" />
+        </div>
+      </section>
+
+      {/* User Dashboard Section */}
+      <section className="user-dashboard padding-top padding-bottom">
+        <div className="container">
+          <div className="row gy-5">
+            <div className="col-lg-3">
+              <div className="dashboard-sidebar">
+                <div className="close-dashboard d-lg-none">
+                  <i className="las la-times"></i>
+                </div>
+                <div className="dashboard-user">
+                  <div className="user-thumb">
+                    <img
+                      src={
+                        userData?.image
+                          ? userData?.image.startsWith("data:image")
+                            ? userData?.image
+                            : `data:image/png;base64,${userData?.image}`
+                          : "/assets/images/testimonial/aa.png"
+                      }
+                      alt="dashboard"
+                      style={{
+                        width: "100px",
+                        height: "100px",
+                        borderRadius: "50%",
+                        objectFit: "cover",
+                      }}
+                    />
+                  </div>
+                  <div className="user-content">
+                    <span>Welcome</span>
+                    <h5 className="name">{userData?.name || "User"}</h5>
+                    <p className="email">{userData?.email || ""}</p>
+                    <hr />
+                  </div>
+                  {/* Referral Code Display */}
+                  <div
+                    style={{
+                      marginTop: "5px",
+                      padding: "5px",
+                      background: "#f8f9fa",
+                      borderRadius: "8px",
+                      border: "1px solid #e9ecef",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: "12px",
+                        color: "#6c757d",
+                        marginBottom: "0px",
+                      }}
+                    >
+                      Referral Code:
+                    </div>
+                    <div
+                      style={{
+                        fontSize: "16px",
+                        fontWeight: "600",
+                        color: "#007bff",
+                        fontFamily: "monospace",
+                      }}
+                    >
+                      {userData?.referralCode || "N/A"}
+                    </div>
+                  </div>
+                </div>
+                <ul className="user-dashboard-tab">
+                  <li>
+                    <a href="/user-dashboard">Account Overview</a>
+                  </li>
+                  <li>
+                    <a href="/insights">Analytics</a>
+                  </li>
+                  <li>
+                    <a href="/earning-history">Earnings History</a>
+                  </li>
+                  <li>
+                    <a href="/referal-users">Referral Users</a>
+                  </li>
+                  <li>
+                    <a href="/deposit" className="active">
+                      Deposit/Withdraw
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/account-settings">Account Settings</a>
+                  </li>
+                  <li>
+                    <a
+                      href="#0"
+                      onClick={async (e) => {
+                        e.preventDefault();
+                        try {
+                          // Call logout API
+                          await api.get("/logout", { withCredentials: true });
+
+                          // Remove localStorage flag
+                          localStorage.removeItem("authenticated");
+
+                          // Redirect to homepage
+                          window.location.href = "/";
+                        } catch (err) {
+                          console.error("Logout failed:", err);
+                          // Optionally show an error message
+                        }
+                      }}
+                    >
+                      Sign Out
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div className="col-lg-9">
+              <div className="user-toggler-wrapper d-flex d-lg-none">
+                <h4 className="title">User Dashboard</h4>
+                <div className="user-toggler">
+                  <i className="las la-sliders-h"></i>
+                </div>
+              </div>
+
+              {/* Dashboard Boxes Section - Horizontal Scroll on Mobile */}
+              <div
+                className="dashboard-boxes hide-scrollbar"
+                style={{
+                  overflowX: "auto",
+                }}
+              >
+                <div
+                  className="row justify-content-lg-center g-4 mb-3"
+                  style={{ minWidth: "900px" }}
+                >
+                  {/* Total Balance */}
+                  <div className="col-4 col-lg-4">
+                    <div className="dashboard-item">
+                      <div className="row align-items-center">
+                        <div className="col-4 text-center">
+                          <img
+                            src="/assets/images/dashboard/wallet.png"
+                            alt="dashboard"
+                            style={{ width: 48, height: 48 }}
+                          />
+                        </div>
+                        <div className="col-8">
+                          <h6
+                            className="title mb-0"
+                            style={{ fontWeight: 600 }}
+                          >
+                            Total Amount
+                          </h6>
+                        </div>
+                      </div>
+                      <div className="row mt-2">
+                        <div className="col-12 text-center">
+                          <h3
+                            className="ammount theme-one"
+                            style={{ fontWeight: 700, fontSize: 22 }}
+                          >
+                            ${(userData?.totalBalance || 0).toLocaleString()}
+                          </h3>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Total Earning */}
+                  <div className="col-4 col-lg-4">
+                    <div className="dashboard-item">
+                      <div className="row align-items-center">
+                        <div className="col-4 text-center">
+                          <img
+                            src="/assets/images/dashboard/profit.png"
+                            alt="dashboard"
+                            style={{ width: 48, height: 48 }}
+                          />
+                        </div>
+                        <div className="col-8">
+                          <h6
+                            className="title mb-0"
+                            style={{ fontWeight: 600 }}
+                          >
+                            Total Earning
+                          </h6>
+                        </div>
+                      </div>
+                      <div className="row mt-2">
+                        <div className="col-12 text-center">
+                          <h3
+                            className="ammount theme-two"
+                            style={{ fontWeight: 700, fontSize: 22 }}
+                          >
+                            ${(userData?.totalEarn || 0).toLocaleString()}
+                          </h3>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Referral Earning */}
+                  <div className="col-4 col-lg-4">
+                    <div className="dashboard-item">
+                      <div className="row align-items-center">
+                        <div className="col-4 text-center">
+                          <img
+                            src="/assets/images/dashboard/reference.png"
+                            alt="dashboard"
+                            style={{ width: 48, height: 48 }}
+                          />
+                        </div>
+                        <div className="col-8">
+                          <h6
+                            className="title mb-0"
+                            style={{ fontWeight: 600 }}
+                          >
+                            Referral Earning
+                          </h6>
+                        </div>
+                      </div>
+                      <div className="row mt-2">
+                        <div className="col-12 text-center">
+                          <h3
+                            className="ammount theme-four"
+                            style={{ fontWeight: 700, fontSize: 22 }}
+                          >
+                            ${(userData?.refEarn || 0).toLocaleString()}
+                          </h3>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Second Row of Dashboard Boxes */}
+              <div
+                className="dashboard-boxes hide-scrollbar"
+                style={{
+                  overflowX: "auto",
+                }}
+              >
+                <div
+                  className="row justify-content-lg-center g-4 mb-3"
+                  style={{ minWidth: "900px" }}
+                >
+                  {/* Deposit Amount */}
+                  <div className="col-4 col-lg-4">
+                    <div className="dashboard-item">
+                      <div className="row align-items-center">
+                        <div className="col-4 text-center">
+                          <img
+                            src="/assets/images/dashboard/deposit.png"
+                            alt="dashboard"
+                            style={{ width: 48, height: 48 }}
+                          />
+                        </div>
+                        <div className="col-8">
+                          <h6
+                            className="title mb-0"
+                            style={{ fontWeight: 600 }}
+                          >
+                            Deposit Amount
+                          </h6>
+                        </div>
+                      </div>
+                      <div className="row mt-2">
+                        <div className="col-12 text-center">
+                          <h3
+                            className="ammount theme-three"
+                            style={{ fontWeight: 700, fontSize: 22 }}
+                          >
+                            ${(userData?.depositAmount || 0).toLocaleString()}
+                          </h3>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Invested Amount */}
+                  <div className="col-4 col-lg-4">
+                    <div className="dashboard-item">
+                      <div className="row align-items-center">
+                        <div className="col-4 text-center">
+                          <img
+                            src="/assets/images/dashboard/invest.png"
+                            alt="dashboard"
+                            style={{ width: 48, height: 48 }}
+                          />
+                        </div>
+                        <div className="col-8">
+                          <h6
+                            className="title mb-0"
+                            style={{ fontWeight: 600 }}
+                          >
+                            Invested Amount
+                          </h6>
+                        </div>
+                      </div>
+                      <div className="row mt-2">
+                        <div className="col-12 text-center">
+                          <h3
+                            className="ammount theme-three"
+                            style={{ fontWeight: 700, fontSize: 22 }}
+                          >
+                            ${(userData?.investedAmount || 0).toLocaleString()}
+                          </h3>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Pending Amount Box */}
+                  <div className="col-4 col-lg-4">
+                    <div className="dashboard-item position-relative">
+                      {/* Top-right info icon */}
+                      <div
+                        className="position-absolute top-0 end-0 me-2 mt-2"
+                        style={{ cursor: "pointer" }}
+                        title="The money you have invested will generate profit after 24 hours."
+                        onClick={() => {
+                          try {
+                           
+                            const isTouch =
+                              typeof window !== "undefined" &&
+                              window.matchMedia &&
+                              window.matchMedia("(hover: none)").matches;
+                            if (isTouch) setShowPendingInfoModal(true);
+                          } catch (_) {
+                            // no-op
+                          }
+                        }}
+                      >
+                        {userData?.pendingLotsSum > 0 && (
+                          <span
+                            style={{
+                              display: "inline-block",
+                              backgroundColor: "#ff3b30",
+                              color: "#fff",
+                            borderRadius: "50%",
+                            width: "20px",
+                            height: "20px",
+                            textAlign: "center",
+                            lineHeight: "20px",
+                            fontWeight: "bold",
+                            fontSize: "14px",
+                          }}
+                        >
+                          ?
+                        </span>
+                        )}
+                      </div>
+
+                      <div className="row align-items-center">
+                        <div className="col-4 text-center">
+                          <img
+                            src="/assets/images/dashboard/queue.png"
+                            alt="dashboard"
+                            style={{ width: 48, height: 48 }}
+                          />
+                        </div>
+                        <div className="col-8">
+                          <h6
+                            className="title mb-0"
+                            style={{ fontWeight: 600 }}
+                          >
+                            Pending Amount
+                          </h6>
+                        </div>
+                      </div>
+
+                      <div className="row mt-2">
+                        <div className="col-12 text-center">
+                          <h3
+                            className="ammount theme-four"
+                            style={{ fontWeight: 700, fontSize: 22 }}
+                          >
+                            ${(userData?.pendingLotsSum || 0).toLocaleString()}
+                          </h3>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                className="d-lg-none text-center text-muted mb-3"
+                style={{ fontSize: "14px" }}
+              >
+                <i className="las la-arrows-alt-h me-2"></i>Scroll horizontally
+                to view details
+              </div>
+              <div className="col-lg-12">
+                <div
+                  className="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center justify-content-lg-between mb-4"
+                  style={{ gap: "12px" }}
+                >
+                  <h4 className="title mb-3 mb-lg-0">Deposit history</h4>
+                  <div
+                    className="d-flex flex-column flex-lg-row w-100 w-lg-auto justify-content-lg-end"
+                    style={{ gap: "12px" }}
+                  >
+                    <button
+                      className="btn btn-primary px-4 py-2 w-100 w-lg-auto"
+                      onClick={() => setShowModal(true)}
+                    >
+                      Deposit
+                    </button>
+                    <button
+                      className="btn btn-primary px-4 py-2 w-100 w-lg-auto"
+                      onClick={() => {
+                        setWithdrawError(""); // Clear any previous errors
+
+                        // ✅ UTC-based day check (0 = Sunday, 6 = Saturday)
+                        const todayUTC = new Date();
+                        const dayOfWeekUTC = todayUTC.getUTCDay();
+
+                        console.log("UTC Day:", dayOfWeekUTC);
+
+                        if (dayOfWeekUTC === 0 || dayOfWeekUTC === 6) {
+                          // Weekend (UTC) → allow withdrawal
+                          setShowWithdrawModal(true);
+                        } else {
+                          // Weekday (UTC) → show restriction modal
+                          setShowWeekendRestrictionModal(true);
+                        }
+                      }}
+                    >
+                      Withdraw
+                    </button>
+
+                    <button
+                      className="btn btn-primary px-4 py-2 w-100 w-lg-auto"
+                      onClick={() => {
+                        const remaining = userData?.BalToInvRemaining;
+                        if (
+                          typeof remaining === "number" &&
+                          remaining !== 342
+                        ) {
+                          setShowInvestBlocker(true);
+                        } else {
+                          setShowInvestModal(true);
+                        }
+                      }}
+                    >
+                      Invest
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <TableLayout
+                columns={["Amount", "Type", "Status", "Action", "Date"]}
+                data={paginatedData}
+                emptyText="No deposit history found."
+                showPagination={true}
+                renderRow={(txn) => (
+                  <tr key={txn._id}>
+                    <td
+                      style={{
+                        padding: "12px 10px",
+                        borderBottom: "1px solid #eee",
+                        whiteSpace: "normal",
+                        wordBreak: "break-word",
+                        verticalAlign: "middle",
+                        textAlign: "left",
+                      }}
+                    >
+                      {txn.type === "Withdraw"
+                        ? `- $${Number(txn.amount).toLocaleString()}`
+                        : txn.type === "Deposit"
+                        ? `+ $${Number(txn.amount).toLocaleString()}`
+                        : `$${Number(txn.amount).toLocaleString()}`}
+                    </td>
+                    <td
+                      style={{
+                        padding: "3px 3px",
+                        borderBottom: "1px solid #eee",
+                        whiteSpace: "normal",
+                        wordBreak: "break-word",
+                        verticalAlign: "middle",
+                        textAlign: "left",
+                      }}
+                    >
+                      {txn.type}
+                    </td>
+                    <td
+                      style={{
+                        padding: "3px 3px",
+                        borderBottom: "1px solid #eee",
+                        whiteSpace: "normal",
+                        wordBreak: "break-word",
+                        verticalAlign: "middle",
+                        textAlign: "left",
+                      }}
+                    >
+                      {txn.status}
+                    </td>
+                    <td
+                      style={{
+                        padding: "8px 8px",
+                        borderBottom: "1px solid #eee",
+                        whiteSpace: "normal",
+                        wordBreak: "break-word",
+                        verticalAlign: "middle",
+                        textAlign: "left",
+                      }}
+                    >
+                      <button
+                        className="btn btn-sm"
+                        style={{
+                          backgroundColor: "#C9CDCF",
+                          color: "#000",
+                          borderRadius: "20px",
+                          border: "none",
+                          padding: "6px 6px",
+                          fontWeight: 500,
+                        }}
+                        onClick={() => {
+                          setSelectedTransaction(txn);
+                          setShowTxnModal(true);
+                        }}
+                      >
+                        View
+                      </button>
+                    </td>
+                    <td
+                      style={{
+                        padding: "12px 10px",
+                        borderBottom: "1px solid #eee",
+                        whiteSpace: "normal",
+                        wordBreak: "break-word",
+                        verticalAlign: "middle",
+                        textAlign: "left",
+                      }}
+                    >
+                      {txn.date}
+                    </td>
+                  </tr>
+                )}
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <a href="#0" className="scrollToTop active">
+        <i className="las la-chevron-up"></i>
+      </a>
+
+      {/* Deposit Modal */}
+      {showModal && <DepositModal />}
+
+      {/* Withdraw Modal */}
+      {showWithdrawModal && <WithdrawModal />}
+
+      {/* Weekend Restriction Modal */}
+      {showWeekendRestrictionModal && <WeekendRestrictionModal />}
+
+      {/* Withdrawal Confirmation Popup */}
+      {showWithdrawConfirmation && <WithdrawConfirmationPopup />}
+
+      {/* OTP Sent Notification Modal */}
+      {showOtpSentNotification && <OtpSentNotificationModal />}
+
+      {/* Withdrawal Verification Modal */}
+      {showWithdrawVerification && <WithdrawVerificationModal />}
+
+      {/* Invest Modal */}
+      {showInvestModal && <InvestModal />}
+
+      {/* Invest Confirmation Popup */}
+      {showInvestConfirmation && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            background: "rgba(0,0,0,0.5)",
+            zIndex: 2100,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            animation: "fadeIn .25s",
+          }}
+          onClick={() => setShowInvestConfirmation(false)}
+        >
+          <div
+            style={{
+              background: "#fff",
+              borderRadius: 16,
+              boxShadow: "0 8px 32px rgba(0,0,0,0.15)",
+              padding: "2rem 2rem 1.5rem 2rem",
+              maxWidth: 520,
+              width: "92%",
+              animation: "slideDown .3s",
+              position: "relative",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h4
+              style={{
+                fontWeight: 700,
+                marginBottom: 18,
+                color: "#222",
+                textAlign: "center",
+              }}
+            >
+              Confirm Investment
+            </h4>
+            <div
+              style={{
+                fontSize: 16,
+                color: "#333",
+                lineHeight: 1.7,
+                textAlign: "center",
+                marginBottom: 24,
+              }}
+            >
+              Your profit will start in 24–48 hours. Next investment is allowed
+              after 3 days. Do you want to invest this amount?
+            </div>
+            <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
+              <button
+                className="btn btn-secondary"
+                onClick={() => setShowInvestConfirmation(false)}
+                style={{
+                  padding: "10px 24px",
+                  borderRadius: 8,
+                  fontWeight: 600,
+                  minWidth: 100,
+                }}
+              >
+                No
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={async () => {
+                  setShowInvestConfirmation(false);
+                  setInvestProcessing(true);
+                  try {
+                    const res = await api.post(
+                      "/user/investamount",
+                      {
+                        from: investFrom,
+                        to: investTo,
+                        amount: investAmount,
+                      },
+                      { withCredentials: true }
+                    );
+                    alert(res.data.message || "Invest submitted!");
+                    setShowInvestModal(false);
+                    window.location.reload();
+                  } catch (err) {
+                    alert(err.response?.data?.message || "Invest failed!");
+                    setInvestProcessing(false);
+                  }
+                }}
+                style={{
+                  padding: "10px 24px",
+                  borderRadius: 8,
+                  fontWeight: 600,
+                  minWidth: 100,
+                }}
+                disabled={investProcessing}
+              >
+                Yes
+              </button>
+            </div>
+          </div>
+          <style>
+            {`
+                        @keyframes fadeIn {
+                            from { opacity: 0; }
+                            to { opacity: 1; }
+                        }
+                        @keyframes slideDown {
+                            from { transform: translateY(-30px); opacity: 0; }
+                            to { transform: translateY(0); opacity: 1; }
+                        }
+                        `}
+          </style>
+        </div>
+      )}
+
+      {/* Invest Blocker (remaining hours) */}
+      {showInvestBlocker && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            background: "rgba(0,0,0,0.5)",
+            zIndex: 2100,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            animation: "fadeIn .25s",
+          }}
+          onClick={() => setShowInvestBlocker(false)}
+        >
+          <div
+            style={{
+              background: "#fff",
+              borderRadius: 16,
+              boxShadow: "0 8px 32px rgba(0,0,0,0.15)",
+              padding: "1.5rem 1.5rem 1.25rem",
+              maxWidth: 460,
+              width: "90%",
+              animation: "slideDown .3s",
+              position: "relative",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h4
+              style={{
+                fontWeight: 700,
+                marginBottom: 12,
+                color: "#222",
+                textAlign: "center",
+              }}
+            >
+              Investment Locked
+            </h4>
+            <div
+              style={{
+                fontSize: 16,
+                color: "#333",
+                lineHeight: 1.7,
+                textAlign: "center",
+                marginBottom: 16,
+              }}
+            >
+              {typeof userData?.BalToInvRemaining === "number"
+                ? `${userData.BalToInvRemaining} hours left for your next investment.`
+                : "Please try again later."}
+            </div>
+            <div style={{ display: "flex", justifyContent: "center" }}>
+              <button
+                className="btn btn-primary"
+                onClick={() => setShowInvestBlocker(false)}
+                style={{
+                  padding: "8px 22px",
+                  borderRadius: 8,
+                  fontWeight: 600,
+                }}
+              >
+                OK
+              </button>
+            </div>
+          </div>
+          <style>
+            {`
+                        @keyframes fadeIn {
+                            from { opacity: 0; }
+                            to { opacity: 1; }
+                        }
+                        @keyframes slideDown {
+                            from { transform: translateY(-30px); opacity: 0; }
+                            to { transform: translateY(0); opacity: 1; }
+                        }
+                        `}
+          </style>
+        </div>
+      )}
+
+      {/* Pending Amount Info (mobile) */}
+      {showPendingInfoModal && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            background: "rgba(0,0,0,0.5)",
+            zIndex: 2100,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            animation: "fadeIn .25s",
+          }}
+          onClick={() => setShowPendingInfoModal(false)}
+        >
+          <div
+            style={{
+              background: "#fff",
+              borderRadius: 16,
+              boxShadow: "0 8px 32px rgba(0,0,0,0.15)",
+              padding: "1.5rem 1.5rem 1.25rem",
+              maxWidth: 420,
+              width: "90%",
+              animation: "slideDown .3s",
+              position: "relative",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h4
+              style={{
+                fontWeight: 700,
+                marginBottom: 12,
+                color: "#222",
+                textAlign: "center",
+                fontSize: 18,
+              }}
+            >
+              Pending Amount Info
+            </h4>
+            <div
+              style={{
+                fontSize: 15,
+                color: "#333",
+                lineHeight: 1.7,
+                textAlign: "center",
+                marginBottom: 16,
+              }}
+            >
+              The money you have invested will generate profit after 24 hours.
+            </div>
+            <div style={{ display: "flex", justifyContent: "center" }}>
+              <button
+                className="btn btn-primary"
+                onClick={() => setShowPendingInfoModal(false)}
+                style={{
+                  padding: "8px 22px",
+                  borderRadius: 8,
+                  fontWeight: 600,
+                }}
+              >
+                OK
+              </button>
+            </div>
+          </div>
+          <style>
+            {`
+                        @keyframes fadeIn {
+                            from { opacity: 0; }
+                            to { opacity: 1; }
+                        }
+                        @keyframes slideDown {
+                            from { transform: translateY(-30px); opacity: 0; }
+                            to { transform: translateY(0); opacity: 1; }
+                        }
+                        `}
+          </style>
+        </div>
+      )}
+
+      {/* Transaction Modal */}
+      {showTxnModal && selectedTransaction && (
+        <div
+          className="modal"
+          style={{
+            display: "block",
+            background: "rgba(0,0,0,0.5)",
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            zIndex: 2000,
+          }}
+          tabIndex="-1"
+          role="dialog"
+        >
+          <div
+            className="modal-dialog modal-dialog-centered"
+            style={{
+              width: "90vw",
+              maxWidth: 600,
+              margin: "auto",
+            }}
+            role="document"
+          >
+            <div
+              className="modal-content"
+              style={{ borderRadius: 12, padding: 0, maxHeight: "90vh" }}
+            >
+              <div
+                className="modal-header"
+                style={{ justifyContent: "center", borderBottom: "none" }}
+              >
+                <h5
+                  className="modal-title"
+                  style={{ fontWeight: 700, fontSize: 22, margin: "auto" }}
+                >
+                  Transaction History
+                </h5>
+              </div>
+              <div
+                className="modal-body"
+                style={{
+                  padding: "1.5rem",
+                  maxHeight: "60vh",
+                  overflowY: "auto",
+                  overflowX: "hidden",
+                }}
+              >
+                <div style={{ marginBottom: "12px" }}>
+                  <b>Exchange Type:</b> {selectedTransaction.exchangeType}
+                </div>
+                <div style={{ marginBottom: "12px" }}>
+                  <b>Exchange Address:</b> {selectedTransaction.ourExchange}
+                </div>
+                <div style={{ marginBottom: "12px" }}>
+                  <b>Amount:</b> $
+                  {Number(selectedTransaction.amount).toLocaleString()}
+                </div>
+                <div style={{ marginBottom: "12px" }}>
+                  <b>User Exchange Address:</b>{" "}
+                  {selectedTransaction.userExchange}
+                </div>
+                <div style={{ marginBottom: "12px" }}>
+                  <b>Status:</b> {selectedTransaction.status}
+                </div>
+                <div style={{ marginBottom: "12px" }}>
+                  <b>Type:</b> {selectedTransaction.type}
+                </div>
+                <div style={{ marginBottom: "12px" }}>
+                  <b>Date:</b> {selectedTransaction.date}
+                </div>
+                {selectedTransaction.status === "Declined" &&
+                  selectedTransaction.type === "Deposit" && (
+                    <div className="text-start mt-2">
+                      <button
+                        className="btn btn-primary btn-sm"
+                        onClick={() => {
+                          setShowTxnModal(false);
+                          setShowDeclineDetailModal(true);
+                        }}
+                      >
+                        View Detail
+                      </button>
+                    </div>
+                  )}
+                {selectedTransaction.image &&
+                  selectedTransaction.image.length > 30 && (
+                    <div style={{ marginTop: 12 }}>
+                      <b>Screenshot:</b>
+                      <br />
+                      <img
+                        src={`data:image/png;base64,${selectedTransaction.image}`}
+                        alt="Transaction Screenshot"
+                        style={{
+                          maxWidth: "100%",
+                          borderRadius: 8,
+                          border: "1px solid #eee",
+                          marginTop: "8px",
+                        }}
+                      />
+                    </div>
+                  )}
+              </div>
+              <div
+                className="modal-footer"
+                style={{ justifyContent: "center", borderTop: "none" }}
+              >
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => setShowTxnModal(false)}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Decline Detail Modal */}
+      {showDeclineDetailModal && selectedTransaction && (
+        <div
+          className="modal"
+          style={{
+            display: "block",
+            background: "rgba(0,0,0,0.5)",
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            zIndex: 2100,
+          }}
+          tabIndex="-1"
+          role="dialog"
+        >
+          <div
+            className="modal-dialog modal-dialog-centered"
+            style={{ width: "90vw", maxWidth: 520, margin: "auto" }}
+            role="document"
+          >
+            <div
+              className="modal-content"
+              style={{ borderRadius: 12, padding: 0 }}
+            >
+              <div
+                className="modal-header"
+                style={{ justifyContent: "center", borderBottom: "none" }}
+              >
+                <h5
+                  className="modal-title"
+                  style={{ fontWeight: 700, fontSize: 20, margin: "auto" }}
+                >
+                  Deposit Information
+                </h5>
+              </div>
+              <div className="modal-body" style={{ padding: "1.5rem" }}>
+                <div style={{ marginBottom: 12 }}>
+                  <b>Reason</b>
+                </div>
+                <div
+                  style={{
+                    padding: "12px",
+                    background: "#f8f9fa",
+                    border: "1px solid #eee",
+                    borderRadius: 8,
+                    whiteSpace: "pre-wrap",
+                  }}
+                >
+                  {selectedTransaction.comment || "No reason provided"}
+                </div>
+              </div>
+              <div
+                className="modal-footer"
+                style={{
+                  justifyContent: "space-between",
+                  borderTop: "none",
+                  padding: "1rem 1.5rem 1.25rem",
+                }}
+              >
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => setShowDeclineDetailModal(false)}
+                >
+                  Close
+                </button>
+                {selectedTransaction.alreadyRedeposit ? (
+                  <div
+                    style={{
+                      color: "#0c5460",
+                      background: "#d1ecf1",
+                      border: "1px solid #bee5eb",
+                      borderRadius: 6,
+                      padding: "8px 12px",
+                    }}
+                  >
+                    You have already redeposited
+                  </div>
+                ) : (
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => {
+                      setShowDeclineDetailModal(false);
+                      setIsRedeposit(true);
+                      setReDepId(selectedTransaction._id);
+                      setSelectedNetwork("Select");
+                      setDepositInput("");
+                      setBinanceTR20("");
+                      setDepositScreenshot(null);
+                      setShowVerification(false);
+                      setDepositProcessing(false);
+                      setShowModal(true);
+                    }}
+                  >
+                    Redeposit
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
 }
 
 export default Deposit;

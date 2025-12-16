@@ -103,43 +103,43 @@ function AcSetting() {
     return (
         <>
             {isLoading && (
-        <>
-          <div
-            className="loader-bg"
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              width: '100vw',
-              height: '100vh',
-              background: '#fff',
-              zIndex: 9999,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-          >
-            <img
-              src="/loader.jpeg"
-              alt="Loading..."
-              style={{
-                width: 260,
-                height: 260,
-                animation: 'blink 1s infinite',
-              }}
-            />
-          </div>
-          <style>
-            {`
+                <>
+                    <div
+                        className="loader-bg"
+                        style={{
+                            position: 'fixed',
+                            top: 0,
+                            left: 0,
+                            width: '100vw',
+                            height: '100vh',
+                            background: '#fff',
+                            zIndex: 9999,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}
+                    >
+                        <img
+                            src="/loader.jpeg"
+                            alt="Loading..."
+                            style={{
+                                width: 260,
+                                height: 260,
+                                animation: 'blink 1s infinite',
+                            }}
+                        />
+                    </div>
+                    <style>
+                        {`
         @keyframes blink {
           0% { opacity: 1; }
           50% { opacity: 0.3; }
           100% { opacity: 1; }
         }
       `}
-          </style>
-        </>
-      )}
+                    </style>
+                </>
+            )}
 
 
 
@@ -179,15 +179,15 @@ function AcSetting() {
                                         <img
                                             src={userData.image ? (userData.image.startsWith('data:image') ? userData.image : `data:image/png;base64,${userData.image}`) : "/assets/images/testimonial/aa.png"}
                                             alt="dashboard"
-                                            style={{ width: "100px", height: "100px" ,borderRadius: "50%", objectFit: "cover" }}
+                                            style={{ width: "100px", height: "100px", borderRadius: "50%", objectFit: "cover" }}
                                         />
                                     </div>
 
                                     <div className="user-content">
-                                         <span>Welcome</span>
-                                       <h5 className="name">{userData.name}</h5>
+                                        <span>Welcome</span>
+                                        <h5 className="name">{userData.name}</h5>
                                         <p className="email">{userData.email}</p>
-                                        <hr/>
+                                        <hr />
                                     </div>
                                     {/* Referral Code Display */}
                                     <div style={{ marginTop: '5px', padding: '5px', background: '#f8f9fa', borderRadius: '8px', border: '1px solid #e9ecef' }}>
@@ -199,6 +199,9 @@ function AcSetting() {
                                 </div>
                                 <ul className="user-dashboard-tab">
                                     <li><a href="/user-dashboard" >Account Overview</a></li>
+                                    <li>
+                                        <a href="/insights">Analytics</a>
+                                    </li>
                                     <li><a href="/earning-history">Earnings History</a></li>
                                     <li><a href="/referal-users">Referral Users</a></li>
                                     <li><a href="/deposit">Deposit/Withdraw</a></li>
@@ -251,7 +254,7 @@ function AcSetting() {
                                             <img
                                                 src={updateFields.image ? updateFields.image : (userData.image ? (userData.image.startsWith('data:image') ? userData.image : `data:image/png;base64,${userData.image}`) : "/assets/images/testimonial/aa.png")}
                                                 alt="Profile"
-                                                style={{ width: '100px', height: '100px', borderRadius: '50%', objectFit: 'cover',  }}
+                                                style={{ width: '100px', height: '100px', borderRadius: '50%', objectFit: 'cover', }}
                                             />
                                             {/* Overlay for upload */}
                                             {showUpload && (
@@ -374,7 +377,7 @@ function AcSetting() {
                 </div>
             </section>
 
-            
+
 
 
 

@@ -1,6 +1,9 @@
-const userDashService = require('../services/User_Dashboard.service');
-const UserModel = require('../models/user.model');
-const { sendAdminDepositEmail, sendUserPendingDepositmail } = require('../services/sendMailer'); // Import the mailer function
+const userDashService = require("../services/User_Dashboard.service");
+const UserModel = require("../models/user.model");
+const {
+  sendAdminDepositEmail,
+  sendUserPendingDepositmail,
+} = require("../services/sendMailer"); // Import the mailer function
 
 const fs = require("fs");
 
@@ -19,7 +22,12 @@ exports.showDashboard = async (req, res) => {
 exports.showEarningHistory = async (req, res) => {
   try {
     const userId = req.user._id; // from auth middleware
-    const historyData = await userDashService.showEarningHistory(userId);
+    const { page = 1, limit = 8 } = req.query;
+    const historyData = await userDashService.showEarningHistory(
+      userId,
+      page,
+      limit
+    );
     res.status(200).json(historyData);
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -45,13 +53,14 @@ exports.deposit = async (req, res) => {
       amount,
       userExchange,
       image,
-      type
+      type,
     });
 
     // ✅ Send fast response immediately
     res.status(200).json({
       success: true,
-      message: "Your deposit request has been received and will be processed within 24 hours.",
+      message:
+        "Your deposit request has been received and will be processed within 24 hours.",
       data: depositData,
     });
 
@@ -85,7 +94,6 @@ exports.deposit = async (req, res) => {
         console.error("Background email sending failed:", err.message);
       }
     });
-
   } catch (err) {
     res.status(400).json({
       success: false,
@@ -114,14 +122,41 @@ exports.showDeposit = async (req, res) => {
   }
 };
 
+// controllers/userController.js
+exports.withdrawOtp = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    await userDashService.withdrawOtp(userId);
+
+    return res.status(200).json({
+      success: true,
+      message: "OTP sent successfully",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message || "failed to send withdraw otp",
+    });
+  }
+};
+
 // withdraw function
 exports.withdraw = async (req, res) => {
   try {
     const userId = req.user._id; // from auth middleware
-    const { exchangeType, ourExchange, amount, userExchange, type } = req.body || {};
+    const { exchangeType, ourExchange, amount, userExchange, type, otp } =
+      req.body || {};
 
     // Basic validation
-    if (!exchangeType || !ourExchange || !amount || !userExchange || !type) {
+    if (
+      !exchangeType ||
+      !ourExchange ||
+      !amount ||
+      !userExchange ||
+      !type ||
+      !otp
+    ) {
       return res.status(400).json({
         success: false,
         message: "Missing required fields for withdrawal.",
@@ -136,15 +171,16 @@ exports.withdraw = async (req, res) => {
       amount,
       userExchange,
       type,
+      otp,
     });
 
     // ✅ Send immediate response to user
     res.status(200).json({
       success: true,
-      message: "Your withdrawal request has been submitted. It will be processed within 24 hours.",
+      message:
+        "Your withdrawal request has been submitted. It will be processed within 24 hours.",
       data: withdrawData,
     });
-
   } catch (err) {
     console.error("Withdraw error:", err);
     res.status(400).json({
@@ -158,18 +194,23 @@ exports.withdraw = async (req, res) => {
 exports.referralUser = async (req, res) => {
   try {
     const userId = req.user._id; // Comes from auth middleware
+    const { page = 1, limit = 8 } = req.query;
 
-    const referralCode = await userDashService.referralUser(userId);
+    const referralCode = await userDashService.referralUser(
+      userId,
+      parseInt(page),
+      parseInt(limit)
+    );
 
     res.status(200).json({
       success: true,
       message: "Referral code fetched successfully",
-      referralCode: referralCode
+      referralCode: referralCode,
     });
   } catch (err) {
     res.status(400).json({
       success: false,
-      message: err.message || "Referral fetch failed"
+      message: err.message || "Referral fetch failed",
     });
   }
 };
@@ -182,7 +223,12 @@ exports.invest = async (req, res) => {
 
     const { from, to, amount } = req.body;
 
-    const investmentData = await userDashService.invest(userId, from, to, amount);
+    const investmentData = await userDashService.invest(
+      userId,
+      from,
+      to,
+      amount
+    );
 
     res.status(200).json({
       success: true,
@@ -192,7 +238,7 @@ exports.invest = async (req, res) => {
   } catch (err) {
     res.status(400).json({
       success: false,
-      message: err.message || "Investment fetch failed"
+      message: err.message || "Investment fetch failed",
     });
   }
 };
@@ -216,7 +262,12 @@ exports.updateProfile = async (req, res) => {
     if (req.file) {
       profileImage = fs.readFileSync(req.file.path, { encoding: "base64" });
     }
-    const profileData = await userDashService.updateProfile(userId, name, password, profileImage);
+    const profileData = await userDashService.updateProfile(
+      userId,
+      name,
+      password,
+      profileImage
+    );
     res.status(200).json(profileData);
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -226,12 +277,12 @@ exports.updateProfile = async (req, res) => {
 exports.redeposit = async (req, res) => {
   try {
     const userId = req.user._id; // from auth middleware
-    const { exchangeType, ourExchange, amount, userExchange, type, reDepId } = req.body;
+    const { exchangeType, ourExchange, amount, userExchange, type, reDepId } =
+      req.body;
     let image = null;
     if (req.file) {
       image = req.file.buffer.toString("base64");
     }
-
 
     const depositData = await userDashService.redeposit({
       userId,
@@ -241,7 +292,7 @@ exports.redeposit = async (req, res) => {
       userExchange,
       image,
       type: type,
-      reDepId: reDepId
+      reDepId: reDepId,
     });
 
     res.status(200).json({
@@ -257,4 +308,22 @@ exports.redeposit = async (req, res) => {
   }
 };
 
+// Insights function
+exports.getInsights = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { range } = req.query; // Weekly, Monthly, etc.
 
+    const insightsData = await userDashService.getInsightsData(userId, range);
+
+    res.status(200).json({
+      success: true,
+      data: insightsData,
+    });
+  } catch (err) {
+    res.status(400).json({
+      success: false,
+      message: err.message || "Failed to fetch insights",
+    });
+  }
+};

@@ -1,14 +1,15 @@
 const User = require('../models/user.model');
 const DailyEarn = require('../models/dailyEarn.model');
 const RedUserEarning = require('../models/refUserEarn.model');
+const RizydraInfo = require('../models/rizydraInfo.model');
 const { sendDailyProfitEmail } = require("./sendMailer");
 
-// ✅ Round to 3 decimals
+// ================= Utilities =================
+
+// Round to 3 decimals
 const roundTo3 = (num) => parseFloat(num.toFixed(3));
 
-// ----------------------------------------
-// NEW: Get previous UTC day "YYYY-MM-DD"
-// ----------------------------------------
+// Get previous UTC day string (YYYY-MM-DD)
 const getUTCPreviousDayString = () => {
   const now = new Date();
   const prev = new Date(Date.UTC(
@@ -16,10 +17,10 @@ const getUTCPreviousDayString = () => {
     now.getUTCMonth(),
     now.getUTCDate() - 1
   ));
-  return prev.toISOString().split("T")[0]; // example: "2025-12-20"
+  return prev.toISOString().split("T")[0];
 };
 
-// Old function kept for referral lookup
+// Yesterday UTC range (for referral lookup)
 const getUTCYesterdayRange = () => {
   const now = new Date();
   const start = new Date(Date.UTC(
@@ -37,23 +38,24 @@ const getUTCYesterdayRange = () => {
   return { start, end };
 };
 
+// ================= MAIN FUNCTION =================
 
-// =======================================================
-// MAIN FUNCTION
-// =======================================================
 exports.calculateDailyEarnings = async () => {
-  const { start, end } = getUTCYesterdayRange();
-  const prevDay = getUTCPreviousDayString(); // <-- NEW
 
-  console.log("Calculating daily earnings for UTC range:", start, "to", end);
+  // 🔥 Fetch dynamic daily percentage (default 1%)
+  const rizydraInfo = await RizydraInfo.findOne().lean();
+  const DAILY_PERCENTAGE = rizydraInfo?.dailyPercentage || 1;
+
+  const { start, end } = getUTCYesterdayRange();
+  const prevDay = getUTCPreviousDayString();
+
+  console.log("Calculating daily earnings for UTC day:", prevDay);
 
   const allUsers = await User.find({});
 
   for (const user of allUsers) {
 
-    // ------------------------------------
-    // ✔ NEW: Prevent duplicate earnings
-    // ------------------------------------
+    // ========== Prevent duplicate daily earning ==========
     const existingRecord = await DailyEarn.findOne({
       userId: user._id,
       createdAt: {
@@ -63,20 +65,18 @@ exports.calculateDailyEarnings = async () => {
     });
 
     if (existingRecord) {
-      console.log(`⏩ Skipped ${user.name} — earnings for ${prevDay} already exist.`);
+      console.log(`⏩ Skipped ${user.name} — already calculated.`);
       continue;
     }
 
-    // ============================
-    //       ORIGINAL LOGIC
-    // ============================
+    // ================= ORIGINAL LOGIC =================
 
     const now = new Date();
     const currentInvested = roundTo3(user.investedAmount || 0);
 
-    // 1) Mature pending lots
+    // ---------- Mature Pending Lots ----------
     let maturedPendingSum = 0;
-    if (user.investedLots && user.investedLots.length > 0) {
+    if (user.investedLots?.length > 0) {
       for (const lot of user.investedLots) {
         const hoursPassed = (now - new Date(lot.createdAt)) / (1000 * 60 * 60);
         if (lot.status === 'Pending' && hoursPassed >= 24) {
@@ -87,11 +87,11 @@ exports.calculateDailyEarnings = async () => {
 
     const totalAfter = roundTo3(currentInvested + maturedPendingSum);
     if (totalAfter < 20) {
-      console.log(`Skipping ${user.name} — total after matured pending (${totalAfter}) < 20.`);
+      console.log(`Skipping ${user.name} — amount < 20.`);
       continue;
     }
 
-    // 2) Update matured lots
+    // ---------- Update Matured Lots ----------
     let lotsUpdated = false;
     if (maturedPendingSum > 0 && user.investedLots?.length > 0) {
       for (const lot of user.investedLots) {
@@ -102,17 +102,18 @@ exports.calculateDailyEarnings = async () => {
         }
       }
       user.investedAmount = roundTo3((user.investedAmount || 0) + maturedPendingSum);
-      console.log(`✅ ${user.name}: matured Pending added = ${maturedPendingSum}`);
     }
     if (lotsUpdated) await user.save();
 
-    // 3) Profit calculate
+    // ---------- Daily Profit (DYNAMIC %) ----------
     const compareAmount = roundTo3(user.investedAmount || 0);
-    const dailyProfit = roundTo3((compareAmount * 1) / 100);
+    const dailyProfit = roundTo3((compareAmount * DAILY_PERCENTAGE) / 100);
+
     let totalRefEarnings = 0;
 
-    // 4) Referral Earnings
+    // ---------- Referral Earnings (STATIC %) ----------
     for (const refUser of user.referredUsers || []) {
+
       if (!refUser.userId || refUser.refLevel === 0) continue;
 
       const refYesterdayRecord = await DailyEarn.findOne({
@@ -121,11 +122,13 @@ exports.calculateDailyEarnings = async () => {
       });
 
       let refDailyProfit = 0;
+
       if (refYesterdayRecord) {
         refDailyProfit = refYesterdayRecord.dailyProfit;
       } else {
         const refUserDetails = await User.findById(refUser.userId);
         if (refUserDetails && refUserDetails.investedAmount >= 20) {
+          // 🔒 STATIC 1% (as requested)
           refDailyProfit = roundTo3((refUserDetails.investedAmount * 1) / 100);
         }
       }
@@ -152,48 +155,39 @@ exports.calculateDailyEarnings = async () => {
       }
     }
 
-    // --------------------------------------------
-    // 5) NEW: Save Daily Record With Previous Date
-    // --------------------------------------------
+    // ---------- Save Daily Earn Record ----------
     await DailyEarn.create({
       userId: user._id,
       baseAmount: compareAmount,
       dailyProfit,
       refEarn: roundTo3(totalRefEarnings),
-
-      // 🔥 store previous day as createdAt
       createdAt: new Date(prevDay + "T12:00:00Z")
     });
 
-    // 6) Update totals
+    // ---------- Update User Totals ----------
     user.totalBalance = roundTo3((user.totalBalance || 0) + dailyProfit + totalRefEarnings);
     user.refEarn = roundTo3((user.refEarn || 0) + totalRefEarnings);
     user.totalEarn = roundTo3((user.totalEarn || 0) + dailyProfit);
 
     await user.save();
 
-    // --------------------------------------------
-    // 7) NEW: Send Email With Previous Date
-    // --------------------------------------------
+    // ---------- Send Email ----------
     try {
       await sendDailyProfitEmail({
         userEmail: user.email,
         userName: user.name,
-        amount: compareAmount || 0,
-        dailyEarn: dailyProfit || 0,
-        refEarn: totalRefEarnings || 0,
-
-        // 🔥 send previous day in email
+        amount: compareAmount,
+        dailyEarn: dailyProfit,
+        refEarn: totalRefEarnings,
+        dailyPercentage: DAILY_PERCENTAGE,
         date: prevDay
       });
-
-      console.log(`📧 Email sent to ${user.name}`);
     } catch (error) {
-      console.error(`❌ Failed to send email to ${user.name}:`, error.message);
+      console.error(`❌ Email failed for ${user.name}:`, error.message);
     }
 
-    console.log(`✅ Updated ${user.name}: Profit=${dailyProfit}, Ref=${totalRefEarnings}`);
+    console.log(`✅ ${user.name}: Profit=${dailyProfit}, Ref=${totalRefEarnings}`);
   }
 
-  return { message: 'Daily earnings calculated and emails sent successfully (UTC based)' };
+  return { message: 'Daily earnings calculated successfully (dynamic percentage)' };
 };

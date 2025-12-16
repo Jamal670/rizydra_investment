@@ -157,7 +157,15 @@ function EarningPlan() {
                 <li>1). <a href="/sign-up" style={{color: '#4100f6ff'}}><b>Register</b></a> to your account first.</li>
                 <li>2). <a href="/deposit" style={{color: '#4100f6ff'}}><b>Deposit</b></a> money to your account. The deposited amount will appear in your <b>Total Balance</b>.</li>
                 <li>3). <b>Choose</b> the amount you want to invest and transfer it from your <b>Total Balance</b> to your <b>Invested Amount</b>.</li>
-                <li>4). <b>Once</b> funds are in <b>Invested Amount</b>, you will automatically receive <b>1% profit daily</b>, adding up to <b>30% profit monthly</b>.</li>
+                <li>
+  4). Funds added to the <strong>Invested Amount</strong> start earning
+  <strong> daily profits</strong> through our
+  <strong> risk-controlled, automated trading robots</strong>, with returns of
+  <strong> up to 20% monthly</strong>.
+</li>
+
+
+
               </ul>
             </div>
           </div>

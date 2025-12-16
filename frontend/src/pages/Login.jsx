@@ -74,6 +74,15 @@ function Login() {
         return () => { /* no-op */ };
     }, []);
 
+    // Auto-fill credentials from localStorage
+    useEffect(() => {
+        const savedEmail = localStorage.getItem("savedEmail");
+        const savedPassword = localStorage.getItem("savedPassword");
+        if (savedEmail && savedPassword) {
+            setForm({ email: savedEmail, password: savedPassword });
+        }
+    }, []);
+
     const handleChange = e => {
         setForm({ ...form, [e.target.name]: e.target.value });
     };
@@ -95,6 +104,10 @@ function Login() {
 
             // ✅ just keep simple flags
             localStorage.setItem("authenticated", "true");
+            
+            // Save credentials for auto-fill
+            localStorage.setItem("savedEmail", form.email);
+            localStorage.setItem("savedPassword", form.password);
 
             if (user.email === "rizydra342@gmail.com") {
                 localStorage.setItem("isAdmin", "true");   // admin flag

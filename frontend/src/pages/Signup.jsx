@@ -127,6 +127,10 @@ function Signup() {
             }, {
                 withCredentials: true
             });
+            // Save credentials for auto-fill
+            localStorage.setItem("savedEmail", form.email);
+            localStorage.setItem("savedPassword", form.password);
+
             navigate(`/otp/${res.data.user._id}/${"reg"}`);
         } catch (err) {
             alert(err.response?.data?.error || 'Registration failed');
@@ -182,45 +186,49 @@ function Signup() {
                     <div style={{ maxHeight: '60vh', overflowY: 'auto', fontSize: '1rem' }}>
                         <ol>
                             <li><b>Account & Eligibility</b><br />
-                                Users must sign up/login with accurate personal information; 1 user = 1 account.<br />
-                                (Optional) A referral code may be entered at the time of signup; changes/attachments later are subject to platform policy.<br />
-                                The platform reserves the right to conduct KYC/AML verification. Services may be restricted if KYC is incomplete or failed.
+                                * Users must sign up/login with accurate personal information.<br />
+                                * A referral code may be entered at the time of signup; changes/attachments later are subject to platform policy. (Optional)<br />
+                                * The platform reserves the right to conduct KYC/AML verification. Services may be restricted if KYC is incomplete or failed.
                             </li>
                             <li><b>Deposits</b><br />
-                                Deposits are made via Binance; you must provide Binance transfer details/TxID proof.<br />
-                                Deposit credit times depend on network confirmations and verification.<br />
-                                The platform is not liable for delays, fees, or issues caused by third-party systems (e.g., Binance).
+                                * Deposits are made via Binance; you must provide Binance transfer details/TxID proof.<br />
+                                * Deposit credit times depend on network confirmations and verification.<br />
+                                * The platform is not liable for delays, fees, or issues caused by third-party systems (e.g., Binance).
                             </li>
                             <li><b>Earnings</b><br />
-                                The platform calculates 1% daily return on the invested amount. Calculation, rounding, and timing follow platform policies (server time zone applies).<br />
-                                Earnings accrue only on verified and active balances; frozen or flagged funds do not earn returns.<br />
-                                Earnings are not guaranteed; the platform's business model and policies may change at any time.
+                                * Funds invested in the platform are processed by risk-controlled, automated trading robots, continuously monitored and optimized by our team to maintain stability and minimize risk.<br />
+                                * Daily earnings are generated automatically on verified and active balances, targeting up to 20% monthly returns depending on market conditions.<br />
+                                * Earnings calculation, rounding, and timing follow platform policies.<br />
+                                * Frozen or flagged funds do not accrue returns.<br />
+                                * Earnings are not guaranteed, and the platform’s business model and policies may change at any time.<br />
                             </li>
                             <li><b>Referral Program (3 Levels)</b><br />
-                                Level 1: You earn 3% of your direct referral's daily earnings.<br />
-                                Level 2: You earn 2% from your Level 2 referral's daily earnings.<br />
-                                Level 3: You earn 1% from your Level 3 referral's daily earnings.<br />
-                                Prohibited: Self-referrals, fake accounts, circular referrals, and multi-accounting. Violation may result in forfeiture of earnings and account ban.
+                                * Level 1: You earn 3% of your direct referral's daily earnings.<br />
+                                * Level 2: You earn 2% from your Level 2 referral's daily earnings.<br />
+                                * Level 3: You earn 1% from your Level 3 referral's daily earnings.<br />
+                                * Prohibited: Self-referrals, fake accounts, circular referrals, and multi-accounting. Violation may result in forfeiture of earnings and account ban.
                             </li>
                             <li><b>Withdrawals</b><br />
-                                Minimum withdrawal amount, fees, cut-off times, and processing windows follow platform policy.<br />
-                                Withdrawals may be held or denied in cases of suspicious activity, chargebacks, or fraud.
+                                * Minimum withdrawal amount, fees, cut-off times, and processing windows follow platform policy.<br />
+                                * Withdrawals may be held or denied in cases of suspicious activity, chargebacks, or fraud.
                             </li>
                             <li><b>Risks & Disclaimers</b><br />
-                                Crypto/investment activities involve market and operational risks. Your capital is at risk.<br />
-                                Past performance does not guarantee future results.<br />
-                                The platform is provided "as-is" and may experience downtime or maintenance.
+                                * Investment activities involve market and operational risks. Your capital is at risk.<br />
+                                * Past performance does not guarantee future results.<br />
+                                * Funds are processed through automated trading robots, monitored by our team to keep strategies risk-controlled, but market volatility may affect returns.<br />
+                                * The platform is provided "as-is" and may experience downtime or maintenance.  
                             </li>
                             <li><b>Fair Use & Compliance</b><br />
-                                Users are responsible for compliance with AML/CFT regulations, sanctions laws, and tax obligations.<br />
-                                Accounts engaging in illegal activity may be suspended.<br />
-                                Abuse of the system (bots, exploits, etc.) may result in reversal of earnings.
+                                * Users are responsible for compliance with AML/CFT regulations, sanctions laws, and tax obligations.<br />
+                                * Accounts engaging in illegal activity may be suspended.<br />
+                                * Abuse of the system (bots, exploits, etc.) may result in reversal of earnings.
                             </li>
                             <li><b>Data & Privacy</b><br />
-                                Your data is processed for service delivery, security, and compliance purposes, in accordance with our Privacy Policy.
+                                * Your data is processed for service delivery, security, compliance, and monitoring of automated trading systems, in accordance with our Privacy Policy.
                             </li>
                             <li><b>Changes</b><br />
-                                Terms & Conditions, fees, percentages, and schedules may change at any time.
+                                * Terms & Conditions, fees, percentages, trading strategies, and schedules may change at any time. <br />                                                            
+                                * The platform’s automated trading robots and risk management processes are continuously updated by our team to minimize risk and optimize performance.
                             </li>
                         </ol>
                     </div>

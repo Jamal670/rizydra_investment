@@ -174,3 +174,26 @@ exports.adminDeleteUser = async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 };
+
+//------------Get Rizydra Info----------------
+exports.adminGetRizydraInfo = async (req, res) => {
+  try {
+    const rizydraInfo = await AdminDashService.adminGetRizydraInfo();
+    res.status(200).json({ status: true, data: rizydraInfo });
+  } catch (err) {
+    res.status(400).json({ status: false, error: err.message });
+  }
+};
+
+//------------update Rizydra Info----------------
+exports.adminUpdateRizydraInfo = async (req, res) => {
+  try {
+    const { dailyPercentage } = req.body;
+    await AdminDashService.adminUpdateRizydraInfo({ dailyPercentage });
+    res.status(200).json({status: true, message: "Rizydra info updated successfully"});
+  } catch (err) {
+    res.status(400).json({status: false, error: err.message});
+  }
+};
+
+

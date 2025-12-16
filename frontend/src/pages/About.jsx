@@ -277,7 +277,7 @@ function About() {
                         </div>
                         <div className="faq-content">
                           <p>
-                            We offer a secure, transparent, and rewarding investment platform with competitive returns and a user-friendly experience. Our multi-level affiliate program, flexible payment options including cryptocurrency, and dedicated support team set us apart — making your investment journey simple, smart, and profitable.
+                            A secure and transparent platform built on risk-controlled, automated trading. Our system is designed to target up to 20% monthly returns, supported by smart automation, flexible crypto payments, and a reliable affiliate program - all backed by a dedicated support team.
                           </p>
                         </div>
                       </div>

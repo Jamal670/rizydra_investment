@@ -2,6 +2,7 @@ const User = require("../models/user.model");
 const Investment = require("../models/investment.model");
 const DailyEarn = require("../models/dailyEarn.model");
 const RefUserEarning = require("../models/refUserEarn.model");
+const RizydraInfoModel = require("../models/rizydraInfo.model");
 const Contact = require("../models/contactUs.model");
 const { sendDepositAcceptedEmail, sendDepositDeclinedEmail, sendWithdrawAcceptedEmail, sendWithdrawDeclinedEmail } = require("./sendMailer"); // Add this import
 
@@ -873,6 +874,37 @@ exports.adminDeleteUser = async (_id) => {
     throw new Error("Error deleting user: " + err.message);
   }
 };
+//======================Admin Get Rizydra Info================================
+exports.adminGetRizydraInfo = async () => {
+  try {
+    return await RizydraInfoModel.findOne({},{_id:1, dailyPercentage:1}).lean();
+  } catch (err) {
+    throw new Error("Error fetching Rizydra info: " + err.message);
+  }
+};
+
+//======================Admin update rizydra info================================
+exports.adminUpdateRizydraInfo = async (data) => {
+  try {
+    await RizydraInfoModel.findOneAndUpdate(
+      {},
+      {
+        ...data,
+        updatedAt: Date.now()
+      },
+      {
+        new: true,
+        upsert: true
+      }
+    );
+    return true;
+  } catch (err) {
+    throw new Error("Error updating Rizydra info: " + err.message);
+  }
+};
+
+
+
 
 
 

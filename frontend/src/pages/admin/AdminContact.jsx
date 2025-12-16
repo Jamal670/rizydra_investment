@@ -113,7 +113,7 @@ const AdminContact = () => {
                                     </a>
                                 </li>
                                 <li className="nav-item mb-2">
-                                    <a className="nav-link text-dark" href="#">
+                                    <a className="nav-link text-dark" href="/admin-setting">
                                         <i className="bi bi-gear me-2"></i> Settings
                                     </a>
                                 </li>
@@ -277,7 +277,7 @@ const AdminContact = () => {
                             </a>
                         </li>
                         <li className="nav-item mb-2">
-                            <a className="nav-link text-dark" href="#">
+                            <a className="nav-link text-dark" href="/admin-setting">
                                 <i className="bi bi-gear me-2"></i> Settings
                             </a>
                         </li>

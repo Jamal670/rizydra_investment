@@ -21,7 +21,7 @@ export async function sendEmail(email, otp) {
   const mailOptions = {
     from: "noreplyrizydra@gmail.com",
     to: email,
-    subject: "Your Email Verification Code - Rizydra",
+    subject: "Email Verification Code - Rizydra",
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.05);">
         <div style="background-color: #1a73e8; color: white; padding: 16px; text-align: center;">
@@ -72,12 +72,76 @@ export async function sendEmail(email, otp) {
   }
 }
 
+//---------------------------withdraw email otp ---------------------------------------
+export async function withdrawOtpEmail(email, otp) {
+  const mailOptions = {
+    from: "noreplyrizydra@gmail.com",
+    to: email,
+    subject: "Withdraw Verification Code - Rizydra",
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.05);">
+        
+        <!-- Header -->
+        <div style="background-color: #1a73e8; color: white; padding: 16px; text-align: center;">
+          <h2 style="margin: 0;">Rizydra Security Verification</h2>
+        </div>
+
+        <!-- Body -->
+        <div style="padding: 20px;">
+          <p style="font-size: 16px; color: #333;">Dear User,</p>
+
+          <p style="font-size: 15px; color: #555;">
+            Enter this verification code in the application to confirm your withdrawal.
+            This code is valid for a limited time only for your security.
+          </p>
+          
+          <!-- OTP Box -->
+          <div style="text-align: center; margin: 25px 0;">
+            <div style="display: inline-block; background-color: #f4f4f4; border: 2px dashed #1a73e8; border-radius: 8px; padding: 14px 28px;">
+              <span style="font-size: 28px; font-weight: bold; color: #1a73e8; letter-spacing: 4px;">
+                ${otp}
+              </span>
+            </div>
+          </div>
+
+          <p style="font-size: 15px; color: #d32f2f;">
+            ⚠️ Do not share this code with anyone.
+          </p>
+
+          <p style="font-size: 15px; color: #555;">
+            If you did not initiate this withdrawal request, please contact our support team immediately.
+          </p>
+
+          <p style="margin-top: 25px; color: #333;">Best Regards,</p>
+          <p style="font-weight: bold; color: #1a73e8;">Rizydra Security Team</p>
+        </div>
+
+        <!-- Footer -->
+        <div style="background-color: #f9f9f9; padding: 10px; text-align: center; font-size: 12px; color: #888;">
+          This is an automated security message. Please do not reply.
+        </div>
+      </div>
+    `,
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    return {
+      success: true,
+      message: "Withdraw OTP email sent successfully",
+      info,
+    };
+  } catch (err) {
+    return { success: false, message: "Failed to send withdraw OTP email", error: err };
+  }
+}
+
 //---------------------------Daily profit mail on every user-------------------------------
 export async function sendDailyProfitEmail({ userEmail, userName, amount = 0, dailyEarn = 0, refEarn = 0, date }) {
   const mailOptions = {
     from: "noreplyrizydra@gmail.com",
     to: userEmail,
-    subject: "Your Daily Profit Summary - Rizydra",
+    subject: "Daily Profit Summary - Rizydra",
     html: `
     <div style="font-family: Arial, sans-serif; max-width:600px; margin:auto; border:1px solid #e0e0e0; padding:20px; border-radius:8px;">
       <h2 style="color:#1a73e8;">💰 Your Daily Profit Report</h2>

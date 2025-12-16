@@ -17,6 +17,8 @@ router.post('/adminHandleWithdrawDeclined', AdminDash.AdminHandleWithdrawDecline
 router.get('/adminGetSpecificUser/:id', AdminDash.adminGetSpecificUsers);
 router.get('/admincontactus', AdminDash.admincontactUs);
 router.post('/adminDeleteUser', AdminDash.adminDeleteUser);
+router.get('/adminGetRizydraInfo', AdminDash.adminGetRizydraInfo);
+router.post('/adminUpdateRizydraInfo', AdminDash.adminUpdateRizydraInfo);
 
 
 module.exports = router;

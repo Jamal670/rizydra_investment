@@ -1,25 +1,55 @@
 import React, { useEffect, useState } from "react";
-import { MdOutlineArrowBackIos, MdArrowForwardIos } from "react-icons/md";
+import { Line, Pie, Bar } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+  BarElement,
+} from "chart.js";
 import api from "../../Api";
 
-function ReferalUsers() {
+// Register Chart.js components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+  BarElement
+);
+
+function Insights() {
   const [isLoading, setIsLoading] = useState(true);
-  const [referralData, setReferralData] = useState({
+  const [userData, setUserData] = useState({
     name: "",
     email: "",
     image: "",
     referralCode: "",
-    investedAmount: 0,
-    refEarn: 0,
-    refEarnings: [],
-    referralSummary: { level1: 0, level2: 0, level3: 0 },
   });
-
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalRows, setTotalRows] = useState(0);
-  const rowsPerPage = 8;
+  const [metrics, setMetrics] = useState({
+    totalAmount: 0,
+    totalEarnings: 0,
+    referralEarnings: 0,
+    totalReferrals: 0,
+    depositAmount: 0,
+    withdrawAmount: 0,
+    investedAmount: 0,
+    pendingBalance: 0,
+  });
+  const [graphs, setGraphs] = useState({
+    dailyEarnings: [],
+    referralLevels: { level1: 0, level2: 0, level3: 0 },
+  });
+  const [timeRange, setTimeRange] = useState("Weekly");
 
   useEffect(() => {
     const loadAssets = () =>
@@ -95,31 +125,43 @@ function ReferalUsers() {
       try {
         await api.get("/user/verify", { withCredentials: true });
         const res = await api.get(
-          `/user/referal?page=${currentPage}&limit=${rowsPerPage}`,
+          `/user/insights?range=${encodeURIComponent(timeRange)}`,
           {
             withCredentials: true,
           }
         );
 
-        if (res.data && res.data.referralCode) {
-          setReferralData({
-            name: res.data.referralCode.name || "",
-            email: res.data.referralCode.email || "",
-            image: res.data.referralCode.image || "",
-            referralCode: res.data.referralCode.referralCode || "",
-            investedAmount: res.data.referralCode.investedAmount || 0,
-            refEarn: res.data.referralCode.refEarn || 0, // Add refEarn
-            refEarnings: res.data.referralCode.refEarnings || [],
-            referralSummary: res.data.referralCode.referralSummary || {
-              level1: 0,
-              level2: 0,
-              level3: 0,
-            },
-          });
+        if (res.data && res.data.success && res.data.data) {
+          const { user, metrics, graphs } = res.data.data;
 
-          if (res.data.referralCode.pagination) {
-            setTotalPages(res.data.referralCode.pagination.totalPages);
-            setTotalRows(res.data.referralCode.pagination.total);
+          if (user) {
+            setUserData({
+              name: user.name || "",
+              email: user.email || "",
+              image: user.image || "",
+              referralCode: user.referralCode || "",
+            });
+          }
+
+          if (metrics) {
+            setMetrics({
+              totalAmount: metrics.totalAmount || 0,
+              totalEarnings: metrics.totalEarnings || 0,
+              referralEarnings: metrics.referralEarnings || 0,
+              totalReferrals: metrics.totalReferrals || 0,
+              depositAmount: metrics.depositAmount || 0,
+              withdrawAmount: metrics.withdrawAmount || 0,
+              investedAmount: metrics.investedAmount || 0,
+              pendingBalance: metrics.pendingBalance || 0,
+            });
+          }
+
+          if (graphs) {
+            setGraphs({
+              dailyEarnings: graphs.dailyEarnings || [],
+              referralLevels:
+                graphs.referralLevels || { level1: 0, level2: 0, level3: 0 },
+            });
           }
         }
       } catch (err) {
@@ -136,23 +178,101 @@ function ReferalUsers() {
     };
 
     init();
-  }, [currentPage]);
+  }, [timeRange]);
 
-  // Pagination logic
-  const paginatedData = referralData.refEarnings || [];
+  // Chart configurations
+  const lineChartData = {
+    labels:
+      graphs.dailyEarnings.length > 0
+        ? graphs.dailyEarnings.map((item) => item._id)
+        : ["No Data"],
+    datasets: [
+      {
+        label: "Daily Profit",
+        data:
+          graphs.dailyEarnings.length > 0
+            ? graphs.dailyEarnings.map((item) => item.dailyProfit || 0)
+            : [0],
+        borderColor: "rgb(75, 192, 192)",
+        backgroundColor: "rgba(75, 192, 192, 0.2)",
+        tension: 0.1,
+      },
+      {
+        label: "Referral Earnings",
+        data:
+          graphs.dailyEarnings.length > 0
+            ? graphs.dailyEarnings.map((item) => item.refEarn || 0)
+            : [0],
+        borderColor: "rgb(255, 159, 64)",
+        backgroundColor: "rgba(255, 159, 64, 0.2)",
+        tension: 0.1,
+      },
+    ],
+  };
 
-  const handleAddReferralUser = async () => {
-    if (referralData.investedAmount >= 20) {
-      const referralLink = `www.rizydra.com/sign-up?ref=${referralData.referralCode}`;
-      try {
-        await navigator.clipboard.writeText(referralLink);
-        alert("Referral link copied to clipboard!");
-      } catch (err) {
-        alert("Failed to copy referral link. Please try again.");
-      }
-    } else {
-      alert("Please invest 20 dollars before referring.");
-    }
+  const depositWithdrawPieData = {
+    labels: ["Deposit", "Withdraw"],
+    datasets: [
+      {
+        data: [metrics.depositAmount || 0, metrics.withdrawAmount || 0],
+        backgroundColor: ["rgba(54, 162, 235, 0.8)", "rgba(255, 99, 132, 0.8)"],
+        borderColor: ["rgba(54, 162, 235, 1)", "rgba(255, 99, 132, 1)"],
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  const balanceDistributionPieData = {
+    labels: ["Total Balance", "Invested Amount", "Pending Balance"],
+    datasets: [
+      {
+        data: [
+          metrics.totalAmount || 0,
+          metrics.investedAmount || 0,
+          metrics.pendingBalance || 0,
+        ],
+        backgroundColor: [
+          "rgba(75, 192, 192, 0.8)",
+          "rgba(255, 206, 86, 0.8)",
+          "rgba(153, 102, 255, 0.8)",
+        ],
+        borderColor: [
+          "rgba(75, 192, 192, 1)",
+          "rgba(255, 206, 86, 1)",
+          "rgba(153, 102, 255, 1)",
+        ],
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  const referralBarData = {
+    labels: ["Level 1", "Level 2", "Level 3"],
+    datasets: [
+      {
+        label: "Referral Earnings",
+        data: [
+          graphs.referralLevels.level1 || 0,
+          graphs.referralLevels.level2 || 0,
+          graphs.referralLevels.level3 || 0,
+        ],
+        backgroundColor: "rgba(54, 162, 235, 0.8)",
+        borderColor: "rgba(54, 162, 235, 1)",
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  const chartOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: "top",
+      },
+      title: {
+        display: false,
+      },
+    },
   };
 
   return (
@@ -243,10 +363,10 @@ function ReferalUsers() {
                   <div className="user-thumb">
                     <img
                       src={
-                        referralData.image
-                          ? referralData.image.startsWith("data:image")
-                            ? referralData.image
-                            : `data:image/png;base64,${referralData.image}`
+                        userData.image
+                          ? userData.image.startsWith("data:image")
+                            ? userData.image
+                            : `data:image/png;base64,${userData.image}`
                           : "/assets/images/testimonial/aa.png"
                       }
                       alt="dashboard"
@@ -260,8 +380,8 @@ function ReferalUsers() {
                   </div>
                   <div className="user-content">
                     <span>Welcome</span>
-                    <h5 className="name">{referralData.name}</h5>
-                    <p className="email">{referralData.email}</p>
+                    <h5 className="name">{userData.name}</h5>
+                    <p className="email">{userData.email}</p>
                     <hr />
                   </div>
                   {/* Referral Code Display */}
@@ -291,7 +411,7 @@ function ReferalUsers() {
                         fontFamily: "monospace",
                       }}
                     >
-                      {referralData.referralCode || "N/A"}
+                      {userData.referralCode || "N/A"}
                     </div>
                   </div>
                 </div>
@@ -300,13 +420,13 @@ function ReferalUsers() {
                     <a href="/user-dashboard">Account Overview</a>
                   </li>
                   <li>
-                    <a href="/insights">Analytics</a>
+                    <a href="/insights"  className="active">Analytics</a>
                   </li>
                   <li>
                     <a href="/earning-history">Earnings History</a>
                   </li>
                   <li>
-                    <a href="/referal-users" className="active">
+                    <a href="/referal-users">
                       Referral Users
                     </a>
                   </li>
@@ -393,45 +513,39 @@ function ReferalUsers() {
                     className="row g-4 mb-3 flex-nowrap flex-lg-wrap justify-content-lg-center"
                     style={{ width: "100%" }}
                   >
-                    {/* Referal Earning */}
+                    {/* Total Amount */}
                     <div className="col-12 col-sm-6 col-md-6 col-lg-3 mobile-dashboard-card">
                       <DashboardItem
                         icon="/assets/images/dashboard/wallet.png"
-                        title="Referal Earning"
-                        value={`$${referralData.refEarn || 0}`} // Use refEarn from backend
+                        title="Total Amount"
+                        value={`$${metrics.totalAmount || 0}`}
                         theme="theme-one"
                       />
                     </div>
-                    {/* Level 1 Earning */}
+                    {/* Total Earnings */}
                     <div className="col-12 col-sm-6 col-md-6 col-lg-3 mobile-dashboard-card">
                       <DashboardItem
-                        icon="/assets/images/dashboard/load.png"
-                        title="Level 1 Earning"
-                        value={`$${
-                          referralData.referralSummary.level1Earning || 0
-                        }`} // Data not available in current backend response
+                        icon="/assets/images/dashboard/profit.png"
+                        title="Total Earning"
+                        value={`$${metrics.totalEarnings || 0}`}
                         theme="theme-two"
                       />
                     </div>
-                    {/* Level 2 Earning */}
+                    {/* Referral Earnings */}
                     <div className="col-12 col-sm-6 col-md-6 col-lg-3 mobile-dashboard-card">
                       <DashboardItem
-                        icon="/assets/images/dashboard/load.png"
-                        title="Level 2 Earning"
-                        value={`$${
-                          referralData.referralSummary.level2Earning || 0
-                        }`} // Data not available in current backend response
+                        icon="/assets/images/dashboard/reference.png"
+                        title="Referal Earning"
+                        value={`$${metrics.referralEarnings || 0}`}
                         theme="theme-three"
                       />
                     </div>
-                    {/* Level 3 Earning */}
+                    {/* Total Referrals */}
                     <div className="col-12 col-sm-6 col-md-6 col-lg-3 mobile-dashboard-card">
                       <DashboardItem
-                        icon="/assets/images/dashboard/load.png"
-                        title="Level 3 Earning"
-                        value={`$${
-                          referralData.referralSummary.level3Earning || 0
-                        }`} // Data not available in current backend response
+                        icon="/assets/images/dashboard/icon6.png"
+                        title="Total Referral"
+                        value={metrics.totalReferrals || 0}
                         theme="theme-three"
                       />
                     </div>
@@ -444,43 +558,39 @@ function ReferalUsers() {
                     className="row g-4 mb-3 flex-nowrap flex-lg-wrap justify-content-lg-center"
                     style={{ width: "100%" }}
                   >
-                    {/* Total Users */}
+                    {/* Deposit Amount */}
                     <div className="col-12 col-sm-6 col-md-6 col-lg-3 mobile-dashboard-card">
                       <DashboardItem
-                        icon="/assets/images/dashboard/icon6.png"
-                        title="Total Users"
-                        value={
-                          (referralData.referralSummary.level1Users || 0) +
-                          (referralData.referralSummary.level2Users || 0) +
-                          (referralData.referralSummary.level3Users || 0)
-                        }
+                        icon="/assets/images/dashboard/deposit.png"
+                        title="Deposit Amount"
+                        value={`$${metrics.depositAmount || 0}`}
                         theme="theme-one"
                       />
                     </div>
-                    {/* Level 1 Users */}
+                    {/* Withdraw Amount */}
                     <div className="col-12 col-sm-6 col-md-6 col-lg-3 mobile-dashboard-card">
                       <DashboardItem
-                        icon="/assets/images/dashboard/people.png"
-                        title="Level 1 Users"
-                        value={referralData.referralSummary.level1Users || 0}
+                        icon="/assets/images/dashboard/withdraw.png"
+                        title="Withdraw Amount"
+                        value={`$${metrics.withdrawAmount || 0}`}
                         theme="theme-two"
                       />
                     </div>
-                    {/* Level 2 Users */}
+                    {/* Invested Amount */}
                     <div className="col-12 col-sm-6 col-md-6 col-lg-3 mobile-dashboard-card">
                       <DashboardItem
-                        icon="/assets/images/dashboard/people.png"
-                        title="Level 2 Users"
-                        value={referralData.referralSummary.level2Users || 0}
+                        icon="/assets/images/dashboard/invest.png"
+                        title="Invested Amount"
+                        value={`$${metrics.investedAmount || 0}`}
                         theme="theme-three"
                       />
                     </div>
-                    {/* Level 3 Users */}
+                    {/* Pending Balance */}
                     <div className="col-12 col-sm-6 col-md-6 col-lg-3 mobile-dashboard-card">
                       <DashboardItem
-                        icon="/assets/images/dashboard/people.png"
-                        title="Level 3 Users"
-                        value={referralData.referralSummary.level3Users || 0}
+                        icon="/assets/images/dashboard/queue.png"
+                        title="Pending Balance"
+                        value={`$${metrics.pendingBalance || 0}`}
                         theme="theme-three"
                       />
                     </div>
@@ -505,228 +615,205 @@ function ReferalUsers() {
                   }}
                 >
                   <div>
-                    <h4 className="title mb-0">Referral Users</h4>
+                    <h4 className="title mb-0">Finencial Analytics</h4>
                   </div>
                   <div>
-                    <button
-                      className="btn btn-primary"
+                    <select
+                      className="form-select"
                       style={{
+                        minWidth: "180px",
                         padding: "6px 20px",
                         cursor: "pointer",
-                        minWidth: "150px",
                       }}
-                      onClick={handleAddReferralUser}
+                      value={timeRange}
+                      onChange={(e) => setTimeRange(e.target.value)}
                     >
-                      Add Referral User
-                    </button>
+                      <option value="Weekly">Weekly</option>
+                      <option value="Monthly">Monthly</option>
+                      <option value="Six Month">Six Month</option>
+                      <option value="Yearly">Yearly</option>
+                      <option value="Lastly">Lastly</option>
+                    </select>
                   </div>
                 </div>
               </div>
 
-              <div
-                style={{
-                  width: "100%",
-                  overflowX: "auto",
-                  WebkitOverflowScrolling: "touch",
-                  background: "#fff",
-                  borderRadius: 8,
-                  boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
-                  marginBottom: "1.5rem",
-                  border: "1px solid #eee",
-                }}
-              >
-                <table
-                  style={{
-                    width: "100%",
-                    borderCollapse: "collapse",
-                    minWidth: 400,
-                    fontSize: "15px",
-                    background: "#fff",
-                  }}
-                >
-                  <thead>
-                    <tr>
-                      {[
-                        "Name",
-                        "Amount",
-                        "Ref Earning",
-                        "Ref Level",
-                        "Date",
-                      ].map((header) => (
-                        <th
-                          key={header}
-                          style={{
-                            background: "#f8f9fa",
-                            fontWeight: 600,
-                            color: "#222",
-                            padding: "12px 10px",
-                            borderBottom: "1px solid #eee",
-                            position: "sticky",
-                            top: 0,
-                            zIndex: 2,
-                            textAlign: "left",
-                            whiteSpace: "normal",
-                          }}
-                        >
-                          {header}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {paginatedData && paginatedData.length > 0 ? (
-                      paginatedData.map((item, idx) => (
-                        <tr key={idx}>
-                          <td
-                            style={{
-                              padding: "12px 10px",
-                              borderBottom: "1px solid #eee",
-                              whiteSpace: "normal",
-                              wordBreak: "break-word",
-                              verticalAlign: "middle",
-                              textAlign: "left",
-                            }}
-                          >
-                            {item.name}
-                          </td>
-                          <td
-                            style={{
-                              padding: "12px 10px",
-                              borderBottom: "1px solid #eee",
-                              whiteSpace: "normal",
-                              wordBreak: "break-word",
-                              verticalAlign: "middle",
-                              textAlign: "left",
-                            }}
-                          >
-                            ${item.amount}
-                          </td>
-                          <td
-                            style={{
-                              padding: "12px 10px",
-                              borderBottom: "1px solid #eee",
-                              whiteSpace: "normal",
-                              wordBreak: "break-word",
-                              verticalAlign: "middle",
-                              textAlign: "left",
-                            }}
-                          >
-                            ${item.earningRef}
-                          </td>
-                          <td
-                            style={{
-                              padding: "12px 10px",
-                              borderBottom: "1px solid #eee",
-                              whiteSpace: "normal",
-                              wordBreak: "break-word",
-                              verticalAlign: "middle",
-                              textAlign: "left",
-                            }}
-                          >
-                            {item.refLevel}
-                          </td>
-                          <td
-                            style={{
-                              padding: "12px 10px",
-                              borderBottom: "1px solid #eee",
-                              whiteSpace: "normal",
-                              wordBreak: "break-word",
-                              verticalAlign: "middle",
-                              textAlign: "left",
-                            }}
-                          >
-                            {item.date}
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td
-                          colSpan="5"
-                          style={{ textAlign: "center", padding: "12px 10px" }}
-                        >
-                          No referral users found.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Pagination Controls */}
-              {totalPages > 1 && (
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    padding: "1rem 0",
-                    background: "#fff",
-                    borderRadius: "8px",
-                    marginBottom: "1.5rem",
-                  }}
-                >
-                  <div style={{ fontSize: "14px", color: "#666" }}>
-                    Showing {Math.min(currentPage * rowsPerPage, totalRows)} of{" "}
-                    {totalRows} results
-                  </div>
-                  <nav aria-label="Table pagination">
-                    <ul
+              {/* Graphs Section - Horizontal Scroll Similar to UserDashboard */}
+              <section className="charts-section mt-4">
+                <div className="container-fluid px-0">
+                  <div
+                    className="charts-scroll-container"
+                    style={{
+                      overflowX: "auto",
+                      overflowY: "hidden",
+                      whiteSpace: "nowrap",
+                      padding: "0 20px",
+                      scrollbarWidth: "thin",
+                      scrollbarColor: "#888 #f1f1f1",
+                    }}
+                  >
+                    <div
+                      className="charts-row"
                       style={{
-                        display: "flex",
-                        listStyle: "none",
-                        margin: 0,
-                        padding: 0,
-                        gap: "4px",
+                        display: "inline-flex",
+                        gap: "20px",
+                        minWidth: "max-content",
+                        padding: "10px 0",
                       }}
                     >
-                      <li>
-                        <button
-                          style={{
-                            padding: "8px 12px",
-                            border: "1px solid #dee2e6",
-                            background: currentPage === 1 ? "#e9ecef" : "#fff",
-                            color: currentPage === 1 ? "#6c757d" : "#007bff",
-                            cursor:
-                              currentPage === 1 ? "not-allowed" : "pointer",
-                            borderRadius: "4px",
-                            fontSize: "14px",
-                          }}
-                          onClick={() => setCurrentPage(currentPage - 1)}
-                          disabled={currentPage === 1}
+                      {/* Line Graph - Daily Earnings Trend */}
+                      <div
+                        className="chart-item"
+                        style={{
+                          minWidth: "400px",
+                          maxWidth: "400px",
+                          background: "#fff",
+                          padding: "20px",
+                          borderRadius: "10px",
+                          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                          border: "1px solid #e9ecef",
+                        }}
+                      >
+                        <h5
+                          className="mb-3"
+                          style={{ fontSize: "16px", fontWeight: "600" }}
                         >
-                          <MdOutlineArrowBackIos />
-                        </button>
-                      </li>
-                      {/* Numbered buttons removed as per request */}
-                      <li>
-                        <button
-                          style={{
-                            padding: "8px 12px",
-                            border: "1px solid #dee2e6",
-                            background:
-                              currentPage === totalPages ? "#e9ecef" : "#fff",
-                            color:
-                              currentPage === totalPages
-                                ? "#6c757d"
-                                : "#007bff",
-                            cursor:
-                              currentPage === totalPages
-                                ? "not-allowed"
-                                : "pointer",
-                            borderRadius: "4px",
-                            fontSize: "14px",
-                          }}
-                          onClick={() => setCurrentPage(currentPage + 1)}
-                          disabled={currentPage === totalPages}
+                          Daily Earnings Trend
+                        </h5>
+                        <div style={{ height: "250px" }}>
+                          <Line
+                            data={lineChartData}
+                            options={{
+                              ...chartOptions,
+                              maintainAspectRatio: false,
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Pie Graph – Deposit vs Withdraw */}
+                      <div
+                        className="chart-item"
+                        style={{
+                          minWidth: "350px",
+                          maxWidth: "350px",
+                          background: "#fff",
+                          padding: "20px",
+                          borderRadius: "10px",
+                          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                          border: "1px solid #e9ecef",
+                        }}
+                      >
+                        <h5
+                          className="mb-3"
+                          style={{ fontSize: "16px", fontWeight: "600" }}
                         >
-                          <MdArrowForwardIos />
-                        </button>
-                      </li>
-                    </ul>
-                  </nav>
+                          Deposit vs Withdraw
+                        </h5>
+                        <div
+                          style={{
+                            height: "250px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <Pie
+                            data={depositWithdrawPieData}
+                            options={{
+                              ...chartOptions,
+                              maintainAspectRatio: false,
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Pie Graph – Balance Distribution */}
+                      <div
+                        className="chart-item"
+                        style={{
+                          minWidth: "350px",
+                          maxWidth: "350px",
+                          background: "#fff",
+                          padding: "20px",
+                          borderRadius: "10px",
+                          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                          border: "1px solid #e9ecef",
+                        }}
+                      >
+                        <h5
+                          className="mb-3"
+                          style={{ fontSize: "16px", fontWeight: "600" }}
+                        >
+                          Balance Distribution
+                        </h5>
+                        <div
+                          style={{
+                            height: "250px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <Pie
+                            data={balanceDistributionPieData}
+                            options={{
+                              ...chartOptions,
+                              maintainAspectRatio: false,
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Bar Graph – Referral Earnings by Level */}
+                      <div
+                        className="chart-item"
+                        style={{
+                          minWidth: "400px",
+                          maxWidth: "400px",
+                          background: "#fff",
+                          padding: "20px",
+                          borderRadius: "10px",
+                          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                          border: "1px solid #e9ecef",
+                        }}
+                      >
+                        <h5
+                          className="mb-3"
+                          style={{ fontSize: "16px", fontWeight: "600" }}
+                        >
+                          Referral Earnings by Level
+                        </h5>
+                        <div style={{ height: "250px" }}>
+                          <Bar
+                            data={referralBarData}
+                            options={{
+                              ...chartOptions,
+                              maintainAspectRatio: false,
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Scroll Indicator */}
+                  <div
+                    className="scroll-indicator mt-3"
+                    style={{
+                      textAlign: "center",
+                      color: "#666",
+                      fontSize: "14px",
+                    }}
+                  >
+                    <i
+                      className="las la-arrows-alt-h"
+                      style={{ marginRight: "8px" }}
+                    ></i>
+                    Scroll horizontally to view all graphs
+                  </div>
                 </div>
-              )}
+              </section>
             </div>
           </div>
         </div>
@@ -739,7 +826,7 @@ function ReferalUsers() {
   );
 }
 
-export default ReferalUsers;
+export default Insights;
 
 function DashboardItem({ icon, title, value, theme }) {
   return (

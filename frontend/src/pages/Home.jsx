@@ -153,7 +153,7 @@ function Home() {
             <div className="col-lg-8">
               <div className="banner-content">
                 <h1 className="banner-title">Rizydra <span className="text--base">Investment </span><span> Solutions</span></h1>
-                <span className="subtitle">Your Journey to Financial Freedom Begins Here - Unlock Consistent, Automated Returns Through a Platform Designed for Simplicity & Security
+                <span className="subtitle">Your Journey Towards Smarter Investing Begins Here Experience Automated, Risk-Controlled Trading Built for Simplicity & Security
                 </span>
                 <div className="button-group d-flex flex-wrap align-items-center">
                   {isAuthenticated ? (
@@ -269,8 +269,8 @@ function Home() {
                 <div className="section-header">
                   <span className="subtitle">RIZYDRA HIGHLIGHTS</span>
                   <h2 className="title">Our Key Features</h2>
-                  <p>
-                    Discover Rizydra's core advantages. We provide a seamless, rewarding experience, managing your investments with expertise and care.
+                  <p style={{ fontSize: '18px' }}>
+                    Discover Rizydra’s core advantages. We deliver a seamless investment experience through automated, risk-aware strategies, designed to help users manage their portfolios with clarity and confidence.
                   </p>
                 </div>
                 <h3 className="title-two">Account Management</h3>
@@ -311,7 +311,7 @@ function Home() {
             <div className="col-sm-6 col-lg-12">
               <div className="plan-item wow fadeIn" data-wow-delay=".1s">
                 <div className="plan-inner-part">
-                  <h3>1</h3>  &nbsp; <h4>% </h4>  &nbsp;  &nbsp; <h3> Per Day</h3>
+                  <h4>upto</h4>  &nbsp; <h3>20</h3>  &nbsp; <h4>%</h4>  &nbsp; <h3>Monthly</h3>
                 </div>
                 <div className="plan-inner-part">
                   <ul className="plan-invest-limit">
@@ -404,7 +404,7 @@ function Home() {
                   <span className="subtitle wow fadeInUp">WHY CHOOSE US</span>
                   <h2 className="title wow fadeInUp" data-wow-delay=".5s">Why You Should Stay With Us</h2>
                   <p className="wow fadeInUp" data-wow-delay=".6s">
-                    Stay with us for reliable service, transparent investments, and continuous support. Your trusted partner in building lasting financial success.
+                    Stay with us for experience risk-controlled, automated trading powered by intelligent robots and continuously monitored by our team to ensure stability and control.
                   </p>
                 </div>
                 <div className="row g-4">
@@ -594,7 +594,7 @@ function Home() {
                         </div>
                         <div className="faq-content">
                           <p>
-                            We offer a secure, transparent, and rewarding investment platform with competitive returns and a user-friendly experience. Our multi-level affiliate program, flexible payment options including cryptocurrency, and dedicated support team set us apart — making your investment journey simple, smart, and profitable.
+                            A secure and transparent platform built on risk-controlled, automated trading. Our system is designed to target up to 20% monthly returns, supported by smart automation, flexible crypto payments, and a reliable affiliate program - all backed by a dedicated support team.
                           </p>
                         </div>
                       </div>

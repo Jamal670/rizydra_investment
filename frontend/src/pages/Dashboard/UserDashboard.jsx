@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Line, Pie, Bar, Line as StackedArea } from "react-chartjs-2";
 import api from "../../Api";
 import {
@@ -47,7 +47,32 @@ function UserDashboard() {
     refEarn: "0.00",
     depositAmount: "0.00",
     investedAmount: "0.00",
+    depositAmount: "0.00",
+    investedAmount: "0.00",
   });
+
+  // Sidebar State
+  const [isSidebarActive, setIsSidebarActive] = useState(false);
+  const sidebarRef = useRef(null);
+
+  // Close sidebar when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        isSidebarActive &&
+        sidebarRef.current &&
+        !sidebarRef.current.contains(event.target) &&
+        !event.target.closest(".user-toggler")
+      ) {
+        setIsSidebarActive(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isSidebarActive]);
 
   useEffect(() => {
     const loadAssets = () =>
@@ -355,8 +380,16 @@ function UserDashboard() {
         <div className="container">
           <div className="row gy-5">
             <div className="col-lg-3">
-              <div className="dashboard-sidebar">
-                <div className="close-dashboard d-lg-none">
+              <div
+                className={`dashboard-sidebar ${
+                  isSidebarActive ? "active" : ""
+                }`}
+                ref={sidebarRef}
+              >
+                <div
+                  className="close-dashboard d-lg-none"
+                  onClick={() => setIsSidebarActive(false)}
+                >
                   <i className="las la-times"></i>
                 </div>
                 <div className="dashboard-user">
@@ -466,7 +499,10 @@ function UserDashboard() {
             <div className="col-lg-9">
               <div className="user-toggler-wrapper d-flex d-lg-none">
                 <h4 className="title">User Dashboard</h4>
-                <div className="user-toggler">
+                <div
+                  className="user-toggler"
+                  onClick={() => setIsSidebarActive(true)}
+                >
                   <i className="las la-sliders-h"></i>
                 </div>
               </div>

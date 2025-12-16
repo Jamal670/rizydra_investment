@@ -868,13 +868,17 @@ exports.getInsightsData = async (userId, range = "Weekly") => {
     const totalReferrals = user.referredUsers ? user.referredUsers.length : 0;
 
     const metrics = {
-      totalAmount: user.totalBalance || 0,
-      totalEarnings: user.totalEarn || 0,
-      referralEarnings: user.refEarn || 0,
+      name: user.name,
+      email: user.email,
+      image: user.image || "",
+      referralCode: user.referralCode || "",
+      totalAmount: user.totalBalance,
+      totalEarnings: user.totalEarn,
+      referralEarnings: user.refEarn,
       totalReferrals: totalReferrals,
-      depositAmount: user.depositAmount || 0,
+      depositAmount: user.depositAmount,
       withdrawAmount: withdrawAmount,
-      investedAmount: user.investedAmount || 0,
+      investedAmount: user.investedAmount,
       pendingBalance: pendingBalance,
     };
 
@@ -929,12 +933,6 @@ exports.getInsightsData = async (userId, range = "Weekly") => {
     });
 
     return {
-      user: {
-        name: user.name,
-        email: user.email,
-        image: user.image || "",
-        referralCode: user.referralCode || "",
-      },
       metrics,
       graphs: {
         dailyEarnings: dailyEarningsData,

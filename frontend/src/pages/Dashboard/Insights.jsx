@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Line, Pie, Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -44,7 +44,30 @@ function Insights() {
     withdrawAmount: 0,
     investedAmount: 0,
     pendingBalance: 0,
+    pendingBalance: 0,
   });
+
+  const [isSidebarActive, setIsSidebarActive] = useState(false);
+  const sidebarRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        isSidebarActive &&
+        sidebarRef.current &&
+        !sidebarRef.current.contains(event.target) &&
+        !event.target.closest(".user-toggler")
+      ) {
+        setIsSidebarActive(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isSidebarActive]);
+
   const [graphs, setGraphs] = useState({
     dailyEarnings: [],
     referralLevels: { level1: 0, level2: 0, level3: 0 },
@@ -141,6 +164,14 @@ function Insights() {
               image: user.image || "",
               referralCode: user.referralCode || "",
             });
+          } else if (metrics) {
+            // Fallback when backend returns only metrics (with identity fields)
+            setUserData({
+              name: metrics.name || "",
+              email: metrics.email || "",
+              image: metrics.image || "",
+              referralCode: metrics.referralCode || "",
+            });
           }
 
           if (metrics) {
@@ -159,8 +190,11 @@ function Insights() {
           if (graphs) {
             setGraphs({
               dailyEarnings: graphs.dailyEarnings || [],
-              referralLevels:
-                graphs.referralLevels || { level1: 0, level2: 0, level3: 0 },
+              referralLevels: graphs.referralLevels || {
+                level1: 0,
+                level2: 0,
+                level3: 0,
+              },
             });
           }
         }
@@ -355,8 +389,16 @@ function Insights() {
         <div className="container">
           <div className="row gy-5">
             <div className="col-lg-3">
-              <div className="dashboard-sidebar">
-                <div className="close-dashboard d-lg-none">
+              <div
+                className={`dashboard-sidebar ${
+                  isSidebarActive ? "active" : ""
+                }`}
+                ref={sidebarRef}
+              >
+                <div
+                  className="close-dashboard d-lg-none"
+                  onClick={() => setIsSidebarActive(false)}
+                >
                   <i className="las la-times"></i>
                 </div>
                 <div className="dashboard-user">
@@ -420,15 +462,15 @@ function Insights() {
                     <a href="/user-dashboard">Account Overview</a>
                   </li>
                   <li>
-                    <a href="/insights"  className="active">Analytics</a>
+                    <a href="/insights" className="active">
+                      Analytics
+                    </a>
                   </li>
                   <li>
                     <a href="/earning-history">Earnings History</a>
                   </li>
                   <li>
-                    <a href="/referal-users">
-                      Referral Users
-                    </a>
+                    <a href="/referal-users">Referral Users</a>
                   </li>
                   <li>
                     <a href="/deposit">Deposit/Withdraw</a>
@@ -465,7 +507,10 @@ function Insights() {
             <div className="col-lg-9">
               <div className="user-toggler-wrapper d-flex d-lg-none">
                 <h4 className="title">User Dashboard</h4>
-                <div className="user-toggler">
+                <div
+                  className="user-toggler"
+                  onClick={() => setIsSidebarActive(true)}
+                >
                   <i className="las la-sliders-h"></i>
                 </div>
               </div>
@@ -615,7 +660,7 @@ function Insights() {
                   }}
                 >
                   <div>
-                    <h4 className="title mb-0">Finencial Analytics</h4>
+                    <h4 className="title m-0">Performance Overview</h4>
                   </div>
                   <div>
                     <select

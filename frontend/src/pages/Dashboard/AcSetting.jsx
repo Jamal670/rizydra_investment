@@ -1,389 +1,593 @@
-import React, { useEffect, useState, useRef } from 'react';
-import api from '../../Api';
+import React, { useEffect, useState, useRef } from "react";
+import api from "../../Api";
 
 function AcSetting() {
-    const [isLoading, setIsLoading] = useState(true);
-    const [userData, setUserData] = useState({ name: '', email: '', image: '', referralCode: '', referralLevel: 0 });
-    const fileInputRef = useRef(null);
-    const [showUpload, setShowUpload] = useState(false);
-    const [selectedImageFile, setSelectedImageFile] = useState(null);
-    const [updateFields, setUpdateFields] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [userData, setUserData] = useState({
+    name: "",
+    email: "",
+    image: "",
+    referralCode: "",
+    referralLevel: 0,
+  });
+  const fileInputRef = useRef(null);
+  const [showUpload, setShowUpload] = useState(false);
+  const [selectedImageFile, setSelectedImageFile] = useState(null);
+  const [updateFields, setUpdateFields] = useState({});
 
-    useEffect(() => {
-        const loadAssets = () => new Promise(resolve => {
-            if (window.__rizydraAssetsLoaded) {
-                resolve(true);
-                return;
-            }
+  // Sidebar State
+  const [isSidebarActive, setIsSidebarActive] = useState(false);
+  const sidebarRef = useRef(null);
 
-            const cssFiles = [
-                '/assets/css/bootstrap.min.css',
-                '/assets/css/all.min.css',
-                '/assets/css/line-awesome.min.css',
-                '/assets/css/animate.css',
-                '/assets/css/magnific-popup.css',
-                '/assets/css/nice-select.css',
-                '/assets/css/odometer.css',
-                '/assets/css/slick.css',
-                '/assets/css/main.css'
-            ];
-            const jsFiles = [
-                '/assets/js/jquery-3.3.1.min.js',
-                '/assets/js/bootstrap.min.js',
-                '/assets/js/jquery.ui.js',
-                '/assets/js/slick.min.js',
-                '/assets/js/wow.min.js',
-                '/assets/js/magnific-popup.min.js',
-                '/assets/js/odometer.min.js',
-                '/assets/js/viewport.jquery.js',
-                '/assets/js/nice-select.js',
-                '/assets/js/main.js'
-            ];
+  // Close sidebar when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        isSidebarActive &&
+        sidebarRef.current &&
+        !sidebarRef.current.contains(event.target) &&
+        !event.target.closest(".user-toggler")
+      ) {
+        setIsSidebarActive(false);
+      }
+    };
 
-            let loaded = 0;
-            const total = cssFiles.length + jsFiles.length;
-            const markLoaded = () => {
-                loaded += 1;
-                if (loaded >= total) {
-                    window.__rizydraAssetsLoaded = true;
-                    resolve(true);
-                }
-            };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isSidebarActive]);
 
-            cssFiles.forEach(href => {
-                const existing = document.querySelector(`link[href="${href}"]`);
-                if (existing) {
-                    markLoaded();
-                } else {
-                    const link = document.createElement('link');
-                    link.rel = 'stylesheet';
-                    link.href = href;
-                    link.onload = markLoaded;
-                    link.onerror = markLoaded;
-                    document.head.appendChild(link);
-                }
-            });
+  useEffect(() => {
+    const loadAssets = () =>
+      new Promise((resolve) => {
+        if (window.__rizydraAssetsLoaded) {
+          resolve(true);
+          return;
+        }
 
-            jsFiles.forEach(src => {
-                const existing = document.querySelector(`script[src="${src}"]`);
-                if (existing) {
-                    markLoaded();
-                } else {
-                    const script = document.createElement('script');
-                    script.src = src;
-                    script.async = false;
-                    script.onload = markLoaded;
-                    script.onerror = markLoaded;
-                    document.body.appendChild(script);
-                }
-            });
-        });
+        const cssFiles = [
+          "/assets/css/bootstrap.min.css",
+          "/assets/css/all.min.css",
+          "/assets/css/line-awesome.min.css",
+          "/assets/css/animate.css",
+          "/assets/css/magnific-popup.css",
+          "/assets/css/nice-select.css",
+          "/assets/css/odometer.css",
+          "/assets/css/slick.css",
+          "/assets/css/main.css",
+        ];
+        const jsFiles = [
+          "/assets/js/jquery-3.3.1.min.js",
+          "/assets/js/bootstrap.min.js",
+          "/assets/js/jquery.ui.js",
+          "/assets/js/slick.min.js",
+          "/assets/js/wow.min.js",
+          "/assets/js/magnific-popup.min.js",
+          "/assets/js/odometer.min.js",
+          "/assets/js/viewport.jquery.js",
+          "/assets/js/nice-select.js",
+          "/assets/js/main.js",
+        ];
 
-        const init = async () => {
-            try {
-                await api.get("/user/verify", { withCredentials: true });
-                const res = await api.get('/user/showdeposit', { withCredentials: true });
-                if (res.data.success) setUserData(res.data.data);
-            } catch (err) {
-                console.error('Authentication or data loading failed:', err);
-                localStorage.removeItem("authenticated");
-                localStorage.removeItem("isAdmin");
-                alert("Your session has expired, Please login again.");
-                window.location.href = '/login';
-                return;
-            }
-
-            await loadAssets();
-            setIsLoading(false);
+        let loaded = 0;
+        const total = cssFiles.length + jsFiles.length;
+        const markLoaded = () => {
+          loaded += 1;
+          if (loaded >= total) {
+            window.__rizydraAssetsLoaded = true;
+            resolve(true);
+          }
         };
 
-        init();
-    }, []);
+        cssFiles.forEach((href) => {
+          const existing = document.querySelector(`link[href="${href}"]`);
+          if (existing) {
+            markLoaded();
+          } else {
+            const link = document.createElement("link");
+            link.rel = "stylesheet";
+            link.href = href;
+            link.onload = markLoaded;
+            link.onerror = markLoaded;
+            document.head.appendChild(link);
+          }
+        });
 
-    return (
+        jsFiles.forEach((src) => {
+          const existing = document.querySelector(`script[src="${src}"]`);
+          if (existing) {
+            markLoaded();
+          } else {
+            const script = document.createElement("script");
+            script.src = src;
+            script.async = false;
+            script.onload = markLoaded;
+            script.onerror = markLoaded;
+            document.body.appendChild(script);
+          }
+        });
+      });
+
+    const init = async () => {
+      try {
+        await api.get("/user/verify", { withCredentials: true });
+        const res = await api.get("/user/showdeposit", {
+          withCredentials: true,
+        });
+        if (res.data.success) setUserData(res.data.data);
+      } catch (err) {
+        console.error("Authentication or data loading failed:", err);
+        localStorage.removeItem("authenticated");
+        localStorage.removeItem("isAdmin");
+        alert("Your session has expired, Please login again.");
+        window.location.href = "/login";
+        return;
+      }
+
+      await loadAssets();
+      setIsLoading(false);
+    };
+
+    init();
+  }, []);
+
+  return (
+    <>
+      {isLoading && (
         <>
-            {isLoading && (
-                <>
-                    <div
-                        className="loader-bg"
-                        style={{
-                            position: 'fixed',
-                            top: 0,
-                            left: 0,
-                            width: '100vw',
-                            height: '100vh',
-                            background: '#fff',
-                            zIndex: 9999,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                        }}
-                    >
-                        <img
-                            src="/loader.jpeg"
-                            alt="Loading..."
-                            style={{
-                                width: 260,
-                                height: 260,
-                                animation: 'blink 1s infinite',
-                            }}
-                        />
-                    </div>
-                    <style>
-                        {`
+          <div
+            className="loader-bg"
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              width: "100vw",
+              height: "100vh",
+              background: "#fff",
+              zIndex: 9999,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <img
+              src="/loader.jpeg"
+              alt="Loading..."
+              style={{
+                width: 260,
+                height: 260,
+                animation: "blink 1s infinite",
+              }}
+            />
+          </div>
+          <style>
+            {`
         @keyframes blink {
           0% { opacity: 1; }
           50% { opacity: 0.3; }
           100% { opacity: 1; }
         }
       `}
-                    </style>
-                </>
-            )}
-
-
-
-            {/* Banner Section */}
-            <section className="inner-banner bg_img padding-bottom" style={{ background: "url(/assets/images/about/bg.png) no-repeat right bottom" }}>
-                <div className="container">
-                    <div className="inner-banner-wrapper">
-                        <div className="inner-banner-content">
-                            <h2 className="inner-banner-title">User <br /> Dashboard</h2>
-                            <ul className="breadcums">
-                                {/* <li><a href="/">Home</a></li> */}
-                                <li><a href="/user-dashboard">Dashboard</a></li>
-                                <li><span>Account Setting</span></li>
-                            </ul>
-                        </div>
-                        <div className="inner-banner-thumb about d-none d-md-block">
-                            <img src="/assets/images/dashboard/thumb.png" alt="about" />
-                        </div>
-                    </div>
-                </div>
-                <div className="shape1 paroller" data-paroller-factor=".2">
-                    <img src="/assets/images/about/balls.png" alt="about" />
-                </div>
-            </section>
-
-            {/* User Dashboard Section */}
-            <section className="user-dashboard padding-top padding-bottom">
-                <div className="container">
-                    <div className="row gy-5">
-                        <div className="col-lg-3">
-                            <div className="dashboard-sidebar">
-                                <div className="close-dashboard d-lg-none">
-                                    <i className="las la-times"></i>
-                                </div>
-                                <div className="dashboard-user">
-                                    <div className="user-thumb">
-                                        <img
-                                            src={userData.image ? (userData.image.startsWith('data:image') ? userData.image : `data:image/png;base64,${userData.image}`) : "/assets/images/testimonial/aa.png"}
-                                            alt="dashboard"
-                                            style={{ width: "100px", height: "100px", borderRadius: "50%", objectFit: "cover" }}
-                                        />
-                                    </div>
-
-                                    <div className="user-content">
-                                        <span>Welcome</span>
-                                        <h5 className="name">{userData.name}</h5>
-                                        <p className="email">{userData.email}</p>
-                                        <hr />
-                                    </div>
-                                    {/* Referral Code Display */}
-                                    <div style={{ marginTop: '5px', padding: '5px', background: '#f8f9fa', borderRadius: '8px', border: '1px solid #e9ecef' }}>
-                                        <div style={{ fontSize: '12px', color: '#6c757d', marginBottom: '0px' }}>Referral Code:</div>
-                                        <div style={{ fontSize: '16px', fontWeight: '600', color: '#007bff', fontFamily: 'monospace' }}>
-                                            {userData.referralCode || 'N/A'}
-                                        </div>
-                                    </div>
-                                </div>
-                                <ul className="user-dashboard-tab">
-                                    <li><a href="/user-dashboard" >Account Overview</a></li>
-                                    <li>
-                                        <a href="/insights">Analytics</a>
-                                    </li>
-                                    <li><a href="/earning-history">Earnings History</a></li>
-                                    <li><a href="/referal-users">Referral Users</a></li>
-                                    <li><a href="/deposit">Deposit/Withdraw</a></li>
-                                    <li><a href="/account-settings" className="active">Account Settings</a></li>
-                                    <li>
-                                        <a
-                                            href="#0"
-                                            onClick={async (e) => {
-                                                e.preventDefault();
-                                                try {
-                                                    // Call logout API
-                                                    await api.get('/logout', { withCredentials: true });
-
-                                                    // Remove localStorage flag
-                                                    localStorage.removeItem("authenticated");
-
-                                                    // Redirect to homepage
-                                                    window.location.href = '/';
-                                                } catch (err) {
-                                                    console.error("Logout failed:", err);
-                                                    // Optionally show an error message
-                                                }
-                                            }}
-                                        >
-                                            Sign Out
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                        <div className="col-lg-9">
-                            <div className="user-toggler-wrapper d-flex d-lg-none">
-                                <h4 className="title">User Dashboard</h4>
-                                <div className="user-toggler">
-                                    <i className="las la-sliders-h"></i>
-                                </div>
-                            </div>
-
-
-                            {/* Profile Update Layout */}
-                            <div className="profile-update-container" style={{ maxWidth: '500px', margin: '0 auto', background: '#fff', borderRadius: '10px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', padding: '32px' }}>
-                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '32px' }}>
-                                    <div className="user-thumb">
-                                        {/* Profile image preview logic */}
-                                        <div
-                                            style={{ width: '120px', height: '120px', borderRadius: '50%', border: '2px solid blue', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', marginBottom: '10px', marginLeft: '20px', cursor: 'pointer', position: 'relative' }}
-                                            onClick={() => setShowUpload(true)}
-                                            title="Click to change profile image"
-                                        >
-                                            <img
-                                                src={updateFields.image ? updateFields.image : (userData.image ? (userData.image.startsWith('data:image') ? userData.image : `data:image/png;base64,${userData.image}`) : "/assets/images/testimonial/aa.png")}
-                                                alt="Profile"
-                                                style={{ width: '100px', height: '100px', borderRadius: '50%', objectFit: 'cover', }}
-                                            />
-                                            {/* Overlay for upload */}
-                                            {showUpload && (
-                                                <div style={{
-                                                    position: 'absolute',
-                                                    top: 0, left: 0, width: '100%', height: '100%',
-                                                    background: 'rgba(0,0,0,0.5)',
-                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                    borderRadius: '50%',
-                                                    zIndex: 2
-                                                }}>
-                                                    <button
-                                                        type="button"
-                                                        style={{
-                                                            background: '#fff',
-                                                            border: 'none',
-                                                            borderRadius: '20px',
-                                                            cursor: 'pointer',
-                                                            fontWeight: 'bold',
-                                                            color: '#333'
-                                                        }}
-                                                        onClick={() => {
-                                                            setShowUpload(false);
-                                                            fileInputRef.current.click();
-                                                        }}
-                                                    >
-                                                        Upload Image
-                                                    </button>
-                                                </div>
-                                            )}
-                                            <input
-                                                type="file"
-                                                accept="image/*"
-                                                ref={fileInputRef}
-                                                style={{ display: 'none' }}
-                                                onChange={async (e) => {
-                                                    const file = e.target.files[0];
-                                                    if (file) {
-                                                        setSelectedImageFile(file);
-                                                        // Show preview instantly
-                                                        const url = URL.createObjectURL(file);
-                                                        setUpdateFields(prev => ({
-                                                            ...prev,
-                                                            image: url
-                                                        }));
-                                                    }
-                                                }}
-                                            />
-                                        </div>
-                                        <div style={{ textAlign: 'center', marginTop: '10px' }}>
-                                            <span style={{ display: 'block', color: '#555' }}>Referral Level: {userData.referralLevel}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <form>
-                                    <div className="form-group mb-3">
-                                        <label htmlFor="name">Name</label>
-                                        <input type="text" id="name" className="form-control" value={updateFields.name !== undefined ? updateFields.name : userData.name} onChange={e => setUpdateFields({ ...updateFields, name: e.target.value })} />
-                                    </div>
-                                    <div className="form-group mb-3">
-                                        <label htmlFor="email">Email</label>
-                                        <input type="email" id="email" className="form-control" value={userData.email} disabled />
-                                    </div>
-                                    <div className="form-group mb-3">
-                                        <label htmlFor="password">Password</label>
-                                        <input type="password" id="password" className="form-control" value={updateFields.password || ''} onChange={e => setUpdateFields({ ...updateFields, password: e.target.value })} />
-                                    </div>
-                                    <div className="form-group mb-4">
-                                        <label htmlFor="confirmPassword">Confirm Password</label>
-                                        <input type="password" id="confirmPassword" className="form-control" value={updateFields.confirmPassword || ''} onChange={e => setUpdateFields({ ...updateFields, confirmPassword: e.target.value })} />
-                                    </div>
-                                    <button
-                                        type="button"
-                                        className="btn btn-primary w-100"
-                                        style={{ padding: '12px 0', fontWeight: 'bold', fontSize: '16px' }}
-                                        onClick={async () => {
-                                            // Only validate password if user is updating it
-                                            if (updateFields.password) {
-                                                const password = updateFields.password;
-                                                const confirmPassword = updateFields.confirmPassword;
-                                                const isLongEnough = password.length >= 6;
-                                                if (!isLongEnough) {
-                                                    alert('Password should contain at least 6 characters.');
-                                                    return;
-                                                }
-                                                if (password !== confirmPassword) {
-                                                    alert('Passwords do not match.');
-                                                    return;
-                                                }
-                                            }
-                                            try {
-                                                const formData = new FormData();
-                                                // Only send changed fields
-                                                if (updateFields.name && updateFields.name !== userData.name) {
-                                                    formData.append('name', updateFields.name);
-                                                }
-                                                // Email is not editable
-                                                if (updateFields.password) {
-                                                    formData.append('password', updateFields.password);
-                                                }
-                                                if (selectedImageFile) {
-                                                    formData.append('profileImage', selectedImageFile);
-                                                }
-                                                await api.post('/user/updateprofile', formData, {
-                                                    withCredentials: true,
-                                                    headers: { 'Content-Type': 'multipart/form-data' }
-                                                });
-                                                window.location.reload();
-                                            } catch (err) {
-                                                alert('Profile update failed: ' + (err?.response?.data?.error || err?.message || 'Unknown error'));
-                                            }
-                                        }}
-                                    >
-                                        Update Profile
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-
-
-
-
-            <a href="#0" className="scrollToTop active"><i className="las la-chevron-up"></i></a>
+          </style>
         </>
-    );
+      )}
+
+      {/* Banner Section */}
+      <section
+        className="inner-banner bg_img padding-bottom"
+        style={{
+          background: "url(/assets/images/about/bg.png) no-repeat right bottom",
+        }}
+      >
+        <div className="container">
+          <div className="inner-banner-wrapper">
+            <div className="inner-banner-content">
+              <h2 className="inner-banner-title">
+                User <br /> Dashboard
+              </h2>
+              <ul className="breadcums">
+                {/* <li><a href="/">Home</a></li> */}
+                <li>
+                  <a href="/user-dashboard">Dashboard</a>
+                </li>
+                <li>
+                  <span>Account Setting</span>
+                </li>
+              </ul>
+            </div>
+            <div className="inner-banner-thumb about d-none d-md-block">
+              <img src="/assets/images/dashboard/thumb.png" alt="about" />
+            </div>
+          </div>
+        </div>
+        <div className="shape1 paroller" data-paroller-factor=".2">
+          <img src="/assets/images/about/balls.png" alt="about" />
+        </div>
+      </section>
+
+      {/* User Dashboard Section */}
+      <section className="user-dashboard padding-top padding-bottom">
+        <div className="container">
+          <div className="row gy-5">
+            <div className="col-lg-3">
+              <div
+                className={`dashboard-sidebar ${
+                  isSidebarActive ? "active" : ""
+                }`}
+                ref={sidebarRef}
+              >
+                <div
+                  className="close-dashboard d-lg-none"
+                  onClick={() => setIsSidebarActive(false)}
+                >
+                  <i className="las la-times"></i>
+                </div>
+                <div className="dashboard-user">
+                  <div className="user-thumb">
+                    <img
+                      src={
+                        userData.image
+                          ? userData.image.startsWith("data:image")
+                            ? userData.image
+                            : `data:image/png;base64,${userData.image}`
+                          : "/assets/images/testimonial/aa.png"
+                      }
+                      alt="dashboard"
+                      style={{
+                        width: "100px",
+                        height: "100px",
+                        borderRadius: "50%",
+                        objectFit: "cover",
+                      }}
+                    />
+                  </div>
+
+                  <div className="user-content">
+                    <span>Welcome</span>
+                    <h5 className="name">{userData.name}</h5>
+                    <p className="email">{userData.email}</p>
+                    <hr />
+                  </div>
+                  {/* Referral Code Display */}
+                  <div
+                    style={{
+                      marginTop: "5px",
+                      padding: "5px",
+                      background: "#f8f9fa",
+                      borderRadius: "8px",
+                      border: "1px solid #e9ecef",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: "12px",
+                        color: "#6c757d",
+                        marginBottom: "0px",
+                      }}
+                    >
+                      Referral Code:
+                    </div>
+                    <div
+                      style={{
+                        fontSize: "16px",
+                        fontWeight: "600",
+                        color: "#007bff",
+                        fontFamily: "monospace",
+                      }}
+                    >
+                      {userData.referralCode || "N/A"}
+                    </div>
+                  </div>
+                </div>
+                <ul className="user-dashboard-tab">
+                  <li>
+                    <a href="/user-dashboard">Account Overview</a>
+                  </li>
+                  <li>
+                    <a href="/insights">Analytics</a>
+                  </li>
+                  <li>
+                    <a href="/earning-history">Earnings History</a>
+                  </li>
+                  <li>
+                    <a href="/referal-users">Referral Users</a>
+                  </li>
+                  <li>
+                    <a href="/deposit">Deposit/Withdraw</a>
+                  </li>
+                  <li>
+                    <a href="/account-settings" className="active">
+                      Account Settings
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#0"
+                      onClick={async (e) => {
+                        e.preventDefault();
+                        try {
+                          // Call logout API
+                          await api.get("/logout", { withCredentials: true });
+
+                          // Remove localStorage flag
+                          localStorage.removeItem("authenticated");
+
+                          // Redirect to homepage
+                          window.location.href = "/";
+                        } catch (err) {
+                          console.error("Logout failed:", err);
+                          // Optionally show an error message
+                        }
+                      }}
+                    >
+                      Sign Out
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div className="col-lg-9">
+              <div className="user-toggler-wrapper d-flex d-lg-none">
+                <h4 className="title">User Dashboard</h4>
+                <div
+                  className="user-toggler"
+                  onClick={() => setIsSidebarActive(true)}
+                >
+                  <i className="las la-sliders-h"></i>
+                </div>
+              </div>
+
+              {/* Profile Update Layout */}
+              <div
+                className="profile-update-container"
+                style={{
+                  maxWidth: "500px",
+                  margin: "0 auto",
+                  background: "#fff",
+                  borderRadius: "10px",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+                  padding: "32px",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    marginBottom: "32px",
+                  }}
+                >
+                  <div className="user-thumb">
+                    {/* Profile image preview logic */}
+                    <div
+                      style={{
+                        width: "120px",
+                        height: "120px",
+                        borderRadius: "50%",
+                        border: "2px solid blue",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        overflow: "hidden",
+                        marginBottom: "10px",
+                        marginLeft: "20px",
+                        cursor: "pointer",
+                        position: "relative",
+                      }}
+                      onClick={() => setShowUpload(true)}
+                      title="Click to change profile image"
+                    >
+                      <img
+                        src={
+                          updateFields.image
+                            ? updateFields.image
+                            : userData.image
+                            ? userData.image.startsWith("data:image")
+                              ? userData.image
+                              : `data:image/png;base64,${userData.image}`
+                            : "/assets/images/testimonial/aa.png"
+                        }
+                        alt="Profile"
+                        style={{
+                          width: "100px",
+                          height: "100px",
+                          borderRadius: "50%",
+                          objectFit: "cover",
+                        }}
+                      />
+                      {/* Overlay for upload */}
+                      {showUpload && (
+                        <div
+                          style={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            width: "100%",
+                            height: "100%",
+                            background: "rgba(0,0,0,0.5)",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            borderRadius: "50%",
+                            zIndex: 2,
+                          }}
+                        >
+                          <button
+                            type="button"
+                            style={{
+                              background: "#fff",
+                              border: "none",
+                              borderRadius: "20px",
+                              cursor: "pointer",
+                              fontWeight: "bold",
+                              color: "#333",
+                            }}
+                            onClick={() => {
+                              setShowUpload(false);
+                              fileInputRef.current.click();
+                            }}
+                          >
+                            Upload Image
+                          </button>
+                        </div>
+                      )}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        ref={fileInputRef}
+                        style={{ display: "none" }}
+                        onChange={async (e) => {
+                          const file = e.target.files[0];
+                          if (file) {
+                            setSelectedImageFile(file);
+                            // Show preview instantly
+                            const url = URL.createObjectURL(file);
+                            setUpdateFields((prev) => ({
+                              ...prev,
+                              image: url,
+                            }));
+                          }
+                        }}
+                      />
+                    </div>
+                    <div style={{ textAlign: "center", marginTop: "10px" }}>
+                      <span style={{ display: "block", color: "#555" }}>
+                        Referral Level: {userData.referralLevel}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <form>
+                  <div className="form-group mb-3">
+                    <label htmlFor="name">Name</label>
+                    <input
+                      type="text"
+                      id="name"
+                      className="form-control"
+                      value={
+                        updateFields.name !== undefined
+                          ? updateFields.name
+                          : userData.name
+                      }
+                      onChange={(e) =>
+                        setUpdateFields({
+                          ...updateFields,
+                          name: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  <div className="form-group mb-3">
+                    <label htmlFor="email">Email</label>
+                    <input
+                      type="email"
+                      id="email"
+                      className="form-control"
+                      value={userData.email}
+                      disabled
+                    />
+                  </div>
+                  <div className="form-group mb-3">
+                    <label htmlFor="password">Password</label>
+                    <input
+                      type="password"
+                      id="password"
+                      className="form-control"
+                      value={updateFields.password || ""}
+                      onChange={(e) =>
+                        setUpdateFields({
+                          ...updateFields,
+                          password: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  <div className="form-group mb-4">
+                    <label htmlFor="confirmPassword">Confirm Password</label>
+                    <input
+                      type="password"
+                      id="confirmPassword"
+                      className="form-control"
+                      value={updateFields.confirmPassword || ""}
+                      onChange={(e) =>
+                        setUpdateFields({
+                          ...updateFields,
+                          confirmPassword: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    className="btn btn-primary w-100"
+                    style={{
+                      padding: "12px 0",
+                      fontWeight: "bold",
+                      fontSize: "16px",
+                    }}
+                    onClick={async () => {
+                      // Only validate password if user is updating it
+                      if (updateFields.password) {
+                        const password = updateFields.password;
+                        const confirmPassword = updateFields.confirmPassword;
+                        const isLongEnough = password.length >= 6;
+                        if (!isLongEnough) {
+                          alert(
+                            "Password should contain at least 6 characters."
+                          );
+                          return;
+                        }
+                        if (password !== confirmPassword) {
+                          alert("Passwords do not match.");
+                          return;
+                        }
+                      }
+                      try {
+                        const formData = new FormData();
+                        // Only send changed fields
+                        if (
+                          updateFields.name &&
+                          updateFields.name !== userData.name
+                        ) {
+                          formData.append("name", updateFields.name);
+                        }
+                        // Email is not editable
+                        if (updateFields.password) {
+                          formData.append("password", updateFields.password);
+                        }
+                        if (selectedImageFile) {
+                          formData.append("profileImage", selectedImageFile);
+                        }
+                        await api.post("/user/updateprofile", formData, {
+                          withCredentials: true,
+                          headers: { "Content-Type": "multipart/form-data" },
+                        });
+                        window.location.reload();
+                      } catch (err) {
+                        alert(
+                          "Profile update failed: " +
+                            (err?.response?.data?.error ||
+                              err?.message ||
+                              "Unknown error")
+                        );
+                      }
+                    }}
+                  >
+                    Update Profile
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <a href="#0" className="scrollToTop active">
+        <i className="las la-chevron-up"></i>
+      </a>
+    </>
+  );
 }
 
 export default AcSetting;

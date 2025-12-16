@@ -26,6 +26,28 @@ function Deposit() {
   const [reDepId, setReDepId] = useState(null);
   const [showDeclineDetailModal, setShowDeclineDetailModal] = useState(false);
 
+  const [isSidebarActive, setIsSidebarActive] = useState(false);
+  const sidebarRef = useRef(null);
+
+  // Close sidebar when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        isSidebarActive &&
+        sidebarRef.current &&
+        !sidebarRef.current.contains(event.target) &&
+        !event.target.closest(".user-toggler")
+      ) {
+        setIsSidebarActive(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isSidebarActive]);
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 8;
@@ -2152,8 +2174,16 @@ function Deposit() {
         <div className="container">
           <div className="row gy-5">
             <div className="col-lg-3">
-              <div className="dashboard-sidebar">
-                <div className="close-dashboard d-lg-none">
+              <div
+                className={`dashboard-sidebar ${
+                  isSidebarActive ? "active" : ""
+                }`}
+                ref={sidebarRef}
+              >
+                <div
+                  className="close-dashboard d-lg-none"
+                  onClick={() => setIsSidebarActive(false)}
+                >
                   <i className="las la-times"></i>
                 </div>
                 <div className="dashboard-user">
@@ -2262,7 +2292,10 @@ function Deposit() {
             <div className="col-lg-9">
               <div className="user-toggler-wrapper d-flex d-lg-none">
                 <h4 className="title">User Dashboard</h4>
-                <div className="user-toggler">
+                <div
+                  className="user-toggler"
+                  onClick={() => setIsSidebarActive(true)}
+                >
                   <i className="las la-sliders-h"></i>
                 </div>
               </div>
@@ -2463,7 +2496,6 @@ function Deposit() {
                         title="The money you have invested will generate profit after 24 hours."
                         onClick={() => {
                           try {
-                           
                             const isTouch =
                               typeof window !== "undefined" &&
                               window.matchMedia &&
@@ -2480,17 +2512,17 @@ function Deposit() {
                               display: "inline-block",
                               backgroundColor: "#ff3b30",
                               color: "#fff",
-                            borderRadius: "50%",
-                            width: "20px",
-                            height: "20px",
-                            textAlign: "center",
-                            lineHeight: "20px",
-                            fontWeight: "bold",
-                            fontSize: "14px",
-                          }}
-                        >
-                          ?
-                        </span>
+                              borderRadius: "50%",
+                              width: "20px",
+                              height: "20px",
+                              textAlign: "center",
+                              lineHeight: "20px",
+                              fontWeight: "bold",
+                              fontSize: "14px",
+                            }}
+                          >
+                            ?
+                          </span>
                         )}
                       </div>
 

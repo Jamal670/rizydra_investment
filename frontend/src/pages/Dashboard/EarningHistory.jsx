@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { MdOutlineArrowBackIos, MdArrowForwardIos } from "react-icons/md";
 import api from "../../Api";
@@ -15,6 +15,27 @@ function EarningHistory() {
     investedAmount: 0,
     earnings: [],
   });
+
+  const [isSidebarActive, setIsSidebarActive] = useState(false);
+  const sidebarRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        isSidebarActive &&
+        sidebarRef.current &&
+        !sidebarRef.current.contains(event.target) &&
+        !event.target.closest(".user-toggler")
+      ) {
+        setIsSidebarActive(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isSidebarActive]);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -233,8 +254,16 @@ function EarningHistory() {
         <div className="container">
           <div className="row gy-5">
             <div className="col-lg-3">
-              <div className="dashboard-sidebar">
-                <div className="close-dashboard d-lg-none">
+              <div
+                className={`dashboard-sidebar ${
+                  isSidebarActive ? "active" : ""
+                }`}
+                ref={sidebarRef}
+              >
+                <div
+                  className="close-dashboard d-lg-none"
+                  onClick={() => setIsSidebarActive(false)}
+                >
                   <i className="las la-times"></i>
                 </div>
                 <div className="dashboard-user">
@@ -360,7 +389,10 @@ function EarningHistory() {
             <div className="col-lg-9">
               <div className="user-toggler-wrapper d-flex d-lg-none">
                 <h4 className="title">User Dashboard</h4>
-                <div className="user-toggler">
+                <div
+                  className="user-toggler"
+                  onClick={() => setIsSidebarActive(true)}
+                >
                   <i className="las la-sliders-h"></i>
                 </div>
               </div>

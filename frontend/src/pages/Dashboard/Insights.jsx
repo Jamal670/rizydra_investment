@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { Line, Pie, Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -44,7 +44,6 @@ function Insights() {
     withdrawAmount: 0,
     investedAmount: 0,
     pendingBalance: 0,
-    pendingBalance: 0,
   });
 
   const [isSidebarActive, setIsSidebarActive] = useState(false);
@@ -73,9 +72,10 @@ function Insights() {
     referralLevels: { level1: 0, level2: 0, level3: 0 },
   });
   const [timeRange, setTimeRange] = useState("Weekly");
+  const [isLoadingGraphs, setIsLoadingGraphs] = useState(false);
 
-  useEffect(() => {
-    const loadAssets = () =>
+  const loadAssets = useCallback(
+    () =>
       new Promise((resolve) => {
         if (window.__rizydraAssetsLoaded) {
           resolve(true);
@@ -142,77 +142,101 @@ function Insights() {
             document.body.appendChild(script);
           }
         });
+      }),
+    []
+  );
+
+  // Fetch Static Cards Data (Run Once)
+  const fetchCards = useCallback(async () => {
+    try {
+      await api.get("/user/verify", { withCredentials: true });
+      const res = await api.get("/user/insights/cards", {
+        withCredentials: true,
       });
 
-    const init = async () => {
-      try {
-        await api.get("/user/verify", { withCredentials: true });
-        const res = await api.get(
-          `/user/insights?range=${encodeURIComponent(timeRange)}`,
-          {
-            withCredentials: true,
-          }
-        );
+      if (res.data && res.data.success && res.data.data) {
+        const metrics = res.data.data;
 
-        if (res.data && res.data.success && res.data.data) {
-          const { user, metrics, graphs } = res.data.data;
+        setUserData({
+          name: metrics.name || "",
+          email: metrics.email || "",
+          image: metrics.image || "",
+          referralCode: metrics.referralCode || "",
+        });
 
-          if (user) {
-            setUserData({
-              name: user.name || "",
-              email: user.email || "",
-              image: user.image || "",
-              referralCode: user.referralCode || "",
-            });
-          } else if (metrics) {
-            // Fallback when backend returns only metrics (with identity fields)
-            setUserData({
-              name: metrics.name || "",
-              email: metrics.email || "",
-              image: metrics.image || "",
-              referralCode: metrics.referralCode || "",
-            });
-          }
+        setMetrics({
+          totalAmount: metrics.totalAmount || 0,
+          totalEarnings: metrics.totalEarnings || 0,
+          referralEarnings: metrics.referralEarnings || 0,
+          totalReferrals: metrics.totalReferrals || 0,
+          depositAmount: metrics.depositAmount || 0,
+          withdrawAmount: metrics.withdrawAmount || 0,
+          investedAmount: metrics.investedAmount || 0,
+          pendingBalance: metrics.pendingBalance || 0,
+        });
+      }
+    } catch (err) {
+      console.error("Cards data loading failed:", err);
+      // Optional: Handle auth failure here or in the other call
+    }
+  }, []);
 
-          if (metrics) {
-            setMetrics({
-              totalAmount: metrics.totalAmount || 0,
-              totalEarnings: metrics.totalEarnings || 0,
-              referralEarnings: metrics.referralEarnings || 0,
-              totalReferrals: metrics.totalReferrals || 0,
-              depositAmount: metrics.depositAmount || 0,
-              withdrawAmount: metrics.withdrawAmount || 0,
-              investedAmount: metrics.investedAmount || 0,
-              pendingBalance: metrics.pendingBalance || 0,
-            });
-          }
+  // Fetch Graphs Data (Run on Filter Change)
+  const fetchGraphs = useCallback(async (range) => {
+    console.log("🔄 [DROPDOWN] Fetching graphs for range:", range);
+    setIsLoadingGraphs(true);
 
-          if (graphs) {
-            setGraphs({
-              dailyEarnings: graphs.dailyEarnings || [],
-              referralLevels: graphs.referralLevels || {
-                level1: 0,
-                level2: 0,
-                level3: 0,
-              },
-            });
-          }
+    try {
+      const res = await api.get(
+        `/user/insights/graphs?range=${encodeURIComponent(range)}`,
+        {
+          withCredentials: true,
         }
-      } catch (err) {
-        console.error("Authentication or data loading failed:", err);
+      );
+
+      console.log("✅ [API RESPONSE] Received data:", res.data);
+
+      if (res.data && res.data.success && res.data.data) {
+        const graphs = res.data.data;
+
+        console.log("📊 [DATA] Daily Earnings:", graphs.dailyEarnings);
+        console.log("📊 [DATA] Referral Levels:", graphs.referralLevels);
+
+        setGraphs({
+          dailyEarnings: graphs.dailyEarnings || [],
+          referralLevels: graphs.referralLevels || {
+            level1: 0,
+            level2: 0,
+            level3: 0,
+          },
+        });
+
+        console.log("✅ [STATE] Graphs state updated successfully");
+      }
+    } catch (err) {
+      console.error("❌ [ERROR] Graph data loading failed:", err);
+      if (err.response && err.response.status === 401) {
         localStorage.removeItem("authenticated");
         localStorage.removeItem("isAdmin");
         alert("Your session has expired, Please login again.");
         window.location.href = "/login";
-        return;
       }
+    } finally {
+      setIsLoadingGraphs(false);
+    }
+  }, []);
 
-      await loadAssets();
+  // Initial Load
+  useEffect(() => {
+    const init = async () => {
+      setIsLoading(true);
+      await Promise.all([fetchCards(), fetchGraphs(timeRange), loadAssets()]);
       setIsLoading(false);
     };
-
     init();
-  }, [timeRange]);
+  }, []); // Run once on mount
+
+  // Update Graphs on Range Change
 
   // Chart configurations
   const lineChartData = {
@@ -671,7 +695,15 @@ function Insights() {
                         cursor: "pointer",
                       }}
                       value={timeRange}
-                      onChange={(e) => setTimeRange(e.target.value)}
+                      onChange={(e) => {
+                        const selectedRange = e.target.value;
+                        console.log(
+                          "👆 [USER ACTION] Dropdown changed to:",
+                          selectedRange
+                        );
+                        setTimeRange(selectedRange);
+                        fetchGraphs(selectedRange);
+                      }}
                     >
                       <option value="Weekly">Weekly</option>
                       <option value="Monthly">Monthly</option>
@@ -684,7 +716,45 @@ function Insights() {
               </div>
 
               {/* Graphs Section - Horizontal Scroll Similar to UserDashboard */}
-              <section className="charts-section mt-4">
+              <section
+                className="charts-section mt-4"
+                style={{ position: "relative" }}
+              >
+                {/* Loading Overlay for Graphs */}
+                {isLoadingGraphs && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background: "rgba(255, 255, 255, 0.8)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      zIndex: 10,
+                      borderRadius: "10px",
+                    }}
+                  >
+                    <div style={{ textAlign: "center" }}>
+                      <div
+                        className="spinner-border text-primary"
+                        role="status"
+                        style={{ width: "3rem", height: "3rem" }}
+                      >
+                        <span className="visually-hidden">Loading...</span>
+                      </div>
+                      <p
+                        className="mt-3"
+                        style={{ fontSize: "16px", fontWeight: "500" }}
+                      >
+                        Updating graphs...
+                      </p>
+                    </div>
+                  </div>
+                )}
+
                 <div className="container-fluid px-0">
                   <div
                     className="charts-scroll-container"

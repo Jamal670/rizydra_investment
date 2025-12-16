@@ -149,18 +149,24 @@ exports.showEarningHistory = async (userId, page = 1, limit = 8) => {
           refEarn: 1,
           depositAmount: 1,
           investedAmount: 1,
-
-          // Count Pending investedLots
-          pendingLotsCount: {
-            $size: {
-              $filter: {
-                input: "$investedLots",
-                as: "lot",
-                cond: { $eq: ["$$lot.status", "Pending"] },
+        
+          // Total Pending Amount
+          pendingLotsAmount: {
+            $sum: {
+              $map: {
+                input: {
+                  $filter: {
+                    input: "$investedLots",
+                    as: "lot",
+                    cond: { $eq: ["$$lot.status", "Pending"] },
+                  },
+                },
+                as: "pendingLot",
+                in: { $ifNull: ["$$pendingLot.amount", 0] },
               },
             },
           },
-
+        
           // Latest earnings with date formatting
           earnings: {
             $map: {
@@ -181,6 +187,7 @@ exports.showEarningHistory = async (userId, page = 1, limit = 8) => {
             },
           },
         },
+        
       },
     ]);
 
@@ -808,37 +815,12 @@ exports.invest = async (userId, from, to, amount) => {
   }
 };
 
-exports.getInsightsData = async (userId, range = "Weekly") => {
+exports.getInsightsCards = async (userId) => {
   try {
     const userObjectId = new mongoose.Types.ObjectId(userId);
     const user = await UserModel.findById(userObjectId);
     if (!user) throw new Error("User not found");
 
-    // 1. Date Range Logic
-    let startDate = new Date();
-    startDate.setHours(0, 0, 0, 0); // Start of today
-
-    switch (range) {
-      case "Weekly":
-        startDate.setDate(startDate.getDate() - 7);
-        break;
-      case "Monthly":
-        startDate.setMonth(startDate.getMonth() - 1);
-        break;
-      case "Six Month":
-        startDate.setMonth(startDate.getMonth() - 6);
-        break;
-      case "Yearly":
-        startDate.setFullYear(startDate.getFullYear() - 1);
-        break;
-      case "Lastly":
-        startDate = new Date(0); // Beginning of epoch
-        break;
-      default:
-        startDate.setDate(startDate.getDate() - 7); // Default Weekly
-    }
-
-    // 2. Metrics (Card Data)
     // Pending Balance = Pending Withdrawals
     const pendingWithdrawals = await InvestmentModel.aggregate([
       {
@@ -882,7 +864,39 @@ exports.getInsightsData = async (userId, range = "Weekly") => {
       pendingBalance: pendingBalance,
     };
 
-    // 3. Graphs Data
+    return metrics;
+  } catch (error) {
+    throw new Error(error.message || "Error fetching insights cards data");
+  }
+};
+
+exports.getInsightsGraphs = async (userId, range) => {
+  try {
+    const userObjectId = new mongoose.Types.ObjectId(userId);
+
+    // 1. Date Range Logic
+    let startDate = new Date();
+    startDate.setHours(0, 0, 0, 0); // Start of today
+
+    switch (range) {
+      case "Weekly":
+        startDate.setDate(startDate.getDate() - 7);
+        break;
+      case "Monthly":
+        startDate.setMonth(startDate.getMonth() - 1);
+        break;
+      case "Six Month":
+        startDate.setMonth(startDate.getMonth() - 6);
+        break;
+      case "Yearly":
+        startDate.setFullYear(startDate.getFullYear() - 1);
+        break;
+      case "Lastly":
+        startDate = new Date(0); // Beginning of epoch
+        break;
+      default:
+        startDate.setDate(startDate.getDate() - 7); // Default Weekly
+    }
 
     // Graph 1: Line Graph (Daily Earnings Trend)
     const dailyEarningsData = await DailyEarn.aggregate([
@@ -902,17 +916,12 @@ exports.getInsightsData = async (userId, range = "Weekly") => {
       { $sort: { _id: 1 } },
     ]);
 
-    // Graph 2: Pie Graph (Deposit vs Withdraw)
-    // Already have depositAmount and withdrawAmount in metrics
-
-    // Graph 3: Pie Graph (Balance Distribution)
-    // Already have totalBalance, investedAmount, pendingBalance in metrics
-
     // Graph 4: Bar Graph (Referral Earnings by Level)
     const referralEarningsByLevel = await RedUserEarning.aggregate([
       {
         $match: {
           userId: userObjectId,
+          createdAt: { $gte: startDate }, // Added Date Filter
         },
       },
       {
@@ -933,14 +942,11 @@ exports.getInsightsData = async (userId, range = "Weekly") => {
     });
 
     return {
-      metrics,
-      graphs: {
-        dailyEarnings: dailyEarningsData,
-        referralLevels,
-      },
+      dailyEarnings: dailyEarningsData,
+      referralLevels,
     };
   } catch (error) {
-    throw new Error(error.message || "Error fetching insights data");
+    throw new Error(error.message || "Error fetching insights graphs data");
   }
 };
 

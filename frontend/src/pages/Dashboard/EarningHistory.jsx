@@ -10,9 +10,13 @@ function EarningHistory() {
     name: "",
     email: "",
     image: "",
+    totalBalance: "",
+    totalEarn: "",
+    refEarn: "",
     referralCode: "",
     depositAmount: 0,
     investedAmount: 0,
+    pendingLotsSum: 0,
     earnings: [],
   });
 
@@ -133,9 +137,13 @@ function EarningHistory() {
           name: user.name || "",
           email: user.email || "",
           image: user.image || "",
+          totalBalance: user.totalBalance || 0,
+          totalEarn: user.totalEarn || 0,
+          refEarn: user.refEarn || 0,
           referralCode: user.referralCode || "",
           depositAmount: user.depositAmount || 0,
           investedAmount: user.investedAmount || 0,
+          pendingLotsSum: user.pendingLotsAmount || 0,
           earnings: user.earnings || [],
           lastEarningDate:
             user.earnings && user.earnings.length > 0

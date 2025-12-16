@@ -42,9 +42,17 @@ const getUTCYesterdayRange = () => {
 
 exports.calculateDailyEarnings = async () => {
 
+  // ================= CHECK WEEKDAY =================
+  const now = new Date();
+  const utcDay = now.getUTCDay(); // 0 = Sunday, 6 = Saturday
+  if (utcDay === 0 || utcDay === 6) {
+    console.log("⏩ Weekend detected (UTC). Skipping daily earnings calculation.");
+    return { message: "Weekend — no earnings calculation." };
+  }
+
   // 🔥 Fetch dynamic daily percentage (default 1%)
   const rizydraInfo = await RizydraInfo.findOne().lean();
-  const DAILY_PERCENTAGE = rizydraInfo?.dailyPercentage || 1;
+  const DAILY_PERCENTAGE = rizydraInfo?.dailyPercentage || 0;
 
   const { start, end } = getUTCYesterdayRange();
   const prevDay = getUTCPreviousDayString();
@@ -71,7 +79,6 @@ exports.calculateDailyEarnings = async () => {
 
     // ================= ORIGINAL LOGIC =================
 
-    const now = new Date();
     const currentInvested = roundTo3(user.investedAmount || 0);
 
     // ---------- Mature Pending Lots ----------
@@ -182,7 +189,7 @@ exports.calculateDailyEarnings = async () => {
         dailyPercentage: DAILY_PERCENTAGE,
         date: prevDay
       });
-    } catch (error) {
+    } catch (error) { 
       console.error(`❌ Email failed for ${user.name}:`, error.message);
     }
 

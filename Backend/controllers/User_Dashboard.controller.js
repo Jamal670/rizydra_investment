@@ -309,21 +309,41 @@ exports.redeposit = async (req, res) => {
 };
 
 // Insights function
-exports.getInsights = async (req, res) => {
+// Insights Cards function (Static Data)
+exports.getInsightsCards = async (req, res) => {
   try {
     const userId = req.user._id;
-    const { range } = req.query; // Weekly, Monthly, etc.
-
-    const insightsData = await userDashService.getInsightsData(userId, range);
+    const cardsData = await userDashService.getInsightsCards(userId);
 
     res.status(200).json({
       success: true,
-      data: insightsData,
+      data: cardsData,
     });
   } catch (err) {
     res.status(400).json({
       success: false,
-      message: err.message || "Failed to fetch insights",
+      message: err.message || "Failed to fetch insights cards",
+    });
+  }
+};
+
+// Insights Graphs function (Dynamic Data)
+exports.getInsightsGraphs = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { range } = req.query; // Weekly, Monthly, etc.
+    console.log(range);
+
+    const graphsData = await userDashService.getInsightsGraphs(userId, range);
+
+    res.status(200).json({
+      success: true,
+      data: graphsData,
+    });
+  } catch (err) {
+    res.status(400).json({
+      success: false,
+      message: err.message || "Failed to fetch insights graphs",
     });
   }
 };

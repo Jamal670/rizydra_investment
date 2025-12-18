@@ -258,6 +258,7 @@ exports.showDeposit = async (userId) => {
                 as: "linkedRedeposits",
               },
             },
+            { $sort: { createdAt: -1 } },
             {
               $addFields: {
                 alreadyRedeposit: { $gt: [{ $size: "$linkedRedeposits" }, 0] },

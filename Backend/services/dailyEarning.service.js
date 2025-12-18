@@ -44,8 +44,8 @@ exports.calculateDailyEarnings = async () => {
 
   // ================= CHECK WEEKDAY =================
   const now = new Date();
-  const utcDay = now.getUTCDay(); // 0 = Sunday, 6 = Saturday
-  if (utcDay === 0 || utcDay === 6) {
+  const utcDay = now.getUTCDay(); // 0 = Sunday, 1 = Monday
+  if (utcDay === 0 || utcDay === 1) {
     console.log("⏩ Weekend detected (UTC). Skipping daily earnings calculation.");
     return { message: "Weekend — no earnings calculation." };
   }

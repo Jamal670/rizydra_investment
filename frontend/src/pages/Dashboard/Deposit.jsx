@@ -1365,7 +1365,7 @@ function Deposit() {
             {verificationLoading ? "Processing..." : "Confirm & Withdraw"}
           </button>
         </form>
-        <div style={{ textAlign: "center", marginTop: 12 }}>
+        {/* <div style={{ textAlign: "center", marginTop: 12 }}>
           <button
             type="button"
             className="btn btn-link"
@@ -1396,7 +1396,7 @@ function Deposit() {
           >
             Resend Verification Code
           </button>
-        </div>
+        </div> */}
       </div>
     </div>
   );

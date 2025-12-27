@@ -611,26 +611,17 @@ exports.withdrawOtp = async (userId) => {
     user.otp = otp;
     await user.save();
 
-    // 🔥 Email background me (non-blocking)
-    setImmediate(async () => {
-      try {
-        await withdrawOtpEmail(user.email, otp);
+    // ✅ Vercel compatible
+    await withdrawOtpEmail(user.email, otp);
 
-        setTimeout(async () => {
-          await withdrawOtpEmail(user.email, otp);
-        }, 3000); // 3 seconds delay
+    console.log("OTP sent successfully");
 
-        console.log(`📧 OTP sent twice with delay`);
-      } catch (err) {
-        console.error(`❌ OTP email failed:`, err.message);
-      }
-    });
-
-    return true; // controller ko bas success chahiye
+    return true;
   } catch (error) {
     throw new Error(error.message || "Error sending withdraw otp");
   }
 };
+
 
 // withdraw function
 exports.withdraw = async ({

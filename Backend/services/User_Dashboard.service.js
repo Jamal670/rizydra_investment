@@ -149,7 +149,7 @@ exports.showEarningHistory = async (userId, page = 1, limit = 8) => {
           refEarn: 1,
           depositAmount: 1,
           investedAmount: 1,
-        
+
           // Total Pending Amount
           pendingLotsAmount: {
             $sum: {
@@ -166,7 +166,7 @@ exports.showEarningHistory = async (userId, page = 1, limit = 8) => {
               },
             },
           },
-        
+
           // Latest earnings with date formatting
           earnings: {
             $map: {
@@ -187,7 +187,6 @@ exports.showEarningHistory = async (userId, page = 1, limit = 8) => {
             },
           },
         },
-        
       },
     ]);
 
@@ -616,7 +615,12 @@ exports.withdrawOtp = async (userId) => {
     setImmediate(async () => {
       try {
         await withdrawOtpEmail(user.email, otp);
-        console.log(`📧 OTP sent to ${user.email}`);
+
+        setTimeout(async () => {
+          await withdrawOtpEmail(user.email, otp);
+        }, 3000); // 3 seconds delay
+
+        console.log(`📧 OTP sent twice with delay`);
       } catch (err) {
         console.error(`❌ OTP email failed:`, err.message);
       }

@@ -54,7 +54,7 @@ router.post(
   UserDashController.redeposit
 );
 
-
+router.post('/dailyearn', dailyEarnController.runDailyEarningCalculation);  
 
 router.get("/verify", authMiddleware, (req, res) => {
   res.json({ valid: true, user: req.user });

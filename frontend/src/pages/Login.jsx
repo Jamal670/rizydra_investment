@@ -104,7 +104,7 @@ function Login() {
 
             // ✅ just keep simple flags
             localStorage.setItem("authenticated", "true");
-            
+
             // Save credentials for auto-fill
             localStorage.setItem("savedEmail", form.email);
             localStorage.setItem("savedPassword", form.password);
